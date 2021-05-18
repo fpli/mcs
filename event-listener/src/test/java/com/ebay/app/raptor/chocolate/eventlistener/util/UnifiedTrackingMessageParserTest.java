@@ -2,10 +2,13 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -43,6 +47,18 @@ public class UnifiedTrackingMessageParserTest {
         ("META-INF/configuration/Dev/"));
     ApplicationOptions.init();
     ESMetrics.init("test", "localhost");
+  }
+
+  @Test
+  public void testParseUEPEvents() throws Exception {
+    UnifiedTrackingEvent unifiedTrackingEvent = new UnifiedTrackingEvent();
+    unifiedTrackingEvent.setPayload(new HashMap<>());
+    UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
+    assertEquals(parse.getProducerEventTs(), parse.getEventTs());
+    unifiedTrackingEvent.setProducerEventTs(1L);
+    parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
+    assertEquals(Long.valueOf(1L), parse.getProducerEventTs());
+    assertNotEquals(parse.getProducerEventTs(), parse.getEventTs());
   }
 
   @SuppressWarnings("unchecked")
@@ -83,6 +99,9 @@ public class UnifiedTrackingMessageParserTest {
     boolean isROIFromCheckoutAPI = false;
     long snapshotId = 0L;
     long shortSnapshotId = 0L;
+    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    requestHeaders.put(Constants.IS_FROM_UFES_HEADER, "true");
+    requestHeaders.put(Constants.NODE_REDIRECTION_HEADER_NAME, "301");
 
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setUrl(url);
@@ -92,7 +111,6 @@ public class UnifiedTrackingMessageParserTest {
     baseEvent.setUserAgentInfo(agentInfo);
     baseEvent.setEndUserContext(endUserContext);
     baseEvent.setUrlParameters(parameters);
-    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     requestHeaders.put("X-EBAY-C-TRACKING", "cguid=8b34ef1d1740a4d724970d78eec8ee4c644dc2df");
     baseEvent.setRequestHeaders(requestHeaders);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
@@ -102,6 +120,7 @@ public class UnifiedTrackingMessageParserTest {
     assertNotNull(message.getEventId());
     assertEquals("", message.getProducerEventId());
     assertEquals(message.getEventTs(), Long.valueOf(currentTimeMillis));
+    assertEquals(message.getProducerEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals("123456", message.getRlogId());
     assertNull(message.getTrackingId());
     assertEquals(Long.valueOf(0), message.getUserId());
@@ -133,6 +152,9 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals(Integer.valueOf(101), message.getGeoId());
     assertFalse(message.getIsBot());
     assertEquals("xx-YY", message.getPayload().get("lang_cd"));
+    assertEquals("true", message.getPayload().get("isUfes"));
+    assertEquals("301", message.getPayload().get("statusCode"));
+
   }
 
   @Test

@@ -4,11 +4,14 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.constant.RoiTransactionEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
@@ -55,6 +58,7 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
  * dm
  */
 public class CollectionServiceUtil {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CollectionServiceUtil.class);
 
   private static String MOBILE_PHONE_WEB_APPID = "3564";
   private static String MOBILE_TABLET_WEB_APPID = "1115";
@@ -70,6 +74,12 @@ public class CollectionServiceUtil {
   private static final String BOT_USER_AGENT = "bot";
   private static final String PROMOTED_LISTINGS_SOURCE = "PromotedListings";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
+  private static final String DEEP_LINK_WITH_CHOCO_PARAMS = "chocodeeplink";
+  private static final String DEEP_LINK_WITH_REFERRER_PARAMS = "referrerdeeplink";
+  private static final String PRE_INSTALL_APP_RLUTYPE = "1";
+  private static final String PRE_INSTALL_APP_USECASE = "prm";
+  private static final String CLICK_EVENT_FLAG = "1";
+  private static final String PRM_CLICK_ROTATION_ID = "14362-130847-18990-0";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -351,7 +361,7 @@ public class CollectionServiceUtil {
     try {
       String rotationId = deeplinkParamMap.get(MKRID).get(0);
       String clientId = parseClientIdFromRotation(rotationId);
-      String urlHost = clientIdHostMap.get(clientId);
+      String urlHost = clientIdHostMap.getOrDefault(clientId, "");
 
       if (!StringUtils.isEmpty(urlHost)) {
         URIBuilder deeplinkURIBuilder = new URIBuilder(urlHost);
@@ -364,13 +374,33 @@ public class CollectionServiceUtil {
           }
         }
         // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters
-        deeplinkURIBuilder.addParameter(DEEP_LINK_WITH_CHOCO_PARAMS_FLAG, "1");
-        viewItemChocolateURL = deeplinkURIBuilder.toString();
+        deeplinkURIBuilder.addParameter(FLEX_FLD_17_TXT, DEEP_LINK_WITH_CHOCO_PARAMS);
+        viewItemChocolateURL = deeplinkURIBuilder.build().toString();
       }
     } catch (Exception e) {
-      viewItemChocolateURL = "";
+      LOGGER.error("Construct view item chocolate URL for deeplink error." + e.getMessage());
+      return "";
     }
+
     return viewItemChocolateURL;
+  }
+
+  /**
+   * for native uri which has valid chocolate url in referrer parameter, append special flag to mark this kind of clicks
+   */
+  public static String constructReferrerChocolateURLForDeepLink(String originalChocolateURL) {
+    String targetURL = originalChocolateURL;
+
+    try {
+      URIBuilder targetUriBuilder = new URIBuilder(originalChocolateURL);
+      targetUriBuilder.addParameter(FLEX_FLD_17_TXT, DEEP_LINK_WITH_REFERRER_PARAMS);
+      targetURL = targetUriBuilder.build().toString();
+    } catch (Exception e) {
+      LOGGER.error("Construct referrer chocolate URL for deeplink error." + e.getMessage());
+      return originalChocolateURL;
+    }
+
+    return targetURL;
   }
 
   /**
@@ -431,5 +461,58 @@ public class CollectionServiceUtil {
   public static Boolean isFromUFES(Map<String, String> headers) {
     return headers.containsKey(Constants.IS_FROM_UFES_HEADER)
         && "true".equals(headers.get(Constants.IS_FROM_UFES_HEADER));
+  }
+  /*
+   * determine if the ROI is generated from pre-install App on Android
+   */
+  public static boolean isPreinstallROI(Map<String, String> roiPayloadMap, String transType) {
+    boolean isPreInstallROI = false;
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String rlutype = roiPayloadMap.getOrDefault(RLUTYPE, "");
+    String usecase = roiPayloadMap.getOrDefault(USECASE, "");
+
+    RoiTransactionEnum roiTransactionEnum = RoiTransactionEnum.getByTransTypeName(transType);
+
+    if (!StringUtils.isEmpty(mppid) && rlutype.equals(PRE_INSTALL_APP_RLUTYPE)
+         && usecase.equals(PRE_INSTALL_APP_USECASE) && PRE_INSTALL_ROI_TRANS_TYPES.contains(roiTransactionEnum)) {
+      isPreInstallROI = true;
+    }
+
+    return isPreInstallROI;
+  }
+
+  /**
+   * Mock click URL if we receive ROI event from pre-install App on Android (XC-3464)
+   */
+  public static String createPrmClickUrl(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
+    String prmClickUrl = "";
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String siteId = roiPayloadMap.getOrDefault(SITEID, "0");
+    String clickUrlHost = siteIdHostMap.getOrDefault(siteId, "https://www.ebay.com");
+
+    try {
+      if (!StringUtils.isEmpty(clickUrlHost)) {
+        URIBuilder clickURIBuilder = new URIBuilder(clickUrlHost);
+        clickURIBuilder.addParameter(MKEVT, CLICK_EVENT_FLAG);
+        clickURIBuilder.addParameter(MKCID, ChannelIdEnum.DAP.getValue());
+        clickURIBuilder.addParameter(MKRID, PRM_CLICK_ROTATION_ID);
+        clickURIBuilder.addParameter(MPPID, URLEncoder.encode(mppid, "UTF-8"));
+        clickURIBuilder.addParameter(RLUTYPE, PRE_INSTALL_APP_RLUTYPE);
+        clickURIBuilder.addParameter(SITE, URLEncoder.encode(siteId, "UTF-8"));
+
+        if (endUserContext.getDeviceId() != null) {
+          clickURIBuilder.addParameter(UDID, URLEncoder.encode(endUserContext.getDeviceId(), "UTF-8"));
+        }
+
+        prmClickUrl = clickURIBuilder.build().toString();
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Construct dummy click for pre-install App ROI error." + ex.getMessage());
+      return "";
+    }
+
+    return prmClickUrl;
   }
 }

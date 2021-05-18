@@ -66,14 +66,15 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
+    long eventTs = System.currentTimeMillis();
     UnifiedTrackingMessage record = setDefaultAndCommonValues(payload,
-        new UserAgentParser().parse(event.getUserAgent()), System.currentTimeMillis());
+        new UserAgentParser().parse(event.getUserAgent()), eventTs);
 
     // event id
     record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
 
     // event timestamp
-    record.setProducerEventTs(coalesce(event.getProducerEventTs(), 0L));
+    record.setProducerEventTs(coalesce(event.getProducerEventTs(), eventTs));
 
     // rlogid
     record.setRlogId(event.getRlogId());
@@ -139,11 +140,12 @@ public class UnifiedTrackingMessageParser {
 
   /**
    * Bot detection by device type
+   *
    * @param userAgent user agent
    */
-  public static boolean isBot(String userAgent)  {
+  public static boolean isBot(String userAgent) {
     // isBot. Basic bot detection by user agent.
-    if(StringUtils.isNotEmpty(userAgent) && (
+    if (StringUtils.isNotEmpty(userAgent) && (
         userAgent.toLowerCase().contains("bot") ||
             userAgent.toLowerCase().contains("proxy") ||
             userAgent.toLowerCase().contains("spider")
@@ -157,18 +159,18 @@ public class UnifiedTrackingMessageParser {
    * Parse chocolate tracked user behavior into utp message
    * @param baseEvent             base event
    * @param requestContext        request context
-   * @param roiEvent              roi event for handling roi case
    * @param snapshotId            PM snapshot id
    * @param shortSnapshotId       PM short snapshot id
-   * @param startTime             start time
    * @return                      utp event
    */
+
   public static UnifiedTrackingMessage parse(BaseEvent baseEvent, ContainerRequestContext requestContext,
-                                             ROIEvent roiEvent, long snapshotId, long shortSnapshotId, long startTime) {
+                                             long snapshotId, long shortSnapshotId) {
     Map<String, String> payload = new HashMap<>();
 
     // set default value
-    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, baseEvent.getUserAgentInfo(), startTime);
+    UnifiedTrackingMessage record = setDefaultAndCommonValues(payload, baseEvent.getUserAgentInfo(),
+        baseEvent.getTimestamp());
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
     payload.put("lang_cd", userPrefsCtx.getLangLocale().toLanguageTag());
@@ -182,7 +184,8 @@ public class UnifiedTrackingMessageParser {
         baseEvent.getChannelType().getLogicalChannel().getAvro()));
 
     // event timestamp
-    record.setProducerEventTs(getProducerEventTs(baseEvent.getActionType().getAvro(), roiEvent));
+    record.setProducerEventTs(getProducerEventTs(baseEvent.getActionType().getAvro(), baseEvent.getRoiEvent(),
+        baseEvent.getTimestamp()));
 
     // rlog id
     record.setRlogId(tracingContext.getRlogId());
@@ -276,10 +279,10 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> fullPayload =
         getPayload(payload, baseEvent, parameters, appId,
             baseEvent.getChannelType().getLogicalChannel().getAvro(), baseEvent.getActionType().getAvro(), snapshotId,
-            shortSnapshotId, roiEvent, userId, trackingHeader);
+            shortSnapshotId, baseEvent.getRoiEvent(), userId, trackingHeader);
 
     // append UEP payload
-    if(uepPayload != null && uepPayload.size() > 0) {
+    if (uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
@@ -376,11 +379,11 @@ public class UnifiedTrackingMessageParser {
     return "";
   }
 
-  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent) {
+  private static long getProducerEventTs(ChannelAction channelAction, ROIEvent roiEvent, long startTime) {
     if (ChannelAction.ROI.equals(channelAction) && isLongNumeric(roiEvent.getTransactionTimestamp())) {
       return Long.parseLong(roiEvent.getTransactionTimestamp());
     } else {
-      return System.currentTimeMillis();
+      return startTime;
     }
   }
 
@@ -440,7 +443,7 @@ public class UnifiedTrackingMessageParser {
         // decode rotationId if rotation is encoded
         // add decodeCnt to avoid looping infinitely
         int decodeCnt = 0;
-        while (rawRotationId.contains("%") && decodeCnt<5) {
+        while (rawRotationId.contains("%") && decodeCnt < 5) {
           rawRotationId = URLDecoder.decode(rawRotationId, "UTF-8");
           decodeCnt = decodeCnt + 1;
         }
@@ -507,7 +510,7 @@ public class UnifiedTrackingMessageParser {
 
     if (channelType == ChannelType.EPN) {
       String toolId = HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID);
-      if(StringUtils.isNotEmpty(toolId)) {
+      if (StringUtils.isNotEmpty(toolId)) {
         payload.put(Constants.TOOL_ID, HttpRequestUtil.parseTagFromParams(parameters, Constants.TOOL_ID));
       }
     }
@@ -541,7 +544,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // is from ufes
-    String isUfes = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.IS_FROM_UFES_HEADER);
+    String isUfes = baseEvent.getRequestHeaders().get(Constants.IS_FROM_UFES_HEADER);
     if (StringUtils.isEmpty(isUfes)) {
       payload.put(Constants.TAG_IS_UFES, "false");
     } else {
@@ -549,7 +552,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // status code
-    String statusCode = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.NODE_REDIRECTION_HEADER_NAME);
+    String statusCode = baseEvent.getRequestHeaders().get(Constants.NODE_REDIRECTION_HEADER_NAME);
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
@@ -578,8 +581,8 @@ public class UnifiedTrackingMessageParser {
    * Add tags in param sojTags
    */
   private static Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
-                                         ChannelType channelType, ChannelAction channelAction) {
-    if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
+                                                ChannelType channelType, ChannelAction channelAction) {
+    if (parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
@@ -610,7 +613,7 @@ public class UnifiedTrackingMessageParser {
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));
     payloadMap.put("snapshotid", String.valueOf(snapshotId));
 
-    if(isLongNumeric(roiEvent.getItemId())) {
+    if (isLongNumeric(roiEvent.getItemId())) {
       payloadMap.put("itm", roiEvent.getItemId());
     }
     if (!StringUtils.isEmpty(roiEvent.getTransType())) {
@@ -652,7 +655,7 @@ public class UnifiedTrackingMessageParser {
     Set<Map.Entry<String, String>> entrySet = map.entrySet();
     Iterator<Map.Entry<String, String>> iterator = entrySet.iterator();
 
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       Map.Entry<String, String> entry = iterator.next();
       if (StringUtils.isEmpty(entry.getValue())) {
         iterator.remove();

@@ -4,24 +4,45 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
+import com.ebay.raptor.auth.RaptorSecureContext;
+import com.ebay.raptor.geo.context.UserPrefsCtx;
+import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
+import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+
+import java.util.Map;
+import java.util.UUID;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;

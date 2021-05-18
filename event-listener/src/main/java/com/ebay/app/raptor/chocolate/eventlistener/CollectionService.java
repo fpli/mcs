@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -79,6 +80,8 @@ public class CollectionService {
   private String duplicateItmClickTopic;
   private static CollectionService instance = null;
   private UnifiedTrackingMessageParser utpParser;
+  private static final String TYPE_INFO = "Info";
+  private static final String STATUS_OK = "0";
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -105,6 +108,8 @@ public class CollectionService {
   private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
+  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com");
+  private static final String ROI_TRANS_TYPE = "roiTransType";
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -352,8 +357,7 @@ public class CollectionService {
     }
 
     // filter click whose referer is internal
-    Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
-    boolean isInternalRef = m.find();
+    boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(), referer);
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -400,11 +404,11 @@ public class CollectionService {
 
       // send to unified tracking topic
       if (listenerMessage != null) {
-        submitChocolateUtpEvent(baseEvent, requestContext, null,
-            listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime);
+        submitChocolateUtpEvent(baseEvent, requestContext,
+            listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId);
       } else {
-        submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
-            0L, utpEventId, startTime);
+        submitChocolateUtpEvent(baseEvent, requestContext, 0L,
+            0L, utpEventId);
       }
     }
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
@@ -426,6 +430,14 @@ public class CollectionService {
     if (enduserctxHeader == null) {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
+  }
+  protected boolean isInternalRef(ChannelType channelType, String referer) {
+    if (inRefererWhitelist(channelType, referer)) {
+      return false;
+    }
+    // filter click whose referer is internal
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    return m.find();
   }
 
   /**
@@ -527,8 +539,43 @@ public class CollectionService {
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
             ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
-    submitChocolateUtpEvent(baseEvent, requestContext, roiEvent,
-        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime);
+    // submit utp event
+    submitChocolateUtpEvent(baseEvent, requestContext,
+        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null);
+
+    // Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
+    boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(baseEvent.getRoiEvent().getPayload(),
+        baseEvent.getRoiEvent().getTransType());
+
+    if (isPreInstallROI) {
+
+      String clickUrl = CollectionServiceUtil.createPrmClickUrl(baseEvent.getRoiEvent().getPayload(),
+          baseEvent.getEndUserContext());
+      UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
+
+      MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
+
+      BaseEvent baseEventForMockClick = new BaseEvent();
+      baseEventForMockClick.setTimestamp(startTime);
+      baseEventForMockClick.setUrl(clickUrl);
+      baseEventForMockClick.setReferer(referer);
+      baseEventForMockClick.setActionType(ChannelActionEnum.CLICK);
+      baseEventForMockClick.setChannelType(ChannelIdEnum.DAP);
+      baseEventForMockClick.setUriComponents(clickUriComponents);
+      baseEventForMockClick.setUrlParameters(clickParameters);
+      baseEventForMockClick.setRequestHeaders(requestHeaders);
+      baseEventForMockClick.setUserAgentInfo(agentInfo);
+      baseEventForMockClick.setUserPrefsCtx(userPrefsCtx);
+      baseEventForMockClick.setEndUserContext(endUserContext);
+      baseEventForMockClick.setUid(userId);
+
+      ListenerMessage mockClickListenerMessage = listenerMessageParser.parse(baseEvent);
+
+      // submit utp event
+      submitChocolateUtpEvent(baseEventForMockClick, requestContext, mockClickListenerMessage.getSnapshotId(),
+          mockClickListenerMessage.getShortSnapshotId(), null);
+
+    }
 
     return true;
   }
@@ -661,11 +708,11 @@ public class CollectionService {
 
     // send to unified tracking topic
     if(listenerMessage!=null) {
-      submitChocolateUtpEvent(baseEvent, requestContext, null, listenerMessage.getSnapshotId(),
-          listenerMessage.getShortSnapshotId(), null, startTime);
+      submitChocolateUtpEvent(baseEvent, requestContext, listenerMessage.getSnapshotId(),
+          listenerMessage.getShortSnapshotId(), null);
     } else {
-      submitChocolateUtpEvent(baseEvent, requestContext, null, 0L,
-          0L, null, startTime);
+      submitChocolateUtpEvent(baseEvent, requestContext, 0L,
+          0L, null);
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
@@ -697,8 +744,10 @@ public class CollectionService {
     if(!baseEvent.isCheckoutApi()) {
       roiCollector.trackUbi(containerRequestContext, baseEvent);
     }
+
     return message;
   }
+
 
   /**
    * Collect sync event and publish to ubi only
@@ -781,6 +830,10 @@ public class CollectionService {
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
     UnifiedTrackingMessage message = utpParser.parse(event);
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, message.getProducerEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
+    SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
@@ -795,15 +848,12 @@ public class CollectionService {
    * Submit chocolate tracked user behavior into utp event
    * @param baseEvent       base event
    * @param requestContext  request context
-   * @param roiEvent        roi event
    * @param snapshotId      snapshot id
    * @param shortSnapshotId short snapshot id
    * @param eventId         utp event id
-   * @param startTime       start time
    */
-  private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
-                                       ROIEvent roiEvent, long snapshotId,
-                                       long shortSnapshotId, String eventId, long startTime) {
+  private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
+                                       long shortSnapshotId, String eventId) {
     try {
       Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
       if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
@@ -811,8 +861,8 @@ public class CollectionService {
           || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
               baseEvent.getReferer())
           || !m.find()) {
-        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, roiEvent, snapshotId,
-            shortSnapshotId, startTime);
+        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
+            shortSnapshotId);
         if(!StringUtils.isEmpty(eventId)) {
           utpMessage.setEventId(eventId);
         }
@@ -829,20 +879,25 @@ public class CollectionService {
   }
 
   /**
-   * Process AMS and IMK events
-   * @param requestContext      wrapped request context
-   * @param targetUrl           landing page url
-   * @param referer             referer of the request
-   * @param parameters          url parameters
-   * @param channelType         channel type
-   * @param channelAction       action type
-   * @param request             http request
-   * @param startTime           start timestamp of the request
-   * @param endUserContext      enduserctx header
-   * @param raptorSecureContext wrapped raptor secure context
-   * @param agentInfo           user agent
-   * @return                    a listener message
+   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site. So add a whitelist to handle these bad cases.
+   * @param channelType channel type
+   * @param referer referer
+   * @return in whitelist or not
    */
+  protected boolean inRefererWhitelist(ChannelType channelType, String referer) {
+    // currently, this case only exists in display channel
+    if (ChannelType.DISPLAY != channelType) {
+      return false;
+    }
+    String lowerCase = referer.toLowerCase();
+    for (String referWhitelist : REFERER_WHITELIST) {
+      if (lowerCase.startsWith(referWhitelist)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Fire PM events to the streams
    * @param baseEvent base event
@@ -869,6 +924,9 @@ public class CollectionService {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
+    // 3. submit utp event
+
+
     return listenerMessage;
   }
 
@@ -893,6 +951,72 @@ public class CollectionService {
       return true;
     } else
       return false;
+  }
+
+  /**
+   * Process Pre-install ROI Event
+   * Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
+   * @param requestContext      wrapped request context
+   * @param referer             referer of the request
+   * @param request             http request
+   * @param endUserContext      enduserctx header
+   * @param raptorSecureContext wrapped raptor secure context
+   * @param agentInfo           user agent
+   * @param payloadMap          ROI payload parameters
+   * @param roiEvent            ROI event
+   * @param transTimestamp      ROI transaction timestamp
+   * @return                success or failure
+   */
+  private boolean processPreInstallROIEvent(ContainerRequestContext requestContext, String referer, HttpServletRequest request,
+                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                            UserAgentInfo agentInfo, Map<String, String> payloadMap, ROIEvent roiEvent, long transTimestamp) {
+
+    try {
+      boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(payloadMap, roiEvent.getTransType());
+
+      if (isPreInstallROI) {
+        UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+        Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
+
+        // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
+        String utpEventId = UUID.randomUUID().toString();
+
+        String clickUrl = CollectionServiceUtil.createPrmClickUrl(payloadMap, endUserContext);
+
+        if (!StringUtils.isEmpty(clickUrl)) {
+          UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
+
+          MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
+
+          ListenerMessage listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
+                  clickUrl, referer, clickParameters, ChannelIdEnum.DAP, ChannelActionEnum.CLICK, request, transTimestamp, endUserContext,
+                  raptorSecureContext);
+
+          Producer<Long, ListenerMessage> producer = KafkaSink.get();
+          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelIdEnum.DAP.getLogicalChannel().getAvro());
+
+          producer.send(
+                  new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
+                  KafkaSink.callback);
+
+          // send to unified tracking topic
+          processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+                  agentInfo, clickParameters, clickUrl, referer, ChannelType.DISPLAY,
+                  ChannelAction.CLICK, null, listenerMessage.getSnapshotId(),
+                  listenerMessage.getShortSnapshotId(), utpEventId, transTimestamp, false);
+
+          // Log mock click for pre-install ROI by transaction type
+          metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
+                  Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
+                  Field.of(ROI_TRANS_TYPE, roiEvent.getTransType()));
+        }
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Error when processing pre-install ROI events", ex);
+      metrics.meter("ErrorProcessPreinstallROIEvent", 1);
+    }
+
+    return true;
   }
 
   /**
