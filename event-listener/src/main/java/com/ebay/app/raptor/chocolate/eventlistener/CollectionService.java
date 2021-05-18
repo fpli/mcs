@@ -10,7 +10,6 @@ import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.collector.*;
-import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
@@ -20,7 +19,6 @@ import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
@@ -32,7 +30,6 @@ import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
-import com.ebay.userlookup.UserLookup;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -49,7 +46,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.net.URLDecoder;
@@ -328,6 +324,7 @@ public class CollectionService {
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
     baseEvent.setUid(userId);
+    baseEvent.setPayload(event.getPayload());
 
     // update startTime if the click comes from checkoutAPI
     try {

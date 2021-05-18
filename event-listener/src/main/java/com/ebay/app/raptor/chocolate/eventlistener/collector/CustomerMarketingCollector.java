@@ -74,51 +74,9 @@ public abstract class CustomerMarketingCollector {
    * Add common soj tags all channels in common
    *
    * @param requestContext wrapped raptor request context
-   * @param targetUrl      landing page url
-   * @param referer        referer of the request
-   * @param agentInfo      user agent
-   * @param utpEventId     utp event id
-   * @param type           channel type
-   * @param action         action type
+   * @param baseEvent      base event
    * @param pageId         soj page id
    */
-  private void addCommonTags(ContainerRequestContext requestContext, String targetUrl, String referer,
-                             UserAgentInfo agentInfo, String utpEventId, String type, String action, int pageId) {
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker
-          = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
-
-      // event action
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
-
-      // target url
-      if (!StringUtils.isEmpty(targetUrl)) {
-        requestTracker.addTag(SOJ_MPRE_TAG, targetUrl, String.class);
-      }
-
-      // referer
-      if (!StringUtils.isEmpty(referer)) {
-        requestTracker.addTag("ref", referer, String.class);
-      }
-
-      // utp event id
-      if (!StringUtils.isEmpty(utpEventId)) {
-        requestTracker.addTag("utpid", utpEventId, String.class);
-      }
-
-      // populate device info
-      CollectionServiceUtil.populateDeviceDetectionParams(agentInfo, requestTracker);
-
-    } catch (Exception e) {
-      LOGGER.warn("Error when tracking ubi for common tags", e);
-      metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
-    }
-  }
-
   private void addCommonTags(ContainerRequestContext requestContext, BaseEvent baseEvent, int pageId) {
     try {
       // Ubi tracking
