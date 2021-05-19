@@ -224,7 +224,7 @@ public class PerformanceMarketingCollector {
    * Determine whether the click is from Checkout API
    * If so, don't track into ubi
    */
-  private Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
+  Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
     boolean isClickFromCheckoutAPI = false;
     try {
       if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {

@@ -104,6 +104,7 @@ public class UnifiedTrackingMessageParserTest {
     requestHeaders.put(Constants.NODE_REDIRECTION_HEADER_NAME, "301");
 
     BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(currentTimeMillis);
     baseEvent.setUrl(url);
     baseEvent.setReferer(referer);
     baseEvent.setChannelType(ChannelIdEnum.DAP);
@@ -115,7 +116,7 @@ public class UnifiedTrackingMessageParserTest {
     baseEvent.setRequestHeaders(requestHeaders);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
 
-    UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, null, snapshotId, shortSnapshotId, currentTimeMillis);
+    UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, snapshotId, shortSnapshotId);
 
     assertNotNull(message.getEventId());
     assertEquals("", message.getProducerEventId());

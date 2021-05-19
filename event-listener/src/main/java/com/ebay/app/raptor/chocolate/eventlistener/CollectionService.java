@@ -45,7 +45,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -357,7 +356,8 @@ public class CollectionService {
     }
 
     // filter click whose referer is internal
-    boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(), referer);
+    boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
+        baseEvent.getReferer());
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -389,26 +389,14 @@ public class CollectionService {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
 
-        listenerMessage = firePMEvent(baseEvent, requestContext);
-      }
-      else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
+        firePMEvent(baseEvent, requestContext);
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-      }
-      else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
         fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-      }
-      else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
           || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
         fireCmEvent(baseEvent, requestContext, smsCollector);
-      }
-
-      // send to unified tracking topic
-      if (listenerMessage != null) {
-        submitChocolateUtpEvent(baseEvent, requestContext,
-            listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId);
-      } else {
-        submitChocolateUtpEvent(baseEvent, requestContext, 0L,
-            0L, utpEventId);
       }
     }
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
@@ -527,8 +515,8 @@ public class CollectionService {
     baseEvent.setCheckoutApi(isRoiFromCheckoutAPI);
     baseEvent.setRoiEvent(roiEvent);
 
-    // Write roi event to kafka output topic
-    ListenerMessage listenerMessage = fireROIEvent(baseEvent, requestContext);
+    // fire roi events
+    fireROIEvent(baseEvent, requestContext);
 
     metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
         Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
@@ -538,44 +526,6 @@ public class CollectionService {
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
             ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
-
-    // submit utp event
-    submitChocolateUtpEvent(baseEvent, requestContext,
-        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null);
-
-    // Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
-    boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(baseEvent.getRoiEvent().getPayload(),
-        baseEvent.getRoiEvent().getTransType());
-
-    if (isPreInstallROI) {
-
-      String clickUrl = CollectionServiceUtil.createPrmClickUrl(baseEvent.getRoiEvent().getPayload(),
-          baseEvent.getEndUserContext());
-      UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
-
-      MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
-
-      BaseEvent baseEventForMockClick = new BaseEvent();
-      baseEventForMockClick.setTimestamp(startTime);
-      baseEventForMockClick.setUrl(clickUrl);
-      baseEventForMockClick.setReferer(referer);
-      baseEventForMockClick.setActionType(ChannelActionEnum.CLICK);
-      baseEventForMockClick.setChannelType(ChannelIdEnum.DAP);
-      baseEventForMockClick.setUriComponents(clickUriComponents);
-      baseEventForMockClick.setUrlParameters(clickParameters);
-      baseEventForMockClick.setRequestHeaders(requestHeaders);
-      baseEventForMockClick.setUserAgentInfo(agentInfo);
-      baseEventForMockClick.setUserPrefsCtx(userPrefsCtx);
-      baseEventForMockClick.setEndUserContext(endUserContext);
-      baseEventForMockClick.setUid(userId);
-
-      ListenerMessage mockClickListenerMessage = listenerMessageParser.parse(baseEvent);
-
-      // submit utp event
-      submitChocolateUtpEvent(baseEventForMockClick, requestContext, mockClickListenerMessage.getSnapshotId(),
-          mockClickListenerMessage.getShortSnapshotId(), null);
-
-    }
 
     return true;
   }
@@ -692,27 +642,17 @@ public class CollectionService {
     baseEvent.setUserAgentInfo(agentInfo);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
+    String utpEventId = UUID.randomUUID().toString();
+    baseEvent.setUuid(utpEventId);
 
 
     // add channel specific tags, and produce message for EPN and IMK
-    ListenerMessage listenerMessage = null;
     if (channelType == ChannelIdEnum.SITE_EMAIL) {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-    }
-    else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+    } else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-    }
-    else {
-      listenerMessage = firePMEvent(baseEvent, requestContext);
-    }
-
-    // send to unified tracking topic
-    if(listenerMessage!=null) {
-      submitChocolateUtpEvent(baseEvent, requestContext, listenerMessage.getSnapshotId(),
-          listenerMessage.getShortSnapshotId(), null);
     } else {
-      submitChocolateUtpEvent(baseEvent, requestContext, 0L,
-          0L, null);
+      firePMEvent(baseEvent, requestContext);
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
@@ -726,7 +666,7 @@ public class CollectionService {
    * @param baseEvent           base event
    * @return                    roi listener message
    */
-  private ListenerMessage fireROIEvent(BaseEvent baseEvent,
+  private void fireROIEvent(BaseEvent baseEvent,
                                        ContainerRequestContext containerRequestContext) {
 
     // Parse the response
@@ -740,12 +680,52 @@ public class CollectionService {
 
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
-    // 2. track uibi
+    // 2. track ubi
     if(!baseEvent.isCheckoutApi()) {
       roiCollector.trackUbi(containerRequestContext, baseEvent);
     }
 
-    return message;
+    // 3. fire utp event
+    submitChocolateUtpEvent(baseEvent, containerRequestContext,
+        message.getSnapshotId(), message.getShortSnapshotId(), null);
+
+    // Mock click for the ROI which has valid mppid
+    // in the payload (ROI generated from pre-install app on Android) XC-3464
+    boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(baseEvent.getRoiEvent().getPayload(),
+        baseEvent.getRoiEvent().getTransType());
+
+    if (isPreInstallROI) {
+
+      String clickUrl = CollectionServiceUtil.createPrmClickUrl(baseEvent.getRoiEvent().getPayload(),
+          baseEvent.getEndUserContext());
+      UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
+
+      MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
+
+      baseEvent.setUrl(clickUrl);
+      baseEvent.setActionType(ChannelActionEnum.CLICK);
+      baseEvent.setChannelType(ChannelIdEnum.DAP);
+      baseEvent.setUriComponents(clickUriComponents);
+      baseEvent.setUrlParameters(clickParameters);
+
+      ListenerMessage mockClickListenerMessage = listenerMessageParser.parse(baseEvent);
+      // switch to display channel topic
+      kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(baseEvent.getChannelType()
+          .getLogicalChannel().getAvro());
+      producer.send(
+          new ProducerRecord<>(kafkaTopic, mockClickListenerMessage.getSnapshotId(),
+              mockClickListenerMessage), KafkaSink.callback);
+
+      // submit utp event
+      submitChocolateUtpEvent(baseEvent, containerRequestContext, mockClickListenerMessage.getSnapshotId(),
+          mockClickListenerMessage.getShortSnapshotId(), null);
+
+      // Log mock click for pre-install ROI by transaction type
+      metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
+          Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
+          Field.of(ROI_TRANS_TYPE, baseEvent.getRoiEvent().getTransType()));
+
+    }
   }
 
 
@@ -879,7 +859,8 @@ public class CollectionService {
   }
 
   /**
-   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site. So add a whitelist to handle these bad cases.
+   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site.
+   * So add a whitelist to handle these bad cases.
    * @param channelType channel type
    * @param referer referer
    * @return in whitelist or not
@@ -902,9 +883,8 @@ public class CollectionService {
    * Fire PM events to the streams
    * @param baseEvent base event
    * @param requestContext request context
-   * @return listener message
    */
-  private ListenerMessage firePMEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
+  private void firePMEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
 
     ListenerMessage listenerMessage;
 
@@ -925,13 +905,12 @@ public class CollectionService {
     }
 
     // 3. submit utp event
-
-
-    return listenerMessage;
+    submitChocolateUtpEvent(baseEvent, requestContext,
+        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), baseEvent.getUuid());
   }
 
 
-  private boolean fireCmEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
+  private void fireCmEvent(BaseEvent baseEvent, ContainerRequestContext requestContext,
                                CustomerMarketingCollector cmCollector) {
 
     // 1. track ubi
@@ -947,76 +926,11 @@ public class CollectionService {
       // else drop into normal topic
       behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
           KafkaSink.callback);
-
-      return true;
-    } else
-      return false;
-  }
-
-  /**
-   * Process Pre-install ROI Event
-   * Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
-   * @param requestContext      wrapped request context
-   * @param referer             referer of the request
-   * @param request             http request
-   * @param endUserContext      enduserctx header
-   * @param raptorSecureContext wrapped raptor secure context
-   * @param agentInfo           user agent
-   * @param payloadMap          ROI payload parameters
-   * @param roiEvent            ROI event
-   * @param transTimestamp      ROI transaction timestamp
-   * @return                success or failure
-   */
-  private boolean processPreInstallROIEvent(ContainerRequestContext requestContext, String referer, HttpServletRequest request,
-                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
-                                            UserAgentInfo agentInfo, Map<String, String> payloadMap, ROIEvent roiEvent, long transTimestamp) {
-
-    try {
-      boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(payloadMap, roiEvent.getTransType());
-
-      if (isPreInstallROI) {
-        UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
-        Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
-
-        // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
-        String utpEventId = UUID.randomUUID().toString();
-
-        String clickUrl = CollectionServiceUtil.createPrmClickUrl(payloadMap, endUserContext);
-
-        if (!StringUtils.isEmpty(clickUrl)) {
-          UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
-
-          MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
-
-          ListenerMessage listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
-                  clickUrl, referer, clickParameters, ChannelIdEnum.DAP, ChannelActionEnum.CLICK, request, transTimestamp, endUserContext,
-                  raptorSecureContext);
-
-          Producer<Long, ListenerMessage> producer = KafkaSink.get();
-          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelIdEnum.DAP.getLogicalChannel().getAvro());
-
-          producer.send(
-                  new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
-                  KafkaSink.callback);
-
-          // send to unified tracking topic
-          processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
-                  agentInfo, clickParameters, clickUrl, referer, ChannelType.DISPLAY,
-                  ChannelAction.CLICK, null, listenerMessage.getSnapshotId(),
-                  listenerMessage.getShortSnapshotId(), utpEventId, transTimestamp, false);
-
-          // Log mock click for pre-install ROI by transaction type
-          metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
-                  Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
-                  Field.of(ROI_TRANS_TYPE, roiEvent.getTransType()));
-        }
-      }
-    } catch (Exception ex) {
-      LOGGER.error("Error when processing pre-install ROI events", ex);
-      metrics.meter("ErrorProcessPreinstallROIEvent", 1);
     }
 
-    return true;
+    // 3. fire utp event
+    submitChocolateUtpEvent(baseEvent, requestContext, 0L,
+        0L, baseEvent.getUuid());
   }
 
   /**
