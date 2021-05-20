@@ -22,7 +22,6 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 
 /**
@@ -68,45 +66,6 @@ public class PerformanceMarketingCollector {
    */
   public ListenerMessage decorateListenerMessageAndHandleGDPR(BaseEvent baseEvent) {
 
-    ChannelIdEnum channelIdEnum = baseEvent.getChannelType();
-    ChannelActionEnum channelActionEnum = baseEvent.getActionType();
-    // logic to filter internal redirection in node, https://jirap.corp.ebay.com/browse/XC-2361
-    // currently we only observe the issue in vi pool in mweb case if the url does not contain title of the item
-    // log metric here about the header which identifiers if there is a redirection
-    String statusCodeStr = baseEvent.getRequestHeaders().get(Constants.NODE_REDIRECTION_HEADER_NAME);
-    if (statusCodeStr != null) {
-      int statusCode;
-
-      try {
-        statusCode = Integer.parseInt(statusCodeStr);
-        if (statusCode == Response.Status.OK.getStatusCode()) {
-          metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-              Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-        } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &&
-            statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
-          metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-              Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-          LOGGER.debug("CollectStatusRedirection: URL: " + baseEvent.getUrl() + ", UA: " +
-              baseEvent.getEndUserContext().getUserAgent());
-        } else if (statusCode >= Response.Status.BAD_REQUEST.getStatusCode()) {
-          metrics.meter("CollectStatusError", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-              Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-          LOGGER.error("CollectStatusError: " + baseEvent.getUrl());
-        } else {
-          metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-              Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-        }
-      } catch (NumberFormatException ex) {
-        metrics.meter("StatusCodeError", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-            Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-        LOGGER.error("Error status code: " + statusCodeStr);
-      }
-
-    } else {
-      metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelActionEnum.getAvro().toString()),
-          Field.of(CHANNEL_TYPE, channelIdEnum.getLogicalChannel().getAvro().toString()));
-    }
-
     ListenerMessage message = parser.parse(baseEvent);
 
     // Use the shot snapshot id from requests
@@ -118,6 +77,11 @@ public class PerformanceMarketingCollector {
     // gdpr
     GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(baseEvent.getUrl(),
         baseEvent.getChannelType());
+    eraseByGdpr(gdprConsentDomain, message);
+    return message;
+  }
+
+  void eraseByGdpr(GdprConsentDomain gdprConsentDomain, ListenerMessage message) {
     boolean allowedStoredPersonalizedData = gdprConsentDomain.isAllowedStoredPersonalizedData();
     boolean allowedStoredContextualData = gdprConsentDomain.isAllowedStoredContextualData();
     if (message != null) {
@@ -135,10 +99,7 @@ public class PerformanceMarketingCollector {
         message.setGuid(CommonConstant.EMPTY_GUID);
         message.setCguid(CommonConstant.EMPTY_GUID);
       }
-
-      return message;
     }
-    return message;
   }
 
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent, ListenerMessage message) {
@@ -148,75 +109,67 @@ public class PerformanceMarketingCollector {
         baseEvent.getEndUserContext())) {
       metrics.meter("CheckoutAPIClick", 1);
     } else {
-      try {
+      IRequestScopeTracker requestTracker
+          = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-        IRequestScopeTracker requestTracker
-            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-        // page id
-        if (baseEvent.getActionType().equals(ChannelActionEnum.CLICK)) {
-          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
-        } else if (baseEvent.getActionType().equals(ChannelActionEnum.ROI)) {
-          requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
-        }
-
-        // event action
-        requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
-
-        // target url
-        if (!StringUtils.isEmpty(baseEvent.getUrl())) {
-          requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
-        }
-
-        // referer
-        if (!StringUtils.isEmpty(baseEvent.getReferer())) {
-          requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
-        }
-
-        // utp event id
-        if (!StringUtils.isEmpty(baseEvent.getUuid())) {
-          requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
-        }
-
-        // populate device info
-        CollectionServiceUtil.populateDeviceDetectionParams(
-            (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
-
-        // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-        // rotation id
-        requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
-
-        // keyword
-        String searchKeyword = "";
-        if (baseEvent.getUrlParameters().containsKey(Constants.SEARCH_KEYWORD)
-            && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
-
-          searchKeyword = baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0);
-        }
-        requestTracker.addTag("keyword", searchKeyword, String.class);
-
-        // rvr id
-        requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
-
-        // gclid
-        String gclid = "";
-        if (baseEvent.getUrlParameters().containsKey(Constants.GCLID) &&
-            baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
-
-          gclid = baseEvent.getUrlParameters().get(Constants.GCLID).get(0);
-        }
-        requestTracker.addTag("gclid", gclid, String.class);
-
-        //producereventts
-        requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
-
-      } catch (Exception e) {
-        LOGGER.warn("Error when tracking ubi for imk", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().getAvro().toString()),
-            Field.of(CHANNEL_TYPE, baseEvent.getChannelType().getLogicalChannel().getAvro().toString()));
+      // page id
+      if (baseEvent.getActionType().equals(ChannelActionEnum.CLICK)) {
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
+      } else if (baseEvent.getActionType().equals(ChannelActionEnum.ROI)) {
+        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
       }
+
+      // event action
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+
+      // target url
+      if (!StringUtils.isEmpty(baseEvent.getUrl())) {
+        requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
+      }
+
+      // referer
+      if (!StringUtils.isEmpty(baseEvent.getReferer())) {
+        requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
+      }
+
+      // utp event id
+      if (!StringUtils.isEmpty(baseEvent.getUuid())) {
+        requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
+      }
+
+      // populate device info
+      CollectionServiceUtil.populateDeviceDetectionParams(
+          (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
+
+      // event family
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+      // rotation id
+      requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
+
+      // keyword
+      String searchKeyword = "";
+      if (baseEvent.getUrlParameters().containsKey(Constants.SEARCH_KEYWORD)
+          && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
+
+        searchKeyword = baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0);
+      }
+      requestTracker.addTag("keyword", searchKeyword, String.class);
+
+      // rvr id
+      requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+      // gclid
+      String gclid = "";
+      if (baseEvent.getUrlParameters().containsKey(Constants.GCLID) &&
+          baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
+
+        gclid = baseEvent.getUrlParameters().get(Constants.GCLID).get(0);
+      }
+      requestTracker.addTag("gclid", gclid, String.class);
+
+      //producereventts
+      requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
     }
   }
 

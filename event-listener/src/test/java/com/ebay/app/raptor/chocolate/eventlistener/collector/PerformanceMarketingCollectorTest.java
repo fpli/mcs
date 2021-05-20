@@ -40,7 +40,6 @@ public class PerformanceMarketingCollectorTest {
     when(mockGeoCtx.getSiteId()).thenReturn(0);
     assertEquals(SearchEngineFreeListingsRotationEnum.US.getRotation(),
         performanceMarketingCollector.getSearchEngineFreeListingsRotationId(mockUserPrefsCtx));
-
   }
 
   @Test

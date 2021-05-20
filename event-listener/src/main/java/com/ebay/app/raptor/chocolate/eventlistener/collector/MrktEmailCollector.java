@@ -18,6 +18,7 @@ import org.springframework.util.MultiValueMap;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
@@ -45,8 +46,9 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
 
   /**
    * Track ubi
-   * @param requestContext  request context
-   * @param baseEvent       base event
+   *
+   * @param requestContext request context
+   * @param baseEvent      base event
    */
   @Override
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
@@ -55,73 +57,71 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
     // Don't track ubi if the click is a duplicate itm click
     if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())
         && ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find()) {
+      MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
+
+      // Ubi tracking
+      IRequestScopeTracker requestTracker =
+          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+
+      // common tags and soj tags
+      super.trackUbi(requestContext, baseEvent);
+
+      // event family
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+
+      // fbprefetch
+      if (isFacebookPrefetchEnabled(baseEvent.getRequestHeaders()))
+        requestTracker.addTag("fbprefetch", true, Boolean.class);
+
+      // channel id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
+      // source id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+
+      // email id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
+
+      // campaign run date
+      addTagFromUrlQuery(parameters, requestTracker, Constants.CAMP_RUN_DT, "crd", String.class);
+
+      // segment name
+      addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME, "segname", String.class);
+
+      // shortened segment name
+      addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME_S, "segname", String.class);
+
+      // Yesmail message master id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_MSTR_ID, "ymmmid", String.class);
+
+      // YesMail message id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_ID, "ymsid", String.class);
+
+      // Yesmail mailing instance
+      addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
+
+      // decrypted user id
+      addDecrytpedUserIDFromBu(parameters, requestTracker);
+
+      // Adobe email redirect url
       try {
-
-        MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
-
-        // Ubi tracking
-        IRequestScopeTracker requestTracker =
-            (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
-        // common tags and soj tags
-        super.trackUbi(requestContext, baseEvent);
-
-        // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
-
-        // fbprefetch
-        if (isFacebookPrefetchEnabled(baseEvent.getRequestHeaders()))
-          requestTracker.addTag("fbprefetch", true, Boolean.class);
-
-        // channel id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
-
-        // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
-
-        // email id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.BEST_GUESS_USER, "emid", String.class);
-
-        // campaign run date
-        addTagFromUrlQuery(parameters, requestTracker, Constants.CAMP_RUN_DT, "crd", String.class);
-
-        // segment name
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME, "segname", String.class);
-
-        // shortened segment name
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SEGMENT_NAME_S, "segname", String.class);
-
-        // Yesmail message master id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_MSTR_ID, "ymmmid", String.class);
-
-        // YesMail message id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_MSSG_ID, "ymsid", String.class);
-
-        // Yesmail mailing instance
-        addTagFromUrlQuery(parameters, requestTracker, Constants.YM_INSTC, "yminstc", String.class);
-
-        // decrypted user id
-        addDecrytpedUserIDFromBu(parameters, requestTracker);
-
-        // Adobe email redirect url
         if (parameters.containsKey(Constants.REDIRECT_URL_SOJ_TAG)
             && parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0) != null) {
           requestTracker.addTag("adcamp_landingpage",
               URLDecoder.decode(parameters.get(Constants.REDIRECT_URL_SOJ_TAG).get(0), "UTF-8"), String.class);
         }
-
-        // Adobe email redirect source
-        addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc",
-            String.class);
-
-        //Adobe campaign public user id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.ADOBE_CAMP_PUBLIC_USER_ID, "adcamppu", String.class);
-
-      } catch (Exception e) {
-        LOGGER.warn("Error when tracking ubi for marketing email click tags", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+      } catch (UnsupportedEncodingException e) {
+        LOGGER.warn("adcamp_landingpage is wrongly encoded", e);
+        metrics.meter("ErrorEncoded_adcamp_landingpage", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
             Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
       }
+
+      // Adobe email redirect source
+      addTagFromUrlQuery(parameters, requestTracker, Constants.REDIRECT_SRC_SOJ_SOURCE, "adcamp_locationsrc",
+          String.class);
+
+      //Adobe campaign public user id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.ADOBE_CAMP_PUBLIC_USER_ID, "adcamppu", String.class);
     }
   }
 }

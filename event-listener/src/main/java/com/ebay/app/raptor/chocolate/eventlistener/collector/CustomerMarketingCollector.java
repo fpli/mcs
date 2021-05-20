@@ -14,7 +14,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
-import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -78,40 +77,33 @@ public abstract class CustomerMarketingCollector {
    * @param pageId         soj page id
    */
   private void addCommonTags(ContainerRequestContext requestContext, BaseEvent baseEvent, int pageId) {
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker
-          = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    // Ubi tracking
+    IRequestScopeTracker requestTracker
+        = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
+    // page id
+    requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
-      // event action
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+    // event action
+    requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 
-      // target url
-      if (!StringUtils.isEmpty(baseEvent.getUrl())) {
-        requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
-      }
-
-      // referer
-      if (!StringUtils.isEmpty(baseEvent.getReferer())) {
-        requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
-      }
-
-      // utp event id
-      if (!StringUtils.isEmpty(baseEvent.getUuid())) {
-        requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
-      }
-
-      // populate device info
-      CollectionServiceUtil.populateDeviceDetectionParams(baseEvent.getUserAgentInfo(), requestTracker);
-
-    } catch (Exception e) {
-      LOGGER.warn("Error when tracking ubi for common tags", e);
-      metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
-          Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
+    // target url
+    if (!StringUtils.isEmpty(baseEvent.getUrl())) {
+      requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
     }
+
+    // referer
+    if (!StringUtils.isEmpty(baseEvent.getReferer())) {
+      requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
+    }
+
+    // utp event id
+    if (!StringUtils.isEmpty(baseEvent.getUuid())) {
+      requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
+    }
+
+    // populate device info
+    CollectionServiceUtil.populateDeviceDetectionParams(baseEvent.getUserAgentInfo(), requestTracker);
   }
 
   /**
@@ -137,19 +129,13 @@ public abstract class CustomerMarketingCollector {
     if (!StringUtils.isEmpty(sojTags)) {
       StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
       while (stToken.hasMoreTokens()) {
-        try {
-          StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
-          if (sojNvp.countTokens() == 2) {
-            String sojTag = sojNvp.nextToken().trim();
-            String urlParam = sojNvp.nextToken().trim();
-            if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
-              addTagFromUrlQuery(baseEvent.getUrlParameters(), requestTracker, urlParam, sojTag, String.class);
-            }
+        StringTokenizer sojNvp = new StringTokenizer(stToken.nextToken(), PresentationConstants.EQUALS);
+        if (sojNvp.countTokens() == 2) {
+          String sojTag = sojNvp.nextToken().trim();
+          String urlParam = sojNvp.nextToken().trim();
+          if (!StringUtils.isEmpty(urlParam) && !StringUtils.isEmpty(sojTag)) {
+            addTagFromUrlQuery(baseEvent.getUrlParameters(), requestTracker, urlParam, sojTag, String.class);
           }
-        } catch (Exception e) {
-          LOGGER.warn("Error when tracking ubi for common tags", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
-              Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
         }
       }
     }
