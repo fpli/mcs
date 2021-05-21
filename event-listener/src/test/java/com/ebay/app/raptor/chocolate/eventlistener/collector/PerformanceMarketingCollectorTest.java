@@ -6,10 +6,12 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.SearchEngineFreeListingsRotationEnum;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
+import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
@@ -31,6 +33,18 @@ public class PerformanceMarketingCollectorTest {
 
   @Autowired
   private PerformanceMarketingCollector performanceMarketingCollector;
+
+  @Test
+  public void testEraseGDPR() {
+    GdprConsentDomain gdprConsentDomain = Mockito.mock(GdprConsentDomain.class);
+    when(gdprConsentDomain.isAllowedStoredContextualData()).thenReturn(false);
+    when(gdprConsentDomain.isAllowedStoredPersonalizedData()).thenReturn(false);
+    ListenerMessage message = new ListenerMessage();
+    performanceMarketingCollector.eraseByGdpr(gdprConsentDomain, message);
+    assertEquals("", message.getRemoteIp());
+    assertEquals(0L, message.getUserId().longValue());
+
+  }
 
   @Test
   public void testGetSearchEngineFreeListingsRotationId() {

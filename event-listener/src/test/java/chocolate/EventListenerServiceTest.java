@@ -562,7 +562,7 @@ public class EventListenerServiceTest {
         .header("X-EBAY-C-TRACKING", tracking)
         .header("Authorization", token)
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(event));
+        .post(Entity.json(event2));
     assertEquals(201, response1.getStatus());
 
     // No item id
@@ -576,7 +576,7 @@ public class EventListenerServiceTest {
         .header("X-EBAY-C-TRACKING", tracking)
         .header("Authorization", token)
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(event));
+        .post(Entity.json(event2));
     assertEquals(201, response1.getStatus());
 
     // no transId
@@ -590,7 +590,7 @@ public class EventListenerServiceTest {
         .header("X-EBAY-C-TRACKING", tracking)
         .header("Authorization", token)
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(event));
+        .post(Entity.json(event2));
     assertEquals(201, response1.getStatus());
 
     // no enduserctx

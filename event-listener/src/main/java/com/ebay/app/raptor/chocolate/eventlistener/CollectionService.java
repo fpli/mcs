@@ -458,6 +458,7 @@ public class CollectionService {
     Map<String, String> payloadMap = roiEvent.getPayload();
     if(payloadMap == null) {
       payloadMap = new HashMap<>();
+      roiEvent.setPayload(payloadMap);
     }
 
     // platform check by user agent
@@ -724,7 +725,6 @@ public class CollectionService {
       metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
           Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
           Field.of(ROI_TRANS_TYPE, baseEvent.getRoiEvent().getTransType()));
-
     }
   }
 

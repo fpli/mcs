@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
 
@@ -40,10 +41,11 @@ public class ROICollector {
 
   /**
    * Set item id from ROIEvent
+   *
    * @param roiEvent roi event
    */
   public void setItemId(@NotNull ROIEvent roiEvent) {
-    if(roiEvent.getItemId() == null) {
+    if (roiEvent.getItemId() == null) {
       roiEvent.setItemId("");
       LOGGER.warn("Error item id null");
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
@@ -58,15 +60,14 @@ public class ROICollector {
   }
 
   public void setTransTimestamp(@NotNull ROIEvent roiEvent) {
-    if(roiEvent.getTransactionTimestamp() == null) {
-      roiEvent.setTransactionTimestamp( Long.toString(System.currentTimeMillis()));
+    if (roiEvent.getTransactionTimestamp() == null) {
+      roiEvent.setTransactionTimestamp(Long.toString(System.currentTimeMillis()));
       LOGGER.warn("Error timestamp null");
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
-    }
-    else {
+    } else {
       Long transTimestamp = Longs.tryParse(roiEvent.getTransactionTimestamp());
       if (transTimestamp == null || transTimestamp <= 0) {
-        roiEvent.setTransactionTimestamp( Long.toString(System.currentTimeMillis()));
+        roiEvent.setTransactionTimestamp(Long.toString(System.currentTimeMillis()));
         LOGGER.warn("Error timestamp " + transTimestamp);
         metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       }
@@ -74,13 +75,13 @@ public class ROICollector {
   }
 
   public void setTransId(ROIEvent roiEvent) {
-    if(roiEvent.getUniqueTransactionId() == null) {
+    if (roiEvent.getUniqueTransactionId() == null) {
       roiEvent.setUniqueTransactionId("");
       LOGGER.warn("Error transactionId null");
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
     }
     Long transId = Longs.tryParse(roiEvent.getUniqueTransactionId());
-    if(transId == null || transId < 0) {
+    if (transId == null || transId < 0) {
       roiEvent.setUniqueTransactionId("");
       LOGGER.warn("Error transactionId " + transId);
       metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
@@ -89,48 +90,44 @@ public class ROICollector {
 
   /**
    * Add roi sjo tags
-   * @param requestContext  request context
-   * @param baseEvent       base event
+   *
+   * @param requestContext request context
+   * @param baseEvent      base event
    */
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
-    try {
-      // Ubi tracking
-      IRequestScopeTracker requestTracker =
-          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    // Ubi tracking
+    IRequestScopeTracker requestTracker =
+        (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
+    // page id
+    requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
 
-      // site ID is embedded in IRequestScopeTracker default commit tags
+    // site ID is embedded in IRequestScopeTracker default commit tags
 
-      // Item ID
-      if(isLongNumeric(baseEvent.getRoiEvent().getItemId())) {
-        requestTracker.addTag("itm", baseEvent.getRoiEvent().getItemId(), String.class);
-      }
+    // Item ID
+    if (isLongNumeric(baseEvent.getRoiEvent().getItemId())) {
+      requestTracker.addTag("itm", baseEvent.getRoiEvent().getItemId(), String.class);
+    }
 
-      // Transation Type
-      if (!StringUtils.isEmpty(baseEvent.getRoiEvent().getTransType())) {
-        requestTracker.addTag("tt", baseEvent.getRoiEvent().getTransType(), String.class);
-      }
+    // Transation Type
+    if (!StringUtils.isEmpty(baseEvent.getRoiEvent().getTransType())) {
+      requestTracker.addTag("tt", baseEvent.getRoiEvent().getTransType(), String.class);
+    }
 
-      // Transation ID
-      if (isLongNumeric(baseEvent.getRoiEvent().getUniqueTransactionId())) {
-        requestTracker.addTag("roi_bti", baseEvent.getRoiEvent().getUniqueTransactionId(), String.class);
-      }
+    // Transation ID
+    if (isLongNumeric(baseEvent.getRoiEvent().getUniqueTransactionId())) {
+      requestTracker.addTag("roi_bti", baseEvent.getRoiEvent().getUniqueTransactionId(), String.class);
+    }
 
-      // user ID
-      if (isLongNumeric(baseEvent.getUid())) {
-        requestTracker.addTag("userid", baseEvent.getUid(), String.class);
-      }
+    // user ID
+    if (isLongNumeric(baseEvent.getUid())) {
+      requestTracker.addTag("userid", baseEvent.getUid(), String.class);
+    }
 
-      // Transaction Time
-      if (isLongNumeric(baseEvent.getRoiEvent().getTransactionTimestamp())) {
-        requestTracker.addTag("producereventts", Long.parseLong(baseEvent.getRoiEvent().getTransactionTimestamp()),
-            Long.class);
-      }
-    } catch (Exception e) {
-      LOGGER.warn("Error when tracking ubi for roi event", e);
-      metrics.meter("ErrorWriteRoiEventToUBI");
+    // Transaction Time
+    if (isLongNumeric(baseEvent.getRoiEvent().getTransactionTimestamp())) {
+      requestTracker.addTag("producereventts", Long.parseLong(baseEvent.getRoiEvent().getTransactionTimestamp()),
+          Long.class);
     }
   }
 }
