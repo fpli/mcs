@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -222,6 +223,9 @@ public class CollectionServiceUtilTest {
 
         String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
         assertEquals("https://www.ebay.fr/itm/154347659933?mkevt=1&mkcid=1&mkrid=709-53481-19255-0&campid=5337369893&toolid=11800&customid=test&ff17=chocodeeplink", viewItemChocolateURL);
+
+        assertEquals("", CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(null));
+        assertEquals("?ff17=referrerdeeplink", CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(""));
     }
 
     @Test
@@ -268,7 +272,18 @@ public class CollectionServiceUtilTest {
 
         roiPayloadMap.put("siteId", "999");
         assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.com?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=999&udid=023b4ffe1711e42a157a2480012d3864");
+
+        assertEquals("", CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, null));
     }
+
+    @Test
+    public void testSubstring() {
+        assertNull(CollectionServiceUtil.substring(null, "", ""));
+        assertNull(CollectionServiceUtil.substring("abcd", "efg", ""));
+        assertNull(CollectionServiceUtil.substring("abcd", "d", ""));
+        assertEquals("cd", CollectionServiceUtil.substring("abcd", "ab", ""));
+    }
+
 
     public MultiValueMap<String, String> getTargetUrlParameters(String targetUrl) {
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();

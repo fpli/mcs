@@ -351,6 +351,7 @@
           <artifactId>scoverage-maven-plugin</artifactId>
           <version>${scoverage.plugin.version}</version>
           <configuration>
+            <excludedPackages>com.ebay.app.raptor.chocolate.gen.model.*;com.ebay.app.raptor.chocolate.eventlistener.configuration.*</excludedPackages>
             <scalaVersion>${scala.version}</scalaVersion>
             <aggregate>true</aggregate>
             <highlighting>true</highlighting>

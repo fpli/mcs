@@ -240,7 +240,7 @@ public class BehaviorMessageParser {
   /**
    * Get device family
    */
-  private String getDeviceFamily(DDSResponse deviceInfo) {
+  String getDeviceFamily(DDSResponse deviceInfo) {
     String deviceFamily;
 
     if (deviceInfo.isTablet()) {
@@ -275,7 +275,7 @@ public class BehaviorMessageParser {
     }
 
     // add tags in url param "sojTags" into applicationPayload
-    applicationPayload = addSojTags(applicationPayload, parameters, channelType, channelAction);
+    applicationPayload = addSojTags(applicationPayload, parameters);
 
     // add other tags
     // app id
@@ -336,16 +336,13 @@ public class BehaviorMessageParser {
   /**
    * Add tags in param sojTags
    */
-  private Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
-                          ChannelType channelType, ChannelAction channelAction) {
+  Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters) {
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         logger.warn("Param sojTags is wrongly encoded", e);
-        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
-            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
       if (!StringUtils.isEmpty(sojTags)) {
         StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
@@ -437,7 +434,7 @@ public class BehaviorMessageParser {
   /**
    * Get request header value
    */
-  private String getData(String key, String headerValue) {
+  String getData(String key, String headerValue) {
     try {
       HeaderMultiValue headerMultiValue;
       if (headerValue != null) {
@@ -454,7 +451,7 @@ public class BehaviorMessageParser {
   /**
    * Soj tag fbprefetch
    */
-  private static boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
+  static boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
     String facebookprefetch = requestContext.getHeaderString("X-Purpose");
     if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
       return true;
@@ -465,7 +462,7 @@ public class BehaviorMessageParser {
   /**
    * Remove choco_bs param if it exists
    */
-  private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
+  String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
         uri = HttpRequestUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
