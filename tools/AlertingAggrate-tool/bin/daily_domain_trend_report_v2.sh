@@ -10,7 +10,7 @@ EXECUTOR_CORES=5
 SPARK_HOME=/datashare/mkttracking/tools/hercules_lvs/spark-hercules/
 
 /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -mkdir hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE
-/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -r hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/dailyDomainTrend
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -rm -r hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/dailyDomainTrend_v2
 
 ${SPARK_HOME}/bin/spark-submit  \
     --files ${FILES}  \
@@ -31,4 +31,4 @@ ${SPARK_HOME}/bin/spark-submit  \
     --conf spark.driver.maxResultSize=10g \
     --conf spark.kryoserializer.buffer.max=2040m \
     --conf spark.task.maxFailures=3 \
-    /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-*.jar hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click/snapshot/ hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/dailyDomainTrend dailyDomainTrend yarn
+    /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool-*.jar hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot/ hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/dailyDomainTrend_v2 dailyDomainTrend yarn
