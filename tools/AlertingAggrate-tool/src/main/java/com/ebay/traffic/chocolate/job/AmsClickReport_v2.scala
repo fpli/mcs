@@ -132,7 +132,7 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
       .write
       .option("header", "true")
       .option("compression", "none")
-      .parquet(outputdir)
+      .csv(outputdir)
   }
 
   def onceClickCount(dir: String): DataFrame = {
@@ -195,7 +195,7 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
       .write
       .option("header", "true")
       .option("compression", "none")
-      .parquet(outputdir)
+      .csv(outputdir)
   }
 
   def oneDayDomainTrend(dir: String, date: String): DataFrame = {
@@ -219,7 +219,7 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
       .write
       .option("header", "true")
       .option("compression", "none")
-      .parquet(outputdir)
+      .csv(outputdir)
   }
 
   def extractHour(ts: String): String = {
