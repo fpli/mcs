@@ -296,6 +296,21 @@ public class EventListenerServiceTest {
     return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
 
+  private Response postMcsResponseWithExtraHeader(String path, String endUserCtx, String tracking, Event event,
+                                                  String extraKey, String extraValue) {
+    // add headers
+    Invocation.Builder builder = client.target(svcEndPoint).path(path).request();
+    if (!StringUtils.isEmpty(endUserCtx)) {
+      builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
+    }
+    if (!StringUtils.isEmpty(tracking)) {
+      builder = builder.header("X-EBAY-C-TRACKING", tracking);
+    }
+    builder = builder.header(extraKey, extraValue);
+
+    return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
   private Response postMcsResponse(String path, String endUserCtx, String tracking, int statusCode, Event event) {
     // add headers
     Invocation.Builder builder = client.target(svcEndPoint).path(path).request();
@@ -438,20 +453,26 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    // mkrvrid in url to set rvrid
+    event.setTargetUrl("https://www.ebay.com?mkcid=28&mkevt=1&mkrvrid=201918172817");
+    event.setReferrer("https://www.google.com");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // validate kafka message
     Thread.sleep(3000);
     KafkaSink.get().flush();
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 8, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 9, 30 * 1000);
     consumerPaidSearch.close();
 
     assertEquals(8, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    response = postMcsResponseWithExtraHeader(eventsPath, endUserCtxiPhone, tracking, event, "X-Purpose", "preview");
     assertEquals(201, response.getStatus());
 
     // adobe click events
@@ -464,7 +485,7 @@ public class EventListenerServiceTest {
 
     // site email click events
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    response = postMcsResponseWithExtraHeader(eventsPath, endUserCtxiPhone, tracking, event, "X-Purpose", "preview");
     assertEquals(201, response.getStatus());
 
     // no partner

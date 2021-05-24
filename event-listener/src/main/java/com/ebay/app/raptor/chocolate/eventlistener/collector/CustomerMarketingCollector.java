@@ -142,14 +142,6 @@ public abstract class CustomerMarketingCollector {
   }
 
   /**
-   * Soj tag fbprefetch
-   */
-  static boolean isFacebookPrefetchEnabled(Map<String, String> requestHeaders) {
-    String facebookprefetch = requestHeaders.get("X-Purpose");
-    return facebookprefetch != null && "preview".equals(facebookprefetch.trim());
-  }
-
-  /**
    * Parse tag from url query string and add to sojourner
    */
   static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,

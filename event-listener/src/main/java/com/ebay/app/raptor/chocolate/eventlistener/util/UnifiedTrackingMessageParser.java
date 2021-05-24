@@ -528,7 +528,7 @@ public class UnifiedTrackingMessageParser {
     payload.put("cobrand", cobrandParser.parse(appId, baseEvent.getUserAgentInfo().getUserAgentRawData()));
 
     // facebook prefetch
-    if (isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
+    if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
       payload.put("fbprefetch", "true");
     }
 
@@ -625,14 +625,6 @@ public class UnifiedTrackingMessageParser {
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
-  }
-
-  /**
-   * Soj tag fbprefetch
-   */
-  private static boolean isFacebookPrefetchEnabled(Map<String, String> requestHeaders) {
-    String facebookprefetch = requestHeaders.get("X-Purpose");
-    return facebookprefetch != null && "preview".equals(facebookprefetch.trim());
   }
 
   /**

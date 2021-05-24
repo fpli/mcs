@@ -521,4 +521,14 @@ public class CollectionServiceUtil {
 
     return prmClickUrl;
   }
+
+  /**
+   * Is facebook prefetch enabled
+   * @param requestHeaders http request headers
+   * @return enabled or not
+   */
+  public static boolean isFacebookPrefetchEnabled(Map<String, String> requestHeaders) {
+    String facebookprefetch = requestHeaders.get("X-Purpose");
+    return facebookprefetch != null && "preview".equals(facebookprefetch.trim());
+  }
 }

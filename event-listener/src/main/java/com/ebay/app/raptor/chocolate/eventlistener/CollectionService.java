@@ -385,7 +385,6 @@ public class CollectionService {
     baseEvent.setUuid(utpEventId);
 
     if(!isDuplicateClick && !isInternalRef ) {
-      ListenerMessage listenerMessage = null;
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
 

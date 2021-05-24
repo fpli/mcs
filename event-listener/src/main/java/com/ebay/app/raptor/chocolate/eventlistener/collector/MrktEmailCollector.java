@@ -7,6 +7,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.Field;
@@ -70,7 +71,7 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
       requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
       // fbprefetch
-      if (isFacebookPrefetchEnabled(baseEvent.getRequestHeaders()))
+      if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders()))
         requestTracker.addTag("fbprefetch", true, Boolean.class);
 
       // channel id

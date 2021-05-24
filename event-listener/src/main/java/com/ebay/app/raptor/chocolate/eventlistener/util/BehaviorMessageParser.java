@@ -378,7 +378,7 @@ public class BehaviorMessageParser {
   /**
    * Parse tag from url query string and add to sojourner
    */
-  public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
+  public String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.get(param).get(0) != null) {
       return parameters.getFirst(param);
     }
@@ -389,7 +389,7 @@ public class BehaviorMessageParser {
   /**
    * Get the address of the local host
    */
-  private static InetAddress getInetAddress() {
+  private InetAddress getInetAddress() {
     try {
       return InetAddress.getLocalHost();
     } catch (UnknownHostException e) {
@@ -451,7 +451,7 @@ public class BehaviorMessageParser {
   /**
    * Soj tag fbprefetch
    */
-  static boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
+  boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
     String facebookprefetch = requestContext.getHeaderString("X-Purpose");
     if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
       return true;

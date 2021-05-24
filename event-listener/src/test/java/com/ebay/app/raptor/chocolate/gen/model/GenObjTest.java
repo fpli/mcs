@@ -69,6 +69,39 @@ public class GenObjTest {
     System.out.println(errorData.hashCode());
     ErrorData errorData2 = (ErrorData) SerializationUtils.clone(errorData);
     assertEquals(errorData, errorData2);
+    assertEquals(errorData, errorData);
+    assertNotEquals(errorData, null);
+    System.out.println(errorData.toString());
+  }
+
+  @Test
+  public void testEvent() {
+    Event event1 = new Event();
+    event1.setReferrer("https://www.google.com");
+    event1.setTargetUrl("https://www.ebay.com/?mkevt=1");
+    Event event2 = (Event) SerializationUtils.clone(event1);
+    assertEquals(event1, event2);
+    assertEquals(event1, event1);
+    assertNotEquals(null, event1);
+    System.out.println(event1);
+  }
+
+  @Test
+  public void testROIEvent() {
+    ROIEvent roiEvent1 = new ROIEvent();
+    roiEvent1.setTransactionTimestamp("1620920179178");
+    roiEvent1.setItemId("21312121");
+    roiEvent1.setUniqueTransactionId("4232664");
+    roiEvent1.setTransType("Bin");
+    Map<String, String> payload = new HashMap<>();
+    payload.put("mmpid", "91");
+    roiEvent1.setPayload(payload);
+    ROIEvent roiEvent2 = (ROIEvent) SerializationUtils.clone(roiEvent1);
+    assertEquals(roiEvent1, roiEvent2);
+    assertEquals(roiEvent1, roiEvent1);
+    assertNotEquals(roiEvent1, null);
+    System.out.println(roiEvent1.toString());
+
   }
 
 }

@@ -71,5 +71,7 @@ public class BehaviorMessageParserTest {
     ContainerRequestContext mockContext = Mockito.mock(ContainerRequestContext.class);
     when(mockContext.getHeaderString("X-Purpose")).thenReturn("preview");
     assertTrue(BehaviorMessageParser.getInstance().isFacebookPrefetchEnabled(mockContext));
+    when(mockContext.getHeaderString("X-Purpose")).thenReturn("test");
+    assertFalse(BehaviorMessageParser.getInstance().isFacebookPrefetchEnabled(mockContext));
   }
 }

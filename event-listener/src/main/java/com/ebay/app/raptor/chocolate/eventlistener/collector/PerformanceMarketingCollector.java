@@ -113,11 +113,7 @@ public class PerformanceMarketingCollector {
           = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
       // page id
-      if (baseEvent.getActionType().equals(ChannelActionEnum.CLICK)) {
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
-      } else if (baseEvent.getActionType().equals(ChannelActionEnum.ROI)) {
-        requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.ROI.getId(), Integer.class);
-      }
+      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
 
       // event action
       requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
