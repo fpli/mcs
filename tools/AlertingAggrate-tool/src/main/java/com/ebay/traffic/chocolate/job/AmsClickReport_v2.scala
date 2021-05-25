@@ -1,7 +1,9 @@
 package com.ebay.traffic.chocolate.job
 
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Date
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.api.java.JavaSparkContext
@@ -227,14 +229,20 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
       if (ts == null) {
         return "999"
       }
-      val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-      return simpleDateFormat.parse(ts).getHours.toString
+
+      val simpleDateFormat1=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      val simpleDateFormat2=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+      if(ts.contains(".")){
+        simpleDateFormat1.parse(ts).getHours.toString
+      }else{
+        simpleDateFormat2.parse(ts).getHours.toString
+      }
     } catch {
       case ex: Exception => {
         ex.printStackTrace()
         logger.info("error ts: " + ts)
         logger.info("exception===>:" + ex.getMessage)
-        return "999"
+        "999"
       }
     }
   }
@@ -243,17 +251,15 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
     try {
       if (ts == null)
         return "0000"
-      val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       val simpleDateFormat1 = new SimpleDateFormat("yyyy-MM-dd")
-      val t = new Date(simpleDateFormat1.parse(ts).getTime())
-
-      return simpleDateFormat1.format(t)
+      val t = new Date(simpleDateFormat1.parse(ts).getTime)
+      simpleDateFormat1.format(t)
     } catch {
       case ex: Exception => {
         ex.printStackTrace()
         logger.info("error ts: " + ts)
         logger.info("exception===>:" + ex.getMessage)
-        return "0000"
+        "0000"
       }
     }
   }
