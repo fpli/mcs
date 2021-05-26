@@ -28,7 +28,7 @@ class ClickDataFrame_v2(df: DataFrame, common: EpnNrtCommon_v2) extends Serializ
       .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM",  common.get_browser_type_udf(col("user_agent")))
       .withColumn("BRWSR_NAME", col("user_agent"))
-      .withColumn("PLCMNT_DATA_TXT", common.filterTab(common.getRelatedInfoFromUriUdf(col("uri"), lit(3), lit("mkrid"))))
+      .withColumn("PLCMNT_DATA_TXT", common.filterTab(common.getRelatedInfoFromUriUdf(col("uri"), lit(3).cast(IntegerType), lit("mkrid"))))
       .withColumn("PBLSHR_ID", col("publisher_id").cast(DecimalType(18,0)))
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id").cast(DecimalType(18,0)))
       .withColumn("AMS_TOOL_ID", common.getToolIdUdf(col("uri")).cast(DecimalType(18,0)))
