@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.util;
 
 public class Constants {
-    public static String TOOLS_BASE_DIR = "/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/";
+    public static String TOOLS_BASE_DIR = "/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/";
     public static String PREFIX_TMP_DIR = TOOLS_BASE_DIR + "temp/";
     public static String APOLLO_DONE_FILES = PREFIX_TMP_DIR + "apollo_files/apollo_done_files.txt";
     public static String HERCULES_DONE_FILES = PREFIX_TMP_DIR + "apollo_files/apollo_done_files.txt";
