@@ -30,4 +30,4 @@ ${SPARK_HOME}/bin/spark-submit  \
     --conf spark.driver.maxResultSize=10g \
     --conf spark.kryoserializer.buffer.max=2040m \
     --conf spark.task.maxFailures=3 \
-    /datashare/mkttracking/tools/AlertingAggrate-tool/lib/AlertingAggrate-tool_v2-*.jar hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot/ hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/hourlyClickCount_v2 hourlyClickCount  yarn
+    /datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/lib/AlertingAggrate-tool-*.jar hdfs://hercules/sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot/ hdfs://hercules/apps/b_marketing_tracking/alert/epn/$DATE/hourlyClickCount_v2 hourlyClickCount  yarn

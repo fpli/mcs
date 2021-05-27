@@ -3,7 +3,7 @@
 DIFF=1
 DATE=`date --date=$DIFF" days ago" +%Y.%m.%d`
 echo "DATE:${DATE}"
-TMP_DIR="/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/temp_v2"
+TMP_DIR="/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/temp"
 
 echo "Start getting hourly done file for apollo-rno cluster."
 DATE1=`date +%Y%m%d`
@@ -52,5 +52,5 @@ cat ${filePath}channel_name=SearchEngineFreeListings/*.csv > ${filePath}channel_
 echo "Finish getting imk hourly count."
 
 echo "Start AAMain application."
-java -cp /datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE mx.vip.ebay.com lli5@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com,yuhxiao@ebay.com,xuanwwang@ebay.com hourly
+java -cp /datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/lib/AlertingAggrate-tool-*.jar com.ebay.traffic.chocolate.AAMain $DATE mx.vip.ebay.com lli5@ebay.com,zhofan@ebay.com,yliu29@ebay.com,shuangxu@ebay.com,jialili1@ebay.com,xiangli4@ebay.com,fechen@ebay.com,zhiyuawang@ebay.com,zjian@ebay.com,yyang28@ebay.com,yli19@ebay.com,yuhxiao@ebay.com,xuanwwang@ebay.com hourly
 echo "AAMain application end."

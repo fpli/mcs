@@ -25,7 +25,7 @@ dag = DAG(dag_id='EPNHourlyClickCountReport_v2', schedule_interval='20 * * * *',
 EPNHourlyClickCountReport_v2 = SSHOperator(task_id='EPNHourlyClickCountReport_v2',
                                   ssh_conn_id=ssh_conn_id,
                                   remote_host=remote_hosts,
-                                  command='/datashare/mkttracking/tools/AlertingAggrate-tool/bin/hourly_click_count_report_v2.sh ',
+                                  command='/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/bin/hourly_click_count_report_v2.sh ',
                                   dag=dag)
 
 EPNHourlyClickCountReport_v2
