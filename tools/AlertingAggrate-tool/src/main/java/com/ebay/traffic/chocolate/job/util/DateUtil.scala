@@ -64,9 +64,9 @@ object DateUtil {
     if (!isTest) {
       val inputDir = new StringBuffer()
       for (i <- 0 to 14) {
-        inputDir.append(input + "click_dt=" + getDateBeforeNDay(i) + "/dw_ams.ams_clicks_cs_*.snappy.parquet,")
+        inputDir.append(input + "click_dt=" + getDateBeforeNDay(i) + "/*.snappy.parquet,")
       }
-      new String(inputDir.append(input + "click_dt=" + getDateBeforeNDay(14) + "/dw_ams.ams_clicks_cs_*.snappy.parquet"))
+      new String(inputDir.append(input + "click_dt=" + getDateBeforeNDay(14) + "/*.snappy.parquet"))
     } else {
       val inputDir = new StringBuffer()
       inputDir.append(input + "click_dt=2019-07-28/dw_ams.ams_clicks_cs_00000-bb5e0287-b52d-42c5-94c2-134ea30cdd90.c000.snappy.parquet" + ",")
