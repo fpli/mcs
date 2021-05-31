@@ -25,7 +25,8 @@ IMK_V2_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events-imk/imkTransform/i
 
 EPNNRT_SCP_CLICK='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_click';
 EPNNRT_SCP_IMP='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_imp';
-
+EPNNRT_SCP_CLICK_V2='hdfs://elvisha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_click';
+EPNNRT_SCP_IMP_V2='hdfs://elvisha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_imp';
 date;
 
 today=$(date +%Y-%m-%d);
@@ -89,10 +90,14 @@ function dealWithAmsDelayMeta() {
     if [ $type == 'click' ]; then
       hdfs dfs -ls $EPNNRT_SCP_CLICK | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_CLICK | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      hdfs dfs -ls $EPNNRT_SCP_CLICK_V2 | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      hdfs dfs -ls $EPNNRT_SCP_CLICK_V2 | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       DIST_DELAY_PATH="${AMS_DELAY_PATH}/click"
     elif [ $type == 'imp' ]; then
       hdfs dfs -ls $EPNNRT_SCP_IMP | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_IMP | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      hdfs dfs -ls $EPNNRT_SCP_IMP_V2 | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      hdfs dfs -ls $EPNNRT_SCP_IMP_V2 | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       DIST_DELAY_PATH="${AMS_DELAY_PATH}/imp"
     else
       exit 1;
