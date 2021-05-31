@@ -25,8 +25,8 @@ IMK_V2_IMKTRANSFORM_PATH='hdfs://slickha/apps/tracking-events-imk/imkTransform/i
 
 EPNNRT_SCP_CLICK='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_click';
 EPNNRT_SCP_IMP='hdfs://elvisha/apps/tracking-events-workdir/meta/EPN/output/epnnrt_scp_imp';
-EPNNRT_SCP_CLICK_V2='hdfs://elvisha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_click';
-EPNNRT_SCP_IMP_V2='hdfs://elvisha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_imp';
+EPNNRT_SCP_CLICK_V2='hdfs://slickha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_click';
+EPNNRT_SCP_IMP_V2='hdfs://slickha/apps/tracking-events-workdir-v2/meta/EPN/output/epnnrt_scp_imp';
 date;
 
 today=$(date +%Y-%m-%d);
