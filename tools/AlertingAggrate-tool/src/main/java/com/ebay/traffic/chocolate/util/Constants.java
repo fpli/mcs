@@ -4,7 +4,7 @@ public class Constants {
     public static String TOOLS_BASE_DIR = "/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/";
     public static String PREFIX_TMP_DIR = TOOLS_BASE_DIR + "temp/";
     public static String APOLLO_DONE_FILES = PREFIX_TMP_DIR + "apollo_files/apollo_done_files.txt";
-    public static String HERCULES_DONE_FILES = PREFIX_TMP_DIR + "apollo_files/apollo_done_files.txt";
+    public static String HERCULES_DONE_FILES = PREFIX_TMP_DIR + "hercules_files/hercules_done_files.txt";
     public static String DAILY_CLICK_TREND_FILE = PREFIX_TMP_DIR + "daily_click_trend/dailyClickTrend.csv";
     public static String DAILY_DOMAIN_TREND_FILE = PREFIX_TMP_DIR + "daily_domain_trend/dailyDomainTrend.csv";
     public static String HOURLY_CLICK_COUNT_FILE = PREFIX_TMP_DIR + "hourly_click_count/hourlyClickCount.csv";
