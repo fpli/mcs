@@ -18,7 +18,8 @@ object BullseyeUtils_v2 {
 
   @transient lazy val properties: Properties = {
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("epnnrt_v2.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
     properties
   }
 
