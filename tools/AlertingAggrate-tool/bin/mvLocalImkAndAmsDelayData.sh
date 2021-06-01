@@ -157,10 +157,6 @@ function dealWithAmsDelayMeta() {
     done
 }
 
-#dealWithImkDelayData imk;
-#dealWithImkDelayData dtl;
-#dealWithImkDelayData imk_v2;
-
 cd "$LOCAL_TMP_PATH/metafile"
 pwd
 dealWithAmsDelayMeta click;
