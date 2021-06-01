@@ -40,6 +40,12 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-metadata-starter</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>async-http-client</artifactId>
+          <groupId>org.asynchttpclient</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
@@ -465,6 +471,7 @@
     <dependency>
       <groupId>org.asynchttpclient</groupId>
       <artifactId>async-http-client</artifactId>
+      <version>2.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.iabtcf</groupId>
