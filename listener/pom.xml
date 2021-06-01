@@ -137,10 +137,17 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
+        <version>9.4.39.v20210325</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-servlet</artifactId>
+        <exclusions>
+          <exclusion>
+            <artifactId>jetty-server</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -180,6 +187,10 @@
           <exclusion>
             <groupId>com.ebay.app.raptor.chocolate</groupId>
             <artifactId>common</artifactId>
+          </exclusion>
+          <exclusion>
+            <artifactId>jetty-server</artifactId>
+            <groupId>org.eclipse.jetty</groupId>
           </exclusion>
         </exclusions>
       </dependency>
