@@ -90,15 +90,20 @@ function dealWithAmsDelayMeta() {
     if [ $type == 'click' ]; then
       hdfs dfs -ls $EPNNRT_SCP_CLICK | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_CLICK | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      DIST_DELAY_PATH="${AMS_DELAY_PATH}/click"
+    elif [ $type == 'click_v2' ]; then
       hdfs dfs -ls $EPNNRT_SCP_CLICK_V2 | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_CLICK_V2 | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       DIST_DELAY_PATH="${AMS_DELAY_PATH}/click"
     elif [ $type == 'imp' ]; then
       hdfs dfs -ls $EPNNRT_SCP_IMP | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_IMP | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
+      DIST_DELAY_PATH="${AMS_DELAY_PATH}/imp"
+     elif [ $type == 'imp_v2' ]; then
       hdfs dfs -ls $EPNNRT_SCP_IMP_V2 | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       hdfs dfs -ls $EPNNRT_SCP_IMP_V2 | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: >> $ams_tmp_file
       DIST_DELAY_PATH="${AMS_DELAY_PATH}/imp"
+
     else
       exit 1;
     fi
@@ -127,8 +132,12 @@ function dealWithAmsDelayMeta() {
       do
         if [ $type == 'click' ]; then
           orgDate=${one_file:39:10}
+        elif [ $type == 'click_v2' ]; then
+          orgDate=${one_file:42:10}
         elif [ $type == 'imp' ]; then
           orgDate=${one_file:44:10}
+        elif [ $type == 'imp_v2' ]; then
+          orgDate=${one_file:47:10}
         else
           exit 1;
         fi
@@ -148,14 +157,16 @@ function dealWithAmsDelayMeta() {
     done
 }
 
-dealWithImkDelayData imk;
-dealWithImkDelayData dtl;
-dealWithImkDelayData imk_v2;
+#dealWithImkDelayData imk;
+#dealWithImkDelayData dtl;
+#dealWithImkDelayData imk_v2;
 
 cd "$LOCAL_TMP_PATH/metafile"
 pwd
 dealWithAmsDelayMeta click;
+dealWithAmsDelayMeta click_v2;
 dealWithAmsDelayMeta imp;
+dealWithAmsDelayMeta imp_v2;
 
 cat $delay_file;
 
