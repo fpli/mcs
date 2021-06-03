@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.function;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.flink.streaming.connectors.elasticsearch6.RestClientFactory;
+import org.apache.flink.streaming.connectors.elasticsearch7.RestClientFactory;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
