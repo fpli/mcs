@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <application>
     <type>Service</type>
     <public>false</public>
-    <!-- Mandatory field -->
+    
     <description>Marketing Collection Service</description>
     <name>adservice</name>
     <lifecycleState>Deployed</lifecycleState>
@@ -11,7 +11,7 @@
             <name>DefaultPage</name>
             <description>This default page that will be inserted for every application. The page id of the default page will be used
                 for every page that is not registered with AR during development</description>
-            <!-- Mandatory field -->
+            
             <lifecycleState>Deployed</lifecycleState>
             <isAjax>false</isAjax>
             <isDefault>true</isDefault>
@@ -27,6 +27,8 @@
             </svcMapping-List>
         </webService>
     </webService-List>
-    <!-- Optional field: true if your application invokes services that require an IAFToken -->
-    <!--<secureService>true</secureService>-->
-</application>
+    
+    
+<parameters-Map>
+<parameters key="rio.profile">ETS-Service</parameters>
+</parameters-Map></application>

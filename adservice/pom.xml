@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>chocolate</artifactId>
     <groupId>com.ebay.traffic</groupId>
@@ -17,6 +15,7 @@
   <properties>
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
     <swagger.codegen.version>3.0.0</swagger.codegen.version>
+    <environment.component.version>0.12.3-RELEASE</environment.component.version>
   </properties>
 
   <dependencies>
@@ -197,7 +196,6 @@
     <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
-      <version>2.2</version>
     </dependency>
 
     <!-- mysql -->
@@ -346,7 +344,6 @@
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
-      <version>${swagger.annotations.version}</version>
     </dependency>
 
     <!-- auth related -->
@@ -422,6 +419,21 @@
       <artifactId>iabtcf-decoder</artifactId>
       <version>2.0.7</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-dal-metrics-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-featureconfig-starter</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-envoyhealth-status-starter</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -438,10 +450,6 @@
       </plugin>
       <plugin>
         <groupId>com.ebay.raptor.build</groupId>
-        <artifactId>raptorconfig-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>com.ebay.raptor.build</groupId>
         <artifactId>assembler-maven-plugin</artifactId>
       </plugin>
       <plugin>
@@ -452,6 +460,7 @@
         <groupId>com.spotify</groupId>
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
+      
       <!--<plugin>-->
         <!--<groupId>com.ebay.raptor.build</groupId>-->
         <!--<artifactId>maven-content-plugin</artifactId>-->
