@@ -1,11 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.12.1-RELEASE</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <version>0.12.4-RELEASE</version>
+    <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
   <artifactId>chocolate</artifactId>
@@ -42,8 +42,8 @@
     <logback.encoder.version>4.11</logback.encoder.version>
     <utp.version>1.1.1-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
-    <tracking.component.version>0.12.0-RELEASE</tracking.component.version>
-    <ddsclient.component.version>0.12.0-RELEASE</ddsclient.component.version>
+    
+    
   </properties>
 
   <modules>
@@ -123,12 +123,6 @@
       </dependency>
 
       <dependency>
-        <groupId>com.couchbase.client</groupId>
-        <artifactId>java-client</artifactId>
-        <version>${couchbase.client.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.databricks</groupId>
         <artifactId>spark-csv_${scala.compat.version}</artifactId>
         <version>1.5.0</version>
@@ -152,20 +146,19 @@
         <version>${metrics.version}</version>
       </dependency>
 
-      <!-- Rheos -->
       <dependency>
         <groupId>io.ebay.rheos</groupId>
         <artifactId>rheos-client_JDK-1.8</artifactId>
         <version>${rheos.version}</version>
       </dependency>
 
+      <!-- Rheos -->
       <dependency>
         <groupId>io.ebay.rheos</groupId>
         <artifactId>rheos-iaf-raptorio_JDK-1.8</artifactId>
         <version>${rheos.version}</version>
       </dependency>
 
-      <!-- Test -->
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka_2.11</artifactId>
@@ -173,13 +166,7 @@
         <scope>test</scope>
       </dependency>
 
-      <dependency>
-        <groupId>org.apache.kafka</groupId>
-        <artifactId>kafka-clients</artifactId>
-        <version>${kafka.version}</version>
-      </dependency>
-
-      <!--logging dependencies-->
+      <!-- Test -->
       <dependency>
         <groupId>com.github.danielwegener</groupId>
         <artifactId>logback-kafka-appender</artifactId>
@@ -193,6 +180,7 @@
         <version>${logback.encoder.version}</version>
       </dependency>
 
+      <!--logging dependencies-->
       <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
@@ -211,6 +199,7 @@
         <version>1.8.0</version>
         <scope>compile</scope>
       </dependency>
+
       <dependency>
         <groupId>org.apache.flume</groupId>
         <artifactId>flume-ng-core</artifactId>
@@ -218,25 +207,24 @@
         <scope>compile</scope>
       </dependency>
 
-      <!-- test -->
       <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_${scala.compat.version}</artifactId>
         <version>2.2.6</version>
         <scope>test</scope>
       </dependency>
-
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13</version>
         <scope>test</scope>
       </dependency>
 
+      <!-- test -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>1.10.19</version>
+        <version>3.3.3</version>
         <scope>test</scope>
       </dependency>
 
@@ -290,23 +278,18 @@
         <version>1.0.12</version>
         <exclusions>
           <exclusion>
-            <groupId>com.ebay.raptor.core</groupId>
             <artifactId>ConfigWeb</artifactId>
+            <groupId>com.ebay.raptor.core</groupId>
           </exclusion>
         </exclusions>
       </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>5.2.8.RELEASE</version>
-      </dependency>
 
-      <!-- UTP -->
       <dependency>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate-utp-common</artifactId>
         <version>${utp.version}</version>
       </dependency>
+
       <dependency>
         <groupId>com.ebay.traffic</groupId>
         <artifactId>chocolate-utp-lib</artifactId>
@@ -318,6 +301,11 @@
           </exclusion>
         </exclusions>
       </dependency>
+      
+
+      <!-- UTP -->
+      
+      
     </dependencies>
   </dependencyManagement>
 
@@ -382,7 +370,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.5.1</version>
           <configuration>
             <encoding>${encoding}</encoding>
             <compilerVersion>${java.version}</compilerVersion>
@@ -456,7 +443,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.19.1</version>
           <executions>
             <execution>
               <goals>
@@ -500,7 +486,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
         <configuration>
           <forkMode>once</forkMode>
           <forkCount>1.0C</forkCount>
