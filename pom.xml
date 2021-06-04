@@ -166,6 +166,12 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka.version}</version>
+      </dependency>
+
       <!-- Test -->
       <dependency>
         <groupId>com.github.danielwegener</groupId>
