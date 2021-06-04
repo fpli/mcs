@@ -15,7 +15,6 @@
   <properties>
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
     <swagger.codegen.version>3.0.0</swagger.codegen.version>
-    <environment.component.version>0.12.4-RELEASE</environment.component.version>
   </properties>
 
   <dependencies>
