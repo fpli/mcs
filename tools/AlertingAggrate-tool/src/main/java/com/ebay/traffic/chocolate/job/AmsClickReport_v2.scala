@@ -204,7 +204,7 @@ class AmsClickReport_v2(val inputdir: String, val outputdir: String, val jobtask
     logger.info("dailyClickTrend function" + dir)
     val domainTrend = spark.read
       .parquet(dir)
-      .withColumn("click_dt", extractDateUdf(col("click_ts"))).filter($"rfrng_dmn_name" isNotNull)
+      .withColumn("click_dt", extractDateUdf(col("click_ts"))).filter(length($"rfrng_dmn_name") =!= 0)
     val domainTrend1 = domainTrend.groupBy("rfrng_dmn_name").agg(count($"click_id").as("click_cnt")).sort($"click_cnt".desc).limit(3).withColumn("ranking", monotonically_increasing_id + 1)
     domainTrend1
   }

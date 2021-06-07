@@ -25,13 +25,13 @@ dag = DAG(dag_id='EPNDailyClick_v2', schedule_interval='40 2 * * *', default_arg
 DailyClickTrendReport_v2 = SSHOperator(task_id='DailyClickTrendReport_v2',
                                   ssh_conn_id=ssh_conn_id,
                                   remote_host=remote_hosts,
-                                  command='/datashare/mkttracking/tools/AlertingAggrate-tool/bin/daily_click_trend_report_v2.sh ',
+                                  command='/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/bin/daily_click_trend_report_v2.sh ',
                                   dag=dag)
 
 DailyDomainTrendReport_v2 = SSHOperator(task_id='DailyDomainTrendReport_v2',
                                     ssh_conn_id=ssh_conn_id,
                                     remote_host=remote_hosts,
-                                    command='/datashare/mkttracking/tools/AlertingAggrate-tool/bin/daily_domain_trend_report_v2.sh ',
+                                    command='/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/bin/daily_domain_trend_report_v2.sh ',
                                     dag=dag)
 
 
