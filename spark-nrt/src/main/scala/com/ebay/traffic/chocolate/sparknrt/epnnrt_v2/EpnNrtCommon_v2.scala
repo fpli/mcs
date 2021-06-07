@@ -358,12 +358,12 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
       } catch {
         case e: MalformedURLException => {
           logger.error("Error parse landing page url from Location: " + e)
-          metrics.meter("ParseLandingPageFromLocationError")
+          metrics.meterByGauge("ParseLandingPageFromLocationError",1)
           return ""
         }
         case e: Exception => {
           logger.error("Error parse landing page url from responseHeader: " + responseHeader + e)
-          metrics.meter("ParseLandingPageFromResponseHeaderError")
+          metrics.meterByGauge("ParseLandingPageFromResponseHeaderError",1)
           return ""
         }
       }
@@ -596,7 +596,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
       } catch {
         case e: Exception => {
             logger.error("Error parse the item id from " + uri + e)
-            metrics.meter("ParseItemIdFromUriError")
+            metrics.meterByGauge("ParseItemIdFromUriError",1)
             return ""
         }
       }
@@ -678,13 +678,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         try{
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("epn_XidGotUserId", 1)
+            metrics.meterByGauge("epn_XidGotUserId", 1)
             result = xid.accounts.head
             logger.debug("get userid from Xid user_id=" + result)
           }
         } catch {
           case e: Exception => {
-            metrics.meter("epn_XidTimeOut", 1)
+            metrics.meterByGauge("epn_XidTimeOut", 1)
             logger.warn("call xid error" + e.printStackTrace())
           }
         }
@@ -700,13 +700,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         try{
           val xid = xidRequestV2("pguid", guid)
           if (xid.accounts.nonEmpty) {
-            metrics.meter("epn_XidGotUserId", 1)
+            metrics.meterByGauge("epn_XidGotUserId", 1)
             result = xid.accounts.head
             logger.debug("get userId from Xid user_id=" + result)
           }
         } catch {
           case e: Exception =>
-            metrics.meter("epn_XidTimeOut", 1)
+            metrics.meterByGauge("epn_XidTimeOut", 1)
             logger.warn("call xid error" + e.printStackTrace())
         }
       }
@@ -1249,7 +1249,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting publisher status " + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1288,7 +1288,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting campaign status " + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1329,7 +1329,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting progmap status " + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1372,7 +1372,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting advClickFilterMap" + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1415,7 +1415,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting pubDomainMap " + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
@@ -1443,12 +1443,12 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
       } catch {
         case e: MalformedURLException => {
           logger.error("Error parse param from " + uri + e)
-          metrics.meter("ParseParamFromUriError")
+          metrics.meterByGauge("ParseParamFromUriError",1)
           return ""
         }
         case e: Exception => {
           logger.error("Error parse param from " + uri + e)
-          metrics.meter("ParseParamFromUriError")
+          metrics.meterByGauge("ParseParamFromUriError",1)
           return ""
         }
       }
@@ -1484,7 +1484,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     if (uri != null && isEbaySitesUrl(uri.toLowerCase())
         && referrer != null && refererEbaySites.matcher(referrer.toLowerCase()).find()) {
       if (metrics != null) {
-        metrics.meter("epnLongTermInternalReferer")
+        metrics.meterByGauge("epnLongTermInternalReferer",1)
       }
       false
     } else {
@@ -1519,14 +1519,14 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
-        metrics.meter("CouchbaseError")
+        metrics.meterByGauge("CouchbaseError",1)
       }
     } finally {
       CorpCouchbaseClient.returnClient(cacheClient)
     }
 
     if (StringUtils.isNotEmpty(roverLastClickGuid)) {
-      metrics.meter("GetChocoTagGuidMappingFromCB")
+      metrics.meterByGauge("GetChocoTagGuidMappingFromCB",1)
       fixedGuid = roverLastClickGuid
     }
 
@@ -1551,7 +1551,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     } catch {
       case e: Exception => {
         logger.error("Error determine url sites " + uri + e)
-        metrics.meter("DetermineUrlSitesError")
+        metrics.meterByGauge("DetermineUrlSitesError",1)
       }
     }
 
