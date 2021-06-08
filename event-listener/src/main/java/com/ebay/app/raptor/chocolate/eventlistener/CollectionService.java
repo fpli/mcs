@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -83,6 +84,8 @@ public class CollectionService {
   private static CollectionService instance = null;
   private EventEmitterPublisher eventEmitterPublisher;
   private UnifiedTrackingMessageParser utpParser;
+  private static final String TYPE_INFO = "Info";
+  private static final String STATUS_OK = "0";
 
   @Autowired
   private HttpRoverClient roverClient;
@@ -124,9 +127,10 @@ public class CollectionService {
   private static final String ROI_SOURCE = "roisrc";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
+  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com");
   private static final String VOD_PAGE = "vod";
   private static final String VOD_SUB_PAGE = "FetchOrderDetails";
+  private static final String ROI_TRANS_TYPE = "roiTransType";
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -357,9 +361,7 @@ public class CollectionService {
       metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
-    // filter click whose referer is internal
-    Matcher m = ebaysites.matcher(referer.toLowerCase());
-    boolean isInternalRef = m.find();
+    boolean isInternalRef = isInternalRef(channelType.getLogicalChannel().getAvro(), referer);
     // Determine whether the click is a duplicate click
     // If duplicate click, then drop into duplicateItmClickTopic
     // If not, drop into normal topic
@@ -413,14 +415,14 @@ public class CollectionService {
 
       // send to unified tracking topic
       if (listenerMessage != null) {
-        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), utpEventId, startTime,
-            vodInternal);
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+            agentInfo, parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(),
+            channelAction.getAvro(), null, listenerMessage.getSnapshotId(),
+            listenerMessage.getShortSnapshotId(), utpEventId, startTime, vodInternal);
       } else {
-        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            null, 0L, 0L, utpEventId, startTime, vodInternal);
+        processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+            agentInfo, parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(),
+            channelAction.getAvro(), null, 0L, 0L, utpEventId, startTime, vodInternal);
       }
     }
 
@@ -429,6 +431,15 @@ public class CollectionService {
         Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
+  }
+
+  protected boolean isInternalRef(ChannelType channelType, String referer) {
+    if (inRefererWhitelist(channelType, referer)) {
+      return false;
+    }
+    // filter click whose referer is internal
+    Matcher m = ebaysites.matcher(referer.toLowerCase());
+    return m.find();
   }
 
   /**
@@ -541,7 +552,11 @@ public class CollectionService {
     boolean processFlag = processROIEvent(requestContext, targetUrl, referer, parameters, ChannelIdEnum.ROI,
         ChannelActionEnum.ROI, request, transTimestamp, endUserContext, raptorSecureContext, agentInfo, roiEvent);
 
-    if (processFlag) {
+    // Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
+    boolean processPreInstallROIEventFlag = processPreInstallROIEvent(requestContext, referer, request, endUserContext,
+            raptorSecureContext, agentInfo, payloadMap, roiEvent, transTimestamp);
+
+    if (processFlag && processPreInstallROIEventFlag) {
       metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
           Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
       // Log the roi lag between transation time and receive time
@@ -688,13 +703,13 @@ public class CollectionService {
 
     // send to unified tracking topic
     if(listenerMessage!=null) {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+          agentInfo, parameters, uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           null, listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), null, startTime,
           false);
     } else {
-      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-          uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+      processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+          agentInfo, parameters, uri, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
           null, 0L, 0L, null, startTime, false);
     }
 
@@ -747,9 +762,9 @@ public class CollectionService {
               behaviorMessage), KafkaSink.callback);
     }
 
-    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, agentInfo, parameters,
-            targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
-            roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
+    processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders, agentInfo,
+        parameters, targetUrl, referer, channelType.getLogicalChannel().getAvro(), channelAction.getAvro(),
+        roiEvent, message.getSnapshotId(), message.getShortSnapshotId(), null, startTime, false);
 
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
     String kafkaTopic
@@ -843,6 +858,10 @@ public class CollectionService {
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
     UnifiedTrackingMessage message = utpParser.parse(event, userLookup);
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, message.getProducerEventId());
+    SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
+    SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
     if (message != null) {
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
@@ -874,6 +893,7 @@ public class CollectionService {
   @SuppressWarnings("unchecked")
   private void processUnifiedTrackingEvent(ContainerRequestContext requestContext, HttpServletRequest request,
                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                           Map<String, String> requestHeaders,
                                            UserAgentInfo agentInfo, MultiValueMap<String, String> parameters,
                                            String url, String referer, ChannelType channelType,
                                            ChannelAction channelAction, ROIEvent roiEvent, long snapshotId,
@@ -883,7 +903,7 @@ public class CollectionService {
       if (ChannelAction.EMAIL_OPEN.equals(channelAction) || ChannelAction.ROI.equals(channelAction)
           || inRefererWhitelist(channelType, referer) || !m.find() || vodInternal) {
         UnifiedTrackingMessage utpMessage = utpParser.parse(requestContext, request, endUserContext,
-                raptorSecureContext, agentInfo, userLookup, parameters, url, referer, channelType, channelAction,
+                raptorSecureContext, requestHeaders, agentInfo, parameters, url, referer, channelType, channelAction,
                 roiEvent, snapshotId, shortSnapshotId, startTime);
         if(!StringUtils.isEmpty(eventId)) {
           utpMessage.setEventId(eventId);
@@ -901,7 +921,7 @@ public class CollectionService {
   }
 
   /**
-   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
+   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site. So add a whitelist to handle these bad cases.
    * @param channelType channel type
    * @param referer referer
    * @return in whitelist or not
@@ -1063,6 +1083,72 @@ public class CollectionService {
       }
     } else {
       metrics.meter("InternalDomainRef", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    }
+
+    return true;
+  }
+
+  /**
+   * Process Pre-install ROI Event
+   * Mock click for the ROI which has valid mppid in the payload (ROI generated from pre-install app on Android) XC-3464
+   * @param requestContext      wrapped request context
+   * @param referer             referer of the request
+   * @param request             http request
+   * @param endUserContext      enduserctx header
+   * @param raptorSecureContext wrapped raptor secure context
+   * @param agentInfo           user agent
+   * @param payloadMap          ROI payload parameters
+   * @param roiEvent            ROI event
+   * @param transTimestamp      ROI transaction timestamp
+   * @return                success or failure
+   */
+  private boolean processPreInstallROIEvent(ContainerRequestContext requestContext, String referer, HttpServletRequest request,
+                                            IEndUserContext endUserContext, RaptorSecureContext raptorSecureContext,
+                                            UserAgentInfo agentInfo, Map<String, String> payloadMap, ROIEvent roiEvent, long transTimestamp) {
+
+    try {
+      boolean isPreInstallROI = CollectionServiceUtil.isPreinstallROI(payloadMap, roiEvent.getTransType());
+
+      if (isPreInstallROI) {
+        UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
+        Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
+
+        // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
+        String utpEventId = UUID.randomUUID().toString();
+
+        String clickUrl = CollectionServiceUtil.createPrmClickUrl(payloadMap, endUserContext);
+
+        if (!StringUtils.isEmpty(clickUrl)) {
+          UriComponents clickUriComponents = UriComponentsBuilder.fromUriString(clickUrl).build();
+
+          MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
+
+          ListenerMessage listenerMessage = performanceMarketingCollector.parseListenerMessage(requestHeaders, userPrefsCtx,
+                  clickUrl, referer, clickParameters, ChannelIdEnum.DAP, ChannelActionEnum.CLICK, request, transTimestamp, endUserContext,
+                  raptorSecureContext);
+
+          Producer<Long, ListenerMessage> producer = KafkaSink.get();
+          String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelIdEnum.DAP.getLogicalChannel().getAvro());
+
+          producer.send(
+                  new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
+                  KafkaSink.callback);
+
+          // send to unified tracking topic
+          processUnifiedTrackingEvent(requestContext, request, endUserContext, raptorSecureContext, requestHeaders,
+                  agentInfo, clickParameters, clickUrl, referer, ChannelType.DISPLAY,
+                  ChannelAction.CLICK, null, listenerMessage.getSnapshotId(),
+                  listenerMessage.getShortSnapshotId(), utpEventId, transTimestamp, false);
+
+          // Log mock click for pre-install ROI by transaction type
+          metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
+                  Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
+                  Field.of(ROI_TRANS_TYPE, roiEvent.getTransType()));
+        }
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Error when processing pre-install ROI events", ex);
+      metrics.meter("ErrorProcessPreinstallROIEvent", 1);
     }
 
     return true;
@@ -1231,7 +1317,7 @@ public class CollectionService {
    * Check if the click is from UFES
    */
   private Boolean isFromUFES(Map<String, String> headers) {
-    return headers.containsKey(Constants.IS_FROM_UFES) && "true".equals(headers.get(Constants.IS_FROM_UFES));
+    return headers.containsKey(Constants.IS_FROM_UFES_HEADER) && "true".equals(headers.get(Constants.IS_FROM_UFES_HEADER));
   }
 
   /**

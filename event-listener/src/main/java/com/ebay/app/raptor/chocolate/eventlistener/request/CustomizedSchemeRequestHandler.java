@@ -54,6 +54,8 @@ public class CustomizedSchemeRequestHandler {
       if (mkevt.equals(CLICKEVENTFLAG) && channelType != null) {
         ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
       } else {
+        LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+        ESMetrics.getInstance().meter(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
         return null;
       }
 
@@ -91,6 +93,7 @@ public class CustomizedSchemeRequestHandler {
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
         ESMetrics.getInstance().meter("IncomingAppDeepLinkWithValidTargetURLSuccess");
+        deeplinkTargetUrl = CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(deeplinkTargetUrl);
         Event event = constructDeeplinkEvent(deeplinkTargetUrl, referer);
         return event;
       } else {
@@ -98,9 +101,6 @@ public class CustomizedSchemeRequestHandler {
         ESMetrics.getInstance().meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         return null;
       }
-    } else {
-      LOGGER.warn(Errors.ERROR_NO_VALID_TRACKING_PARAMS_DEEPLINK);
-      return null;
     }
 
     return null;

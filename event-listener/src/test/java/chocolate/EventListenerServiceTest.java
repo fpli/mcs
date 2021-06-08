@@ -178,7 +178,7 @@ public class EventListenerServiceTest {
       "%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage%2Fapng%2C*%2F*%3Bq%3D0.8," +
       "userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
       "userAgent=ebayUserAgent%2FeBayAndroid%3B5.27.1%3BAndroid%3B8.0.0%3Bsamsung%3Bgreatqlte%3BU.S" +
-      ".%20Cellular%3B1080x2094%3B2.6,deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      ".%20Cellular%3B1080x2094%3B2.6,deviceId=8101a7ad1670ac3c41a87509fffc40b4,deviceIdType=IDREF," +
       "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
       ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
       "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
@@ -777,6 +777,8 @@ public class EventListenerServiceTest {
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
 
     // no query parameter
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");
@@ -831,6 +833,18 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=2&mkcid=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=99");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
@@ -844,6 +858,12 @@ public class EventListenerServiceTest {
     assertEquals(4012, errorMessage.getErrorCode());
 
     event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=999-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -939,7 +959,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testCheckoutAPIClickAndRoiEventsResource() {
+  public void testCheckoutAPIClickAndRoiEventsResource() throws InterruptedException {
     // Test Checkout api click
     Event event = new Event();
     event.setReferrer("");
@@ -973,6 +993,16 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(roiEvent));
     assertEquals(201, response1.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
+            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
+    consumerROI.close();
+    assertEquals(1, listenerMessagesROI.size());
   }
 
   @Test
@@ -1126,6 +1156,52 @@ public class EventListenerServiceTest {
     assertEquals(0, listenerMessagesPaidSearch.size());
   }
 
+  @Test
+  public void testProcessPreInstallROIEvent() throws Exception {
+    String token = tokenGenerator.getToken().getAccessToken();
+    // Test event cases
+    ROIEvent roiEventPreInstall = constructROIEvent();
+    Map<String, String> roiPayloadMap = new HashMap<String, String>();
+    roiPayloadMap.put("siteId", "77");
+    roiPayloadMap.put("roisrc", "5");
+    roiPayloadMap.put("usecase", "prm");
+    roiPayloadMap.put("mppid", "92");
+    roiPayloadMap.put("rlutype", "1");
+    roiPayloadMap.put("mrollp", "79");
+
+    roiEventPreInstall.setPayload(roiPayloadMap);
+
+    Response response1 = client.target(svcEndPoint).path(roiPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxAndroid)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(roiEventPreInstall));
+    assertEquals(201, response1.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerDisplay = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesDisplay = pollFromKafkaTopic(
+            consumerDisplay, Arrays.asList("dev_listened-display"), 1, 30 * 1000);
+    consumerDisplay.close();
+    // dummy click will be dropped into display click topic
+    assertEquals(1, listenerMessagesDisplay.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
+            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
+    consumerROI.close();
+    assertEquals(1, listenerMessagesROI.size());
+  }
+
   /**
    * Load properties
    * @param fileName
@@ -1137,5 +1213,14 @@ public class EventListenerServiceTest {
     Properties properties = new Properties();
     properties.load(new FileReader(propertiesFile));
     return properties;
+  }
+
+  public ROIEvent constructROIEvent() {
+    ROIEvent roiEvent = new ROIEvent();
+    roiEvent.setItemId("192658398245");
+    roiEvent.setTransType("BIN-MobileApp");
+    roiEvent.setUniqueTransactionId("1225203159023");
+    roiEvent.setTransactionTimestamp("1620385327000");
+    return roiEvent;
   }
 }

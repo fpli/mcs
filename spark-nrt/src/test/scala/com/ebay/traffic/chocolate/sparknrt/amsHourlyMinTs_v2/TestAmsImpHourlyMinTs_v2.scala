@@ -5,7 +5,7 @@ import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata,
 
 class TestAmsImpHourlyMinTs_v2 extends BaseFunSuite {
   private val tmpPath = createTempPath()
-  private val inputDir = getTestResourcePath("amsImpSample_v2.dat.gz")
+  private val inputDir = getTestResourcePath("amsImpSample_v2.snappy.parquet")
   private val workDir = tmpPath + "/workDir/"
   private val outputDir = tmpPath + "/outputDir/"
   private val channel = "EPN"

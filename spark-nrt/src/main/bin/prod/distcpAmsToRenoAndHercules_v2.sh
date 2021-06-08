@@ -14,11 +14,11 @@
 # Output:   Apollo RNO
 #           /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp/imprsn_dt=
 #           Hercules
-#           /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot/imprsn_dt=
+#           /sys/edw/imk/im_tracking/epn/ams_imprsn_v2/snapshot/imprsn_dt=
 # Schedule: /3 * ? * *
 # case：
 #./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/click /apps/b_marketing_tracking/chocolate/epnnrt_v2/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click
-#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/impression /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_impression_v2/snapshot imp
+#./distcpAmsToRenoAndHercules_v2.sh /apps/epn-nrt-v2/impression /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_imprsn_v2/snapshot imp
 
 set -x
 
@@ -113,9 +113,10 @@ then
     echo "Fail to datamove from Apollo to Hercules, please check!!!"
     exit ${datamove_result_code};
   fi
-  /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
-  /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 fi
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 
 META_PATH="hdfs://slickha${META_DIR}/date=${today}"
 RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
@@ -152,9 +153,10 @@ then
     echo "Fail to datamove from Apollo to Hercules, please check!!!"
     exit ${datamove_result_code};
   fi
-  /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${apollo_file}
-  /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${hercules_file}
 fi
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${apollo_file}
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams >> ${hercules_file}
 
 # deal metaFile
 function process_meta_file(){

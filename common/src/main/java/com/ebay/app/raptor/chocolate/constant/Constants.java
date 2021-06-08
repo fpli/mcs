@@ -36,6 +36,8 @@ public class Constants {
   public static final String GUID = "guid";
   public static final String CGUID = "cguid";
   public static final String STR_NULL = "null";
+  public static final String TAG_IS_UFES = "isUfes";
+  public static final String TAG_STATUS_CODE = "statusCode";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
@@ -101,13 +103,23 @@ public class Constants {
   public static final String PLRFR = "plrfr";
 
   // UFES header
-  public static final String IS_FROM_UFES = "x-ufes-mcs-int";
+  public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
 
   // Deep Link native uri params
   public static final String NAV = "nav";
   public static final String ID = "id";
-  // DEEP_LINK_WITH_CHOCO_PARAMS_FLAG is used to mark the click whose original url is custom uri with Chocolate parameters
-  public static final String DEEP_LINK_WITH_CHOCO_PARAMS_FLAG = "mkdeeplink";
+  // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri (ebay://)
+  public static final String FLEX_FLD_17_TXT = "ff17";
+
+  // Pre-install App ROI params
+  public static final String MPPID = "mppid";
+  public static final String RLUTYPE = "rlutype";
+  public static final String USECASE = "usecase";
+  public static final String SITEID = "siteId";
+
+  // Pre-install App dummy click params
+  public static final String UDID = "udid";
+  public static final String SITE = "site";
 
   /**
    * Performance marketing channels
@@ -115,6 +127,15 @@ public class Constants {
   public static final Set<ChannelIdEnum> PM_CHANNELS = new HashSet<>(
       Arrays.asList(ChannelIdEnum.EPN, ChannelIdEnum.PAID_SEARCH,
           ChannelIdEnum.DAP, ChannelIdEnum.SOCIAL_MEDIA, ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS)
+  );
+
+  /**
+   * Pre-install ROI transaction types
+   */
+  public static final Set<RoiTransactionEnum> PRE_INSTALL_ROI_TRANS_TYPES = new HashSet<>(
+          Arrays.asList(RoiTransactionEnum.BID_MOBILEAPP, RoiTransactionEnum.BIN_MOBILEAPP,
+                  RoiTransactionEnum.BO_MOBILE_APP, RoiTransactionEnum.SELL_MOBILE_APP,
+                  RoiTransactionEnum.REG_MOBILE_APP, RoiTransactionEnum.REG_SELL_MOBILE_APP)
   );
 
   /**
@@ -175,4 +196,28 @@ public class Constants {
           .put("4686", "https://www.ebay.com")
           .build();
 
+  /**
+   * site id - host map
+   * this is used to construct dummy click landing page url when we receive the ROI events generated from pre-install Android App (XC-3464)
+   */
+  public static final ImmutableMap<String, String> siteIdHostMap = new ImmutableMap.Builder<String, String>()
+          .put("0", "https://www.ebay.com")
+          .put("2", "https://www.ebay.ca")
+          .put("3", "https://www.ebay.co.uk")
+          .put("15", "https://www.ebay.com.au")
+          .put("16", "https://www.ebay.at")
+          .put("23", "https://www.befr.ebay.be")
+          .put("71", "https://www.ebay.fr")
+          .put("77", "https://www.ebay.de")
+          .put("100", "https://www.ebay.com")
+          .put("101", "https://www.ebay.it")
+          .put("123", "https://www.benl.ebay.be")
+          .put("146", "https://www.ebay.nl")
+          .put("186", "https://www.ebay.es")
+          .put("193", "https://www.ebay.ch")
+          .put("205", "https://www.ebay.ie")
+          .put("207", "https://www.ebay.com.my")
+          .put("210", "https://www.ebay.ca")
+          .put("212", "https://www.ebay.pl")
+          .build();
 }

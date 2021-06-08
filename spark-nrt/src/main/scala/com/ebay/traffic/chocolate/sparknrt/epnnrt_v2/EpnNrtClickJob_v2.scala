@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.col
@@ -24,12 +23,10 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
   lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
 
   //meta final dir
-  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/ epnnrt_click/"
+  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_click/"
   lazy val epnNrtScpMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_click/"
 
   lazy val clickDir = "/click/"
-
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.click.metafile.batchsize")
@@ -122,9 +119,9 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
           var clickDf = new ClickDataFrame_v2(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "parquet", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + clickDir)
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "parquet", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir)
 
           metrics.meter("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 

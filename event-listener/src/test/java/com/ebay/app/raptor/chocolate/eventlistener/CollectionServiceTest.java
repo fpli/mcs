@@ -284,6 +284,20 @@ public class CollectionServiceTest {
     assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
     assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
     assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
+    assertTrue(collectionService.inRefererWhitelist(ChannelType.DISPLAY, "https://secureir.ebaystatic.com/"));
+    assertFalse(collectionService.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://secureir.ebaystatic.com/"));
+  }
+
+  @Test
+  public void isInternalRef() {
+    assertTrue(collectionService.isInternalRef(ChannelType.EPN, "http://www.ebay.com"));
+    assertTrue(collectionService.isInternalRef(ChannelType.EPN, "https://ebay.mtag.io/"));
+    assertTrue(collectionService.isInternalRef(ChannelType.DISPLAY, "http://www.ebay.com"));
+    assertFalse(collectionService.isInternalRef(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
+    assertFalse(collectionService.isInternalRef(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
+    assertTrue(collectionService.isInternalRef(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
+    assertFalse(collectionService.isInternalRef(ChannelType.DISPLAY, "https://secureir.ebaystatic.com/"));
+    assertTrue(collectionService.isInternalRef(ChannelType.PAID_SEARCH, "https://secureir.ebaystatic.com/"));
   }
 
   @Test
