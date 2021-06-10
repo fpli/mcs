@@ -38,7 +38,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
   }
 
   override def run(): Unit = {
-    logger.info(System.getenv("TRT_GRANT_FILE"))
+    logger.info("TRF GRANT FILE IS"+System.getenv("TRF_GRANT_FILE"))
     //1. load meta files
     logger.info("load metadata...")
 
