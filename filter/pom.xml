@@ -204,12 +204,6 @@
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
             <version>${dukes.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.ebay.fount</groupId>
-                    <artifactId>managed-fount-client</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>

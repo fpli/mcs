@@ -179,27 +179,6 @@
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes</artifactId>
       <version>${dukes.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.ebay.platform.security</groupId>
-          <artifactId>trustfabric-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.ebay.fount</groupId>
-          <artifactId>managed-fount-client</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ebay.platform.security</groupId>
-      <artifactId>trustfabric-client</artifactId>
-      <version>1.0.10-RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>com.ebay.fount</groupId>
-      <artifactId>managed-fount-client</artifactId>
-      <version>0.2.8-SNAPSHOT</version>
     </dependency>
 
     <dependency>

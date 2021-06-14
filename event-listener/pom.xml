@@ -231,10 +231,6 @@
           <groupId>javax.persistence</groupId>
           <artifactId>persistence-api</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>com.ebay.fount</groupId>
-          <artifactId>managed-fount-client</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
