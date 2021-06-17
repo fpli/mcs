@@ -26,7 +26,7 @@
     <log4j.version>1.2.17</log4j.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.2</couchbase.client.version>
-    <dukes.version>1.5.1.raptorio</dukes.version>
+    <dukes.version>1.6.19.raptorio</dukes.version>
     <raptor.dal.verion>2.2.0-RELEASE</raptor.dal.verion>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
     <elasticsearch.version>6.3.0</elasticsearch.version>
