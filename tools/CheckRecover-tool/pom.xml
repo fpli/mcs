@@ -165,7 +165,7 @@
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
-            <version>develop_2.0.10-SNAPSHOT</version>
+            <version>${dukes.version}</version>
         </dependency>
     </dependencies>
 
