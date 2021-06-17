@@ -182,9 +182,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-trustfabric-client-starter</artifactId>
-      <version>0.12.2-RELEASE</version>
+      <groupId>com.ebay.platform.security</groupId>
+      <artifactId>trustfabric-client</artifactId>
+      <version>1.0.10-RELEASE</version>
     </dependency>
 
     <dependency>
