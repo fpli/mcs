@@ -5,7 +5,7 @@ LOCAL_DONE_DATE_FILE=$2
 ACTION=$3
 DONE_CLUSTER=$4
 
-DONE_FILE_DIR=/apps/b_marketing_tracking/watch_v2/
+DONE_FILE_DIR=/user/b_marketing_tracking/watch/
 
 done_date=${DONE_TIME:0:8}
 repair_date=${done_date:0:4}-${done_date:4:2}-${done_date:6}
