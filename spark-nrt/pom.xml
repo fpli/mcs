@@ -183,6 +183,12 @@
 
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-trustfabric-client-starter</artifactId>
+      <version>0.12.2-RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dawg-dictionary</artifactId>
     </dependency>
 
