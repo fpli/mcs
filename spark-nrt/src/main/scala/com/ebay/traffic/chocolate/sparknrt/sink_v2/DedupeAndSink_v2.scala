@@ -210,7 +210,7 @@ class DedupeAndSink_v2(params: Parameter_v2)
       } catch {
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-          metrics.meter("CBDedupeException")
+          metrics.meter("CBDedupeException",1)
           writeMessage(writer, message)
           couchbaseDedupe = false
       }
@@ -252,7 +252,7 @@ class DedupeAndSink_v2(params: Parameter_v2)
                   } catch {
                     case e: Exception =>
                       logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
-                      metrics.meter("CBDedupeException")
+                      metrics.meter("CBDedupeException",1)
                       couchbaseDedupe = false
                   }
                 }
