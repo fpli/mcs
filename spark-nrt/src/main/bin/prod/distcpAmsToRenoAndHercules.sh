@@ -113,9 +113,10 @@ then
     echo "Fail to datamove from Apollo to Hercules, please check!!!"
     exit ${datamove_result_code};
   fi
-  /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
-  /datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 fi
+
+/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
+/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 
 META_PATH="hdfs://elvisha${META_DIR}/date=${today}"
 RENO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
