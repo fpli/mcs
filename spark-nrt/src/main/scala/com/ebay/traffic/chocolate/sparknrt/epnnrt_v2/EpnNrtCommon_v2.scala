@@ -303,13 +303,19 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
   }
 
   def getLastViewItemInfo(cguid: String, timestamp: String): Array[String] = {
+    /*
     val res = BullseyeUtils_v2.getLastViewItem(cguid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrl"))
     Array(res._1, res._2)
+     */
+    Array("", "")
   }
 
   def getLastViewItemInfoV3(cguid: String, guid: String, timestamp: String): Array[String] = {
+    /*
     val res = BullseyeUtils_v2.getLastViewItemV3(cguid, guid, timestamp, properties.getProperty("epnnrt.modelId"), properties.getProperty("epnnrt.lastviewitemnum"), properties.getProperty("epnnrt.bullseyeUrlV3"))
     Array(res._1, res._2)
+    */
+    Array("", "")
   }
 
   def getValueFromQueryURL(uri: String, key: String): String = {
@@ -693,6 +699,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
   }
 
   def getUserIdByGuid(userId: String, guid: String): String = {
+    /*
     var result = userId
     if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
       if (StringUtils.isNotEmpty(guid)) {
@@ -711,6 +718,8 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
       }
     }
     result
+    */
+    ""
   }
 
   @Deprecated
