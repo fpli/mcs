@@ -699,7 +699,6 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
   }
 
   def getUserIdByGuid(userId: String, guid: String): String = {
-    /*
     var result = userId
     if (StringUtils.isEmpty(userId) || userId.equals("0") || userId.equals("-1")) {
       if (StringUtils.isNotEmpty(guid)) {
@@ -718,13 +717,11 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
       }
     }
     result
-    */
-    ""
   }
 
   @Deprecated
   def xidRequest(idType: String, id: String): MyID = {
-    Http(s"http://$xidHost/anyid/v1/$idType/$id")
+    Http(s"https://$xidHost/anyid/v1/$idType/$id")
       .header("X-EBAY-CONSUMER-ID", xidConsumerId)
       .header("X-EBAY-CLIENT-ID", xidClientId)
       .timeout(xidConnectTimeout, xidReadTimeout)
