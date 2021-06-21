@@ -727,7 +727,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
   }
 
   def xidRequestV2(idType: String, id: String): MyIDV2 = {
-    Http(s"http://$xidHost/anyid/v2/$idType/$id")
+    Http(s"https://$xidHost/anyid/v2/$idType/$id")
       .header("X-EBAY-CONSUMER-ID", xidConsumerId)
       .header("X-EBAY-CLIENT-ID", xidClientId)
       .timeout(xidConnectTimeout, xidReadTimeout)
