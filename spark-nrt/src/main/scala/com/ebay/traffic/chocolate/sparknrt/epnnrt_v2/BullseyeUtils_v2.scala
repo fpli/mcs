@@ -41,7 +41,7 @@ object BullseyeUtils_v2 {
   } catch {
     case e: Exception => {
       logger.error("Error when generate Bullseye token from bullseye, get token from HDFS file" + e)
-      metrics.meterByGauge("BullseyeTokenError_tess", 1)
+      metrics.meterByGauge("BullseyeTokenError", 1)
       null
     }
   }
@@ -65,7 +65,7 @@ object BullseyeUtils_v2 {
         logger.error(s"bullseye response for cguid $cguid with error: $response")
         token = generateToken2
         logger.warn(s"get new token: $token")
-        metrics.meterByGauge("BullsEyeError_tess", 1)
+        metrics.meterByGauge("BullsEyeError", 1)
         None
       }
     } catch {
@@ -94,7 +94,7 @@ object BullseyeUtils_v2 {
         logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
         token = generateToken2
         logger.warn(s"get new token: $token")
-        metrics.meterByGauge("BullsEyeError_tess", 1)
+        metrics.meterByGauge("BullsEyeError", 1)
         None
       }
     } catch {
@@ -128,7 +128,7 @@ object BullseyeUtils_v2 {
                 if (isItemIdValid(timestamp, item_id, lastViewTime)) {
                   item_id = item_id.replace("\"", "")
                   val date = new Timestamp(lastViewTime).toString
-                  metrics.meterByGauge("SuccessfulGet_tess", 1)
+                  metrics.meterByGauge("SuccessfulGet", 1)
                   return (item_id, date)
                 }
               })
@@ -155,11 +155,11 @@ object BullseyeUtils_v2 {
                 }
               })
             if (maxLastViwTime > 0) {
-              metrics.meterByGauge("SuccessfulGet_tess", 1)
+              metrics.meterByGauge("SuccessfulGet", 1)
               return (itemId, new Timestamp(maxLastViwTime).toString)
             }
           }
-          metrics.meterByGauge("BullsEyeHit_tess", 1)
+          metrics.meterByGauge("BullsEyeHit", 1)
           ("", "")
       }
     } catch {
@@ -191,7 +191,7 @@ object BullseyeUtils_v2 {
                 if (isItemIdValid(timestamp, item_id, lastViewTime)) {
                   item_id = item_id.replace("\"", "")
                   val date = new Timestamp(lastViewTime).toString
-                  metrics.meterByGauge("SuccessfulGet_tess", 1)
+                  metrics.meterByGauge("SuccessfulGet", 1)
                   return (item_id, date)
                 }
               })
@@ -218,11 +218,11 @@ object BullseyeUtils_v2 {
                 }
               })
             if (maxLastViwTime > 0) {
-              metrics.meterByGauge("SuccessfulGet_tess", 1)
+              metrics.meterByGauge("SuccessfulGet", 1)
               return (itemId, new Timestamp(maxLastViwTime).toString)
             }
           }
-          metrics.meterByGauge("BullsEyeHit_tess", 1)
+          metrics.meterByGauge("BullsEyeHit", 1)
           ("", "")
       }
     } catch {
@@ -304,7 +304,7 @@ object BullseyeUtils_v2 {
     } catch {
       case e: Exception => {
         logger.error("Error when encode consumerId:consumerSecret to String" + e)
-        metrics.meterByGauge("ErrorEncodeConsumerIdAndSecret_tess", 1)
+        metrics.meterByGauge("ErrorEncodeConsumerIdAndSecret", 1)
       }
     }
 
@@ -333,12 +333,12 @@ object BullseyeUtils_v2 {
       }
     } catch {
       case e: Exception =>
-        metrics.meterByGauge("getSecretByClientIdError_tess",1)
+        metrics.meterByGauge("getSecretByClientIdError",1)
         logger.error("get client secret failed " + e)
     }
     if (secret == null) {
       secret = ""
-      metrics.meterByGauge("getClientSecretNull_tess",1)
+      metrics.meterByGauge("getClientSecretNull",1)
     }
     secret
   }
