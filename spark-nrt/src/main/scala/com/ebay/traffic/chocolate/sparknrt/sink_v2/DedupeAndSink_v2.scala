@@ -203,7 +203,9 @@ class DedupeAndSink_v2(params: Parameter_v2)
       try {
         val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
+        logger.info("couchbaseDedupe {}",key)
         if (!bucket.exists(key)) {
+          logger.info("couchbaseDedupe contains the key{}",key)
           writeMessage(writer, message)
         }
         CorpCouchbaseClient_v2.returnClient(cacheClient)
