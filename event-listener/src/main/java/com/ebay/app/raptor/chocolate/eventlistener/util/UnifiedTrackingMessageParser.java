@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -270,9 +271,8 @@ public class UnifiedTrackingMessageParser {
     // format UEP payload
     Map<String, String> uepPayload =
         uepPayloadHelper.getUepPayload(url, ActionTypeEnum.valueOf(actionType), channelTypeEnum);
-    Map<String, String> fullPayload =
-        getPayload(payload, parameters, requestHeaders, requestContext, url, userAgent, appId, channelType,
-            channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime, trackingHeader);
+    Map<String, String> fullPayload = getPayload(payload, parameters, requestHeaders, requestContext, url, userAgent,
+            appId, channelType, channelAction, snapshotId, shortSnapshotId, roiEvent, userId, startTime, trackingHeader);
 
     // append UEP payload
     if (uepPayload != null && uepPayload.size() > 0) {
@@ -570,8 +570,33 @@ public class UnifiedTrackingMessageParser {
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
+    //parse itm from url and put itm to payload
+      parseItmTag(payload, url);
 
-    return encodeTags(payload);
+      return encodeTags(payload);
+  }
+
+  private static void parseItmTag(Map<String, String> payload, String url) {
+    if (!payload.containsKey("itm")) {
+      try {
+        URI uri = new URI(url);
+        String path = uri.getPath();
+          if (StringUtils.isNotBlank(path)) {
+            String[] split = new String[0];
+            if (path.contains("/itm/")) {
+              split = path.split("/itm/");
+            } else if (path.contains("/i/")) {
+              split = path.split("/i/");
+            }
+            if (split.length == 2 && StringUtils.isNotBlank(split[1])) {
+              payload.put("itm", split[1]);
+            }
+          }
+      } catch (Exception e) {
+        metrics.meter("putItmToPldError");
+        logger.warn("put itm tag to payload error, url is {}", url);
+      }
+    }
   }
 
   private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters, long snapshotId, long shortSnapshotId, long eventTs) {
