@@ -582,15 +582,15 @@ public class UnifiedTrackingMessageParser {
         URI uri = new URI(url);
         String path = uri.getPath();
           if (StringUtils.isNotBlank(path)) {
-              String[] split = new String[0];
-              if (path.contains("/itm/")) {
-                  split = path.split("/itm/");
-              } else if (path.contains("/i/")) {
-                  split = path.split("/i/");
-              }
-              if (split.length == 2) {
-                  payload.put("itm", split[1]);
-              }
+            String[] split = new String[0];
+            if (path.contains("/itm/")) {
+              split = path.split("/itm/");
+            } else if (path.contains("/i/")) {
+              split = path.split("/i/");
+            }
+            if (split.length == 2 && StringUtils.isNotBlank(split[1])) {
+              payload.put("itm", split[1]);
+            }
           }
       } catch (Exception e) {
         metrics.meter("putItmToPldError");
