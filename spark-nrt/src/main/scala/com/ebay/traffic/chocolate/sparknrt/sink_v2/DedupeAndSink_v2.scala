@@ -298,7 +298,7 @@ class DedupeAndSink_v2(params: Parameter_v2)
     */
   private def metric(message: FilterMessage) = {
     if (metrics != null) {
-      metrics.meterByGauge("dedupe_input_count", 1,
+      metrics.meterByGauge("dedupeInputCount", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }
@@ -341,7 +341,7 @@ class DedupeAndSink_v2(params: Parameter_v2)
   def writeMessage(writer: ParquetWriter[GenericRecord], message: FilterMessage)  = {
     writer.write(message)
     if (metrics != null) {
-      metrics.meterByGauge("dedupe_temp_output", 1,
+      metrics.meterByGauge("dedupeTempOutput", 1,
         Field.of[String, AnyRef](CHANNEL_ACTION, message.getChannelAction.toString),
         Field.of[String, AnyRef](CHANNEL_TYPE, message.getChannelType.toString))
     }

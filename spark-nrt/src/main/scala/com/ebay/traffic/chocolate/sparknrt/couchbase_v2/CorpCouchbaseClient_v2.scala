@@ -5,9 +5,11 @@ import java.util.Properties
 import com.couchbase.client.java.Bucket
 import com.couchbase.client.java.datastructures.MutationOptionBuilder
 import com.couchbase.client.java.document.json.JsonObject
-import com.ebay.dukes.CacheClient
+import com.ebay.dukes.{CacheClient, CacheSpecificationsStore}
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
+import com.ebay.dukes.fountclient.{ApplicationConfiguration, FountCacheFactory, FountCacheSpecificationsStoreProvider}
+import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient.{dataSource, properties}
 import org.slf4j.LoggerFactory
 
 object CorpCouchbaseClient_v2 {
@@ -22,7 +24,8 @@ object CorpCouchbaseClient_v2 {
 
   @transient var dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
 
-  @transient private lazy val factory =
+  @transient private lazy val factory = {
+    /*
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
@@ -32,6 +35,18 @@ object CorpCouchbaseClient_v2 {
       .poolType(properties.getProperty("chocolate.corp.couchbase.poolType"))
       .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
       .build()
+      */
+    val appConfig = new ApplicationConfiguration(
+      properties.getProperty("chocolate.corp.couchbase.dbEnv"),
+      properties.getProperty("chocolate.corp.couchbase.deploymentSlot"),
+      properties.getProperty("chocolate.corp.couchbase.dnsRegion"),
+      properties.getProperty("chocolate.corp.couchbase.pool"),
+      properties.getProperty("chocolate.corp.couchbase.poolType"),
+      properties.getProperty("chocolate.corp.couchbase.appName"),
+      null, true)
+    val store: CacheSpecificationsStore = FountCacheSpecificationsStoreProvider.config(appConfig, null, dataSource).getCacheSpecificationsStore
+    FountCacheFactory.createFactory(store)
+  }
 
   @transient var getBucketFunc: () => (Option[CacheClient], Bucket) = getBucket
 

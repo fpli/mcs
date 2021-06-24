@@ -1,12 +1,11 @@
 package com.ebay.traffic.chocolate.spark.kafka
 
-import java.util
-import java.util.Properties
+import java.{lang, util}
+import java.util.Map
 import java.util.concurrent.TimeoutException
 
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
+import com.ebay.traffic.monitoring.Field
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
-import jodd.io.FileUtil.params
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.rdd.RDD
@@ -48,7 +47,6 @@ class KafkaRDD_v2[K, V](
     while (iter.hasNext) {
       kpartitions.add(new TopicPartition(topic, (iter.next().partition())))
     }
-
     // get end offsets of kafka partitions
     val endOffsets = consumer.endOffsets(kpartitions)
     log.info(s"###topic: ${topic}, endOffsets: ${endOffsets}")
@@ -58,7 +56,8 @@ class KafkaRDD_v2[K, V](
     // until offsets
     val untilOffsets = new util.HashMap[TopicPartition, OffsetAndMetadata]()
     val endOffsetIter = endOffsets.entrySet().iterator()
-    while (endOffsetIter.hasNext) {
+    var latestExceed=false;
+    while ((!latestExceed)&endOffsetIter.hasNext) {
       val endOffset = endOffsetIter.next()
       val tp = endOffset.getKey
       val position = consumer.position(tp)
@@ -70,15 +69,28 @@ class KafkaRDD_v2[K, V](
           Field.of[String, AnyRef]("topic", tp.topic()),
           Field.of[String, AnyRef]("consumer", Int.box(tp.partition)))
       }
-
-      if (until > position) {
+      if(until <= position&&properties.getProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG).equals("latest")){
+        latestExceed=true
+      }
+      else if (until > position) {
         untilOffsets.put(endOffset.getKey, new OffsetAndMetadata(until))
       }
+    }
+    if(latestExceed){
+      val commitOffsets = new util.HashMap[TopicPartition, OffsetAndMetadata]()
+      val it: util.Iterator[Map.Entry[TopicPartition, lang.Long]] = endOffsets.entrySet().iterator()
+      while (it.hasNext) {
+        val endOffset = it.next()
+        val tp = endOffset.getKey
+        val position = consumer.position(tp)
+        commitOffsets.put(endOffset.getKey, new OffsetAndMetadata(position))
+      }
+      log.info(s"commitOffsets: $commitOffsets")
+      consumer.commitSync(commitOffsets)
     }
     consumer.unsubscribe()
     if (metrics != null)
       metrics.flush()
-
     untilOffsets
   }
 
@@ -154,7 +166,7 @@ class KafkaRDD_v2[K, V](
 
     // metrics
     if (metrics != null) {
-      metrics.meter("spark_kafka_consumer_offset", offset,
+      metrics.meter("sparkKafkaConsumerOffset", offset,
         Field.of[String, AnyRef]("topic", topicPartition.topic()),
         Field.of[String, AnyRef]("consumer", Int.box(topicPartition.partition())))
     }
