@@ -59,7 +59,7 @@ public class UTPRoverEventTransformer {
   private static final String SITE_EMAIL_CHANNEL_ID = "7";
   private static final String MRKT_EMAIL_CHANNEL_ID = "8";
   private static final String EPN_CHANNEL_ID = "1";
-  public static final String BEHAVIOR_PULSAR_MISC_BOT = "behavior.pulsar.misc.bot";
+  public static final String BEHAVIOR_PULSAR_MISC_BOT = "behavior.pulsar.customized.marketing-tracking.bot";
   public static final String REFERER = "Referer";
   private static final String ROVER_HOST = "https://rover.ebay.com";
   public static final String TOPIC = "topic";
@@ -184,9 +184,9 @@ public class UTPRoverEventTransformer {
       if(!roverCoreSites.contains(server)) {
         return false;
       }
+      long borderTs = 1624526400000L;
+      return getEventTs() >= borderTs;
     }
-
-    return true;
   }
 
   private String parseUrlQueryString() {
