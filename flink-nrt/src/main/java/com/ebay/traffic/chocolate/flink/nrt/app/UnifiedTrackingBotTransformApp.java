@@ -226,7 +226,6 @@ public class UnifiedTrackingBotTransformApp
       if (pageId == PAGE_ID_ROVER_CLICK) {
         return true;
       }
-      long borderTs = 1624526400000L;
 
       // only need rover email open
       return pageId == PAGE_ID_EMAIL_OPEN && PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName);
