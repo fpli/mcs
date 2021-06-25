@@ -166,7 +166,7 @@ class KafkaRDD_v2[K, V](
 
     // metrics
     if (metrics != null) {
-      metrics.meter("sparkKafkaConsumerOffset", offset,
+      metrics.meterByGauge("SparkKafkaConsumerOffset", offset,
         Field.of[String, AnyRef]("topic", topicPartition.topic()),
         Field.of[String, AnyRef]("consumer", Int.box(topicPartition.partition())))
     }
@@ -196,7 +196,7 @@ class KafkaRDD_v2[K, V](
       val record = nextRecord
       offset = record.offset() + 1 // update offset
       if (metrics != null) {
-        metrics.meter("kafkaRDD_input", 1)
+        metrics.meterByGauge("KafkaRDDInput", 1)
       }
 
       nextRecord = null

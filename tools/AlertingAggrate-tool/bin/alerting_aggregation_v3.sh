@@ -20,8 +20,8 @@ DATE1=`date --date=$DIFF" days ago" +%Y-%m-%d`
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_v2/click/click_dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/ams_click.txt
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -ls viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_v2/imp/imprsn_dt=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "apollo" > ${TMP_DIR}/apollo_files/ams_impression.txt
 
-hadoop fs -ls hdfs://slickha/apps/epn-nrt-v2/click/date=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "elvisha" > ${TMP_DIR}/chocolate_files/ams_click.txt
-hadoop fs -ls hdfs://slickha/apps/epn-nrt-v2/impression/date=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "elvisha" > ${TMP_DIR}/chocolate_files/ams_impression.txt
+hadoop fs -ls hdfs://slickha/apps/epn-nrt-v2/click/date=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "slickha" > ${TMP_DIR}/chocolate_files/ams_click.txt
+hadoop fs -ls hdfs://slickha/apps/epn-nrt-v2/impression/date=$DATE1 | grep -v "^$" | awk '{print $NF}' | grep "slickha" > ${TMP_DIR}/chocolate_files/ams_impression.txt
 
 
 echo "Finish getting cluster file list."

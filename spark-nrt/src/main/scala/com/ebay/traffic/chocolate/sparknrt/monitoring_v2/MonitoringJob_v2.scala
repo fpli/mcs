@@ -79,47 +79,47 @@ class MonitoringJob_v2(params: Parameter_v2)
 
             if (metrics != null) {
               //Capping output total
-              metrics.meter("CappingOutput", CappingTotalCount(df, "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CappingOutput", CappingTotalCount(df, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-              metrics.meter("CappingOutput", CappingTotalCount(df, "IMPRESSION", "EPN"), fieldImp, fieldEpn)
-              metrics.meter("CappingOutput", CappingTotalCount(df, "IMPRESSION", "DISPLAY"), fieldImp, fieldDisplay)
+              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "CLICK", "EPN"), fieldClick, fieldEpn)
+              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
+              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "IMPRESSION", "EPN"), fieldImp, fieldEpn)
+              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "IMPRESSION", "DISPLAY"), fieldImp, fieldDisplay)
 
               //Capping fail total
-              metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
+              metrics.meterByGauge("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "EPN"), fieldClick, fieldEpn)
+              metrics.meterByGauge("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
 
               //EPN nrt rules
-              metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+              metrics.meterByGauge("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S,
+              metrics.meterByGauge("IPPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_S,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L,
+              metrics.meterByGauge("IPPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPPubCappingRule_L,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CGUIDShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_S,
+              metrics.meterByGauge("CGUIDShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_S,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CGUIDLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_L,
+              metrics.meterByGauge("CGUIDLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDCappingRule_L,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S,
+              metrics.meterByGauge("CGUIDPubShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_S,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L,
+              metrics.meterByGauge("CGUIDPubLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.CGUIDPubCappingRule_L,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("IPBrowserShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_S,
+              metrics.meterByGauge("IPBrowserShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_S,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("IPBrowserMediumCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_M,
+              metrics.meterByGauge("IPBrowserMediumCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_M,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meter("IPBrowserLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_L,
+              metrics.meterByGauge("IPBrowserLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPBrowserCappingRule_L,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
-//              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
+//              metrics.meterByGauge("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
 //                "CLICK", "EPN"), fieldClick, fieldEpn)
-//              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
+//              metrics.meterByGauge("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
 //                "CLICK", "EPN"), fieldClick, fieldEpn)
 
               //Display nrt rules
-              metrics.meter("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
+              metrics.meterByGauge("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-//              metrics.meter("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
+//              metrics.meterByGauge("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
 //                "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-//              metrics.meter("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
+//              metrics.meterByGauge("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
 //                "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
 
               metrics.flush()
