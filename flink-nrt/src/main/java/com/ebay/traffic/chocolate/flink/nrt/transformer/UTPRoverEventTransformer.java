@@ -134,6 +134,10 @@ public class UTPRoverEventTransformer {
 
   @SuppressWarnings("unchecked")
   private boolean validate() {
+    long borderTs = 1624612800000L;
+    if (getEventTs() < borderTs){
+      return false;
+    }
     pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
     if (pageId == null) {
       SherlockioMetrics.getInstance().meter("NoPageId", 1, Field.of(TOPIC, sourceTopic));
@@ -184,9 +188,8 @@ public class UTPRoverEventTransformer {
       if(!roverCoreSites.contains(server)) {
         return false;
       }
-      long borderTs = 1624526400000L;
-      return getEventTs() >= borderTs;
     }
+    return true;
   }
 
   private String parseUrlQueryString() {
