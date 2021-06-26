@@ -84,6 +84,9 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
         outputStatus.map(status => {
           val srcFile = status.getPath
           val destFile = new Path(destDir + status.getPath.getName)
+          if(!fs.exists(destFile)){
+            fs.mkdirs(destFile)
+          }
           fs.rename(srcFile, destFile)
         })
       }

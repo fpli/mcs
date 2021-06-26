@@ -7,7 +7,7 @@ if [ $# -le 1 ]; then
   echo $usage
   exit 1
 fi
-
+cd /mnt/jobs/tracking/epn-nrt/bin
 export HADOOP_USER_NAME=chocolate
 whoami
 RENO_DEST_DIR=$1
@@ -51,9 +51,10 @@ rm ${hercules_file}
 
 apollo_command=/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs
 hercules_command=/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs
+RNO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}"
 RNO_PATH="hdfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}"
 HERCULES_PATH="hdfs://hercules${HERCULES_DEST_DIR}"
-meta_yesterday_files_nums=`${apollo_command} dfs -ls ${RNO_PATH} | grep dw_ams | wc -l`
+meta_yesterday_files_nums=`${apollo_command} dfs -ls ${RNO_DEST_PATH} | grep dw_ams | wc -l`
 hercules_yesterday_files_nums=`${hercules_command} dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" |  grep dw_ams | wc -l`
 
 if [ ${meta_yesterday_files_nums} == ${hercules_yesterday_files_nums} -a ${meta_yesterday_files_nums} -gt 0 ]
@@ -81,9 +82,10 @@ fi
 ${apollo_command} dfs -ls "${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${apollo_file}
 ${hercules_command} dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${yesterday}" | grep -v "^$" | awk '{print $NF}' | grep dw_ams > ${hercules_file}
 
+RNO_DEST_PATH="viewfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
 RNO_PATH="hdfs://apollo-rno${RENO_DEST_DIR}/${DEST_DIR_PREFIX}=${today}"
 HERCULES_PATH="hdfs://hercules${HERCULES_DEST_DIR}"
-meta_today_files_nums=`${apollo_command} dfs -ls ${RNO_PATH} | grep dw_ams | wc -l`
+meta_today_files_nums=`${apollo_command} dfs -ls ${RNO_DEST_PATH} | grep dw_ams | wc -l`
 hercules_today_files_nums=`${hercules_command} dfs -ls "${HERCULES_DEST_DIR}/${DEST_DIR_PREFIX}=${today}" |  grep dw_ams | wc -l`
 
 if [ ${meta_today_files_nums} == ${hercules_today_files_nums} -a ${meta_today_files_nums} -gt 0 ]

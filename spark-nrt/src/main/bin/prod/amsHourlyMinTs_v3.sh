@@ -25,7 +25,7 @@ EXECUTOR_MEMORY=4g
 EXECUTOR_CORES=1
 
 JOB_NAME="AMSHourlyMinTsJob_v3"
-/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit \
+/datashare/mkttracking/tools/apollo_rno/spark-2.4.5/bin/spark-submit \
     --class com.ebay.traffic.chocolate.sparknrt.amsHourlyMinTs_v2.AmsHourlyMinTsJob_v2 \
     --name ${JOB_NAME} \
     --master yarn \
