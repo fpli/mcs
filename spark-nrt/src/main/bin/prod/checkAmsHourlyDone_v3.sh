@@ -31,7 +31,7 @@ let check_now_timestamp=${check_last_timestamp}+7200000
 echo "================================ Start checking dedupe lags ================================"
 
 flag_lag=0
-last_ts_path=viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir/last_ts/EPN/*
+last_ts_path=viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir/last_ts/EPN/*
 
 earliest_ts=`${apollo_command} dfs -cat ${last_ts_path} | sort -n | head -1`
 echo "Timestamp of earliest dedupe lag: "${earliest_ts}

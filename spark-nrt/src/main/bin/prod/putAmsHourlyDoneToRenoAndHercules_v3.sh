@@ -21,7 +21,7 @@ fi
 
 TYPE=$1
 
-WORK_DIR=viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir
+WORK_DIR=viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir
 CHANNEL=EPN
 USAGE_CLICK=epnnrt_scp_click
 USAGE_IMP=epnnrt_scp_imp

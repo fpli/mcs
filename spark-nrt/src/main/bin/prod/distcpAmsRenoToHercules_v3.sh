@@ -159,14 +159,12 @@ function process_meta_file(){
   done
 }
 
-cd /datashare/mkttracking/jobs/tracking/epnnrt_v2/bin/prod
-
 ./putAmsHourlyDoneToRenoAndHercules_v3.sh ${TYPE}
 
 cd ${LOCAL_TMP_DIR}
 
 all_meta_files="${LOCAL_TMP_DIR}/all_meta_files.txt"
-epn_output_path="viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir/meta/EPN/output"
+epn_output_path="viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir/meta/EPN/output"
 if [ "${TYPE}" == "click" ]
 then
   ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_click  | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > ${all_meta_files}

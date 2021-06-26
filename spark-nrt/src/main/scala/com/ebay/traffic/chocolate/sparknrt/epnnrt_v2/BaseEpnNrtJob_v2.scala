@@ -101,8 +101,14 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
   }
 
   def renameFile(outputDir: String, sparkDir: String, date: String, prefix: String) = {
+    var dateOutputPath:Path=null
+    if(prefix.contains("clicks")){
+      dateOutputPath = new Path(outputDir + "/click_dt=" + date)
+    }
+    else{
+      dateOutputPath = new Path(outputDir + "/imprsn_dt=" + date)
+    }
     // rename result to output dir
-    val dateOutputPath = new Path(outputDir + "/date=" + date)
     var max = -1
     if (fs.exists(dateOutputPath)) {
       val outputStatus = fs.listStatus(dateOutputPath)
