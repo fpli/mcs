@@ -88,9 +88,10 @@ object BullseyeUtils_v2 {
         .param("count", count)
         .asString
 
-      if (response.isNotError)
+      if (response.isNotError) {
+        logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
         Some(response)
-      else {
+      } else {
         logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
         token = generateToken2
         logger.warn(s"get new token: $token")
