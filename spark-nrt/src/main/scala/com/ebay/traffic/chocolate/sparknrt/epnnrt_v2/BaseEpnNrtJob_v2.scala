@@ -78,10 +78,6 @@ abstract class BaseEpnNrtJob_v2(params: Parameter_v2,
 
   def renameMeta(srcTmpDir: String, destDir: String): Unit = {
     val tmpPath = new Path(srcTmpDir)
-    val destPath=new Path(destDir)
-    if(!fs.exists(destPath)){
-      fs.mkdirs(destPath)
-    }
     if (fs.exists(tmpPath)) {
       val outputStatus = fs.listStatus(tmpPath)
       if (outputStatus.nonEmpty) {
