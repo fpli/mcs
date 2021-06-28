@@ -21,7 +21,7 @@ elif [ "${CLUSTER}" == "HERCULES" ]
 then
   YARN="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/yarn "
 else
-    echo "Wrong cluster to send data!"
+    echo "Wrong cluster!"
     exit 1
 fi
 
