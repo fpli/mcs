@@ -134,10 +134,6 @@ public class UTPRoverEventTransformer {
 
   @SuppressWarnings("unchecked")
   private boolean validate() {
-    long borderTs = 1624612800000L;
-    if (getEventTs() < borderTs){
-      return false;
-    }
     pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
     if (pageId == null) {
       SherlockioMetrics.getInstance().meter("NoPageId", 1, Field.of(TOPIC, sourceTopic));

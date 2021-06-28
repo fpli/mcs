@@ -206,10 +206,6 @@ public class UnifiedTrackingBotTransformApp
      * @return send to unified tracking or not
      */
     private boolean filter(GenericRecord sourceRecord) {
-      long borderTs = 1624612800000L;
-      if ((Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP) < borderTs) {
-        return false;
-      }
       if (sourceRecord.get(TransformerConstants.PAGE_ID) == null) {
         sherlockioMetrics.meter(EMPTY_PAGE_ID, 1);
         return false;
@@ -226,7 +222,6 @@ public class UnifiedTrackingBotTransformApp
       if (pageId == PAGE_ID_ROVER_CLICK) {
         return true;
       }
-
       // only need rover email open
       return pageId == PAGE_ID_EMAIL_OPEN && PAGE_NAME_ROVER_EMAIL_OPEN.equals(pageName);
     }
