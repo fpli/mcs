@@ -701,7 +701,6 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
           if (xid.accounts.nonEmpty) {
             metrics.meterByGauge("epn_XidGotUserIdTess", 1)
             result = xid.accounts.head
-            logger.debug("get userId from Xid user_id=" + result)
           }
         } catch {
           case e: Exception =>
@@ -1210,7 +1209,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
     pubDomain_map = batchGetPubDomainMap(publisher_list)
 
-    metrics.mean("NrtCouchbaseLatency", System.currentTimeMillis() - start)
+    metrics.mean("NrtCouchbaseLatencyTess", System.currentTimeMillis() - start)
 
 
     (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
@@ -1513,7 +1512,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         if (jsonDocument != null) {
           roverLastClickGuid = jsonDocument.content().get("guid").toString
         }
-        metrics.mean("GetRoverLastGuidCouchbaseLatency", System.currentTimeMillis() - start)
+        metrics.mean("GetRoverLastGuidCouchbaseLatencyTess", System.currentTimeMillis() - start)
       }
     } catch {
       case e: Exception => {
