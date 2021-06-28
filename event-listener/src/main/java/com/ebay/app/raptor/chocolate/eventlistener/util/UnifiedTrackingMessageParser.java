@@ -581,17 +581,12 @@ public class UnifiedTrackingMessageParser {
       try {
         URI uri = new URI(url);
         String path = uri.getPath();
-          if (StringUtils.isNotBlank(path)) {
-            String[] split = new String[0];
-            if (path.contains("/itm/")) {
-              split = path.split("/itm/");
-            } else if (path.contains("/i/")) {
-              split = path.split("/i/");
-            }
-            if (split.length == 2 && StringUtils.isNotBlank(split[1])) {
-              payload.put("itm", split[1]);
-            }
+        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+          String itemId = path.substring(path.lastIndexOf("/") + 1);
+          if (StringUtils.isNumeric(itemId)) {
+            payload.put("itm", itemId);
           }
+        }
       } catch (Exception e) {
         metrics.meter("putItmToPldError");
         logger.warn("put itm tag to payload error, url is {}", url);
