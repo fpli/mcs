@@ -19,7 +19,7 @@ then
     HDFS_PATH="/datashare/mkttracking/tools/hercules_lvs/hadoop-hercules/bin/hdfs"
     HIVE_PATH="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
     SPARK_PATH="/datashare/mkttracking/tools/hercules_lvs/spark-hercules/bin/spark-submit"
-    QUEUE="hdlq-data-default"
+    QUEUE="hdlq-data-batch-low"
     INPUT_SOURCE="im_tracking.imk_rvr_trckng_event_v2"
     CACHE_TABLE="im_tracking.utp_imk_hourly_done_cache"
     CACHE_DIR="/apps/b_marketing_tracking/work/UTPImkHourlyDoneJob/cache"
