@@ -123,7 +123,7 @@ function process_meta_file(){
       output_file="${LOCAL_TMP_DIR}/output_file.txt"
       meta_file_name=$(basename "${one_meta}")
       rm -f ${meta_file_name}
-      hdfs dfs -get ${one_meta}
+      ${apollo_command} dfs -get ${one_meta}
       if [ ! -f "${meta_file_name}" ]; then
         continue;
       fi
@@ -169,15 +169,15 @@ all_meta_files="${LOCAL_TMP_DIR}/all_meta_files.txt"
 epn_output_path="viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir/meta/EPN/output"
 if [ "${TYPE}" == "click" ]
 then
-  ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_click  | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > ${all_meta_files}
+  ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_click  | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep viewfs: > ${all_meta_files}
   process_meta_file ${all_meta_files} ${apollo_file}
-  ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_click  | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > ${all_meta_files}
+  ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_click  | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep viewfs: > ${all_meta_files}
   process_meta_file ${all_meta_files} ${hercules_file}
 elif [ "${TYPE}" == "imp" ]
 then
-    ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_imp  | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep hdfs: > ${all_meta_files}
+    ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_imp  | grep .epnnrt_reno  |  grep -v "^$" | awk '{print $NF}' | grep viewfs: > ${all_meta_files}
     process_meta_file ${all_meta_files} ${apollo_file}
-    ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_imp  | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep hdfs:> ${all_meta_files}
+    ${apollo_command} dfs -ls ${epn_output_path}/epnnrt_scp_imp  | grep .epnnrt_hercules  |  grep -v "^$" | awk '{print $NF}' | grep viewfs:> ${all_meta_files}
     process_meta_file ${all_meta_files} ${hercules_file}
 else
     echo "Wrong type to metaFile!"

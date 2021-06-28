@@ -27,8 +27,8 @@ if [ "${DONE_CLUSTER}" == "reno" ]
 then
     command_hive="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
     command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
-    table_click=choco_data.ams_click_v2
-    table_imp=choco_data.ams_imprsn_v2
+    table_click=choco_data.ams_click_v3
+    table_imp=choco_data.ams_imprsn_v3
 elif [ "${DONE_CLUSTER}" == "hercules" ]
 then
     command_hive="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
