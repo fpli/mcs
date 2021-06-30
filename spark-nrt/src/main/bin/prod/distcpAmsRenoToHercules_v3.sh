@@ -152,7 +152,7 @@ function process_meta_file(){
       done
       if [ ${files_size} == ${had_copied_number} ]
       then
-        hdfs dfs -rm ${one_meta}
+        ${apollo_command} dfs -rm ${one_meta}
         echo "${one_meta} can delete"
       else
         echo "${one_meta} can't delete"
