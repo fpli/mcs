@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
+import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
+import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeutils.base.StringSerializer;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -19,6 +21,11 @@ public class AbstractRheosCompatibleAppTest {
 
   private RheosCompatibleApp rheosCompatibleApp;
   private static class RheosCompatibleApp extends AbstractRheosCompatibleApp<String, String> {
+    @Override
+    protected void loadProperty() {
+      this.env_config = PropertyMgr.getInstance().loadYaml("");
+    }
+
     @Override
     protected DataStream<String> transform(DataStreamSource<String> dataStreamSource) {
       return dataStreamSource.map((MapFunction<String, String>) String::toUpperCase);

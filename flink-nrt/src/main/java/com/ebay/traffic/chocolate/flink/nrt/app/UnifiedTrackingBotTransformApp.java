@@ -78,6 +78,11 @@ public class UnifiedTrackingBotTransformApp
   }
 
   @Override
+  protected void loadProperty() {
+    this.env_config = PropertyMgr.getInstance().loadYaml("");
+  }
+
+  @Override
   protected List<String> getConsumerTopics() {
     return Arrays.asList(PropertyMgr.getInstance()
             .loadProperty(PropertyConstants.UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)

@@ -8,7 +8,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +37,10 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
   // The maximum number of concurrent checkpoint attempts
   protected static final int MAX_CONCURRENT_CHECK_POINTS = 1;
 
+  protected Map<String, Object> env_config;
+
   void run() throws Exception {
+    loadProperty();
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     prepareBaseExecutionEnvironment();
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
@@ -68,14 +72,14 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
    *
    * @return Kafka consumer
    */
-  protected abstract SourceFunction<IN> getKafkaConsumer();
+  protected abstract SourceFunction<IN> getKafkaConsumer() throws IOException;
 
   /**
    * Override this method to define Kafka producer
    *
    * @return Kafka producer
    */
-  protected abstract SinkFunction<OUT> getKafkaProducer();
+  protected abstract SinkFunction<OUT> getKafkaProducer() throws IOException;
 
   /**
    * Oerride this method to get the actual consumer topics from config file
@@ -89,7 +93,7 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
    *
    * @return kafka consumer properties
    */
-  protected abstract Properties getConsumerProperties();
+  protected abstract Properties getConsumerProperties() throws IOException;
 
   /**
    * Override this method to get the actual get producer topics from config file
@@ -103,6 +107,11 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
    *
    * @return kafka producer properties
    */
-  protected abstract Properties getProducerProperties();
+  protected abstract Properties getProducerProperties() throws IOException;
+
+  /**
+   * Override this method to load property file
+   */
+  protected abstract void loadProperty();
 
 }

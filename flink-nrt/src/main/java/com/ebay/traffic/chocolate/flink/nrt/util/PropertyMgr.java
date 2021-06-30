@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * This class can determine the runtime environment automatically, and also provide some useful methods to get variables
@@ -112,4 +113,18 @@ public class PropertyMgr {
     return joiner.toString();
   }
 
+  /**
+   * Read property files from config path.
+   *
+   * @param propertyName property file name
+   * @return file content
+   */
+  public Map<String, Object> loadYaml(String propertyName) {
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
+      Yaml yaml = new Yaml();
+      return yaml.load(in);
+    } catch (IOException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
 }
