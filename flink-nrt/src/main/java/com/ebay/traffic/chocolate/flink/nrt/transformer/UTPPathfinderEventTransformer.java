@@ -326,7 +326,13 @@ public class UTPPathfinderEventTransformer {
     }
 
     protected String getReferer() {
-        return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.REFERRER);
+        String referer = GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.REFERRER);
+
+        if (StringUtils.isEmpty(referer)) {
+            referer = applicationPayload.get(TransformerConstants.REFERRER);
+        }
+
+        return referer;
     }
 
     protected String getUserAgent() {
