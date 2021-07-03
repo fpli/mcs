@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.lbs;
 
+import com.ebay.app.raptor.chocolate.filter.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
@@ -73,7 +74,8 @@ public class LBSClient {
         }
       } catch (Exception e) {
         logger.error("Failed to parse LBS response postalcode.", e);
-        metrics.meter("LBSPaserCodeException");
+        MonitorUtil.info("LBSPaserCodeException");
+
       }
     }
     return result;
@@ -115,13 +117,14 @@ public class LBSClient {
       } else {
         String msg = lbsResponse.readEntity(String.class);
         logger.error("LBS service returns: " + msg);
-        metrics.meter("LBSexception");
+        MonitorUtil.info("LBSexception");
+
       }
     } catch (Exception ex) {
       logger.error("Failed to call LBS service.", ex);
-      metrics.meter("LBSexception");
+      MonitorUtil.info("LBSexception");
     }
-    metrics.mean("LBSLatency", System.currentTimeMillis() - startTime);
+    MonitorUtil.latency("LBSLatency", System.currentTimeMillis() - startTime);
 
     return queryResult;
   }

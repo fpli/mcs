@@ -6,10 +6,7 @@ import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorKafkaSink;
-import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.PageNameEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
+import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -422,16 +419,16 @@ public class RoverRheosTopicFilterTask extends Thread {
         long latencyOfRheosSentTimestamp = currentTimestamp - rheosSentTimestamp;
         // rheos internal timestamps
         String rheosInternalTimestamps = coalesce(applicationPayload.get(new Utf8("rheosTimestamps")), empty).toString();
-        metrics.meter(metricMessageLatency, latencyOfMessage, Field.of("channelType",
+        MonitorUtil.info(metricMessageLatency, latencyOfMessage, Field.of("channelType",
             record.getChannelType().toString()));
-        metrics.meter(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
+        MonitorUtil.info(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
-        metrics.meter(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
+        MonitorUtil.info(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
         String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheos_internal_ts=%s";
         if(latencyOfMessage > ONE_HOUR) {
-          metrics.meter(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
+          MonitorUtil.info(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricMessageLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
@@ -443,7 +440,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosInternalTimestamps));
         }
         if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
-          metrics.meter(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
+          MonitorUtil.info(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosCreateLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
@@ -455,7 +452,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosInternalTimestamps));
         }
         if(latencyOfRheosSentTimestamp > ONE_HOUR) {
-          metrics.meter(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
+          MonitorUtil.info(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosSentLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),

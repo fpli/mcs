@@ -107,18 +107,18 @@ public class EventEmitterPublisher {
       authToken = tokenGenerator.getPublicAppToken(APP_NAME, CLIENT_SCOPE).getAccessToken();
     } catch (TokenCreationException e) {
       logger.error("Auth token generation for spock failed", e);
-      metrics.meter("TokenGenerationFail");
+      MonitorUtil.info("TokenGenerationFail");
     }
 
     // send event
     try {
       if (!StringUtils.isEmpty(authToken)) {
         emitter.emit(messageEvent, authToken);
-        metrics.meter("EventEmitterPublishSuccess");
+        MonitorUtil.info("EventEmitterPublishSuccess");
       }
     } catch(QueueFullException e) {
       logger.error("Event emitter sending error", e);
-      metrics.meter("EventEmitterQueueFull");
+      MonitorUtil.info("EventEmitterQueueFull");
     }
 
   }
@@ -180,7 +180,7 @@ public class EventEmitterPublisher {
         emailData.put(Constants.SOJ_MPRE_TAG, URLEncoder.encode(targetUrl, "UTF-8"));
       } catch (UnsupportedEncodingException e) {
         logger.warn("Tag url_mpre encoding failed", e);
-        metrics.meter("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+        MonitorUtil.info("UrlMpreEncodeError", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
     }
@@ -202,7 +202,7 @@ public class EventEmitterPublisher {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         logger.warn("Param sojTags is wrongly encoded", e);
-        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+       MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
       if (!StringUtils.isEmpty(sojTags)) {

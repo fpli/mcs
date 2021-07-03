@@ -6,6 +6,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.Field;
@@ -91,7 +92,7 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
 
       } catch (Exception e) {
         LOGGER.warn("Error when tracking ubi for site email click tags", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+        MonitorUtil.info("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
       }
     }
   }

@@ -10,6 +10,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
@@ -146,7 +147,7 @@ public abstract class CustomerMarketingCollector {
 
     } catch (Exception e) {
       LOGGER.warn("Error when tracking ubi for common tags", e);
-      metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      MonitorUtil.info("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
   }
 
@@ -170,7 +171,7 @@ public abstract class CustomerMarketingCollector {
       sojTags = URLDecoder.decode(sojTags, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       LOGGER.warn("Param sojTags is wrongly encoded", e);
-      metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
     }
     if (!StringUtils.isEmpty(sojTags)) {
       StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
@@ -186,7 +187,7 @@ public abstract class CustomerMarketingCollector {
           }
         } catch (Exception e) {
           LOGGER.warn("Error when tracking ubi for common tags", e);
-          metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+          MonitorUtil.info("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
         }
       }
     }

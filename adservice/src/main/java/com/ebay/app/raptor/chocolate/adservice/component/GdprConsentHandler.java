@@ -1,6 +1,8 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
+import com.ebay.app.raptor.chocolate.adservice.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.lang.management.MonitorInfo;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +70,7 @@ public class GdprConsentHandler {
         }
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
-                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_ADSVC);
+                MonitorUtil.info(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_ADSVC);
                 gdprConsentDomain.setAllowedSetCookie(false);
                 gdprConsentDomain.setAllowedShowPersonalizedAds(false);
                 gdprConsentDomain.setAllowedUseContextualInfo(false);
@@ -135,19 +138,19 @@ public class GdprConsentHandler {
                         }
                         //else treat every user as an anonymous user.
                         if (gdprConsentDomain.isAllowedSetCookie()) {
-                            metrics.meter(GdprConsentConstant.ALLOWED_SET_COOKIES);
+                            MonitorUtil.info(GdprConsentConstant.ALLOWED_SET_COOKIES);
                         }
                         if (gdprConsentDomain.isAllowedUseContextualInfo()) {
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
+                            MonitorUtil.info(GdprConsentConstant.ALLOWED_USE_CONTEXTUAL);
                         }
                         if (gdprConsentDomain.isAllowedUseGeoInfo()) {
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_GEO);
+                            MonitorUtil.info(GdprConsentConstant.ALLOWED_USE_GEO);
                         }
                         if (gdprConsentDomain.isAllowedShowPersonalizedAds()) {
-                            metrics.meter(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
+                            MonitorUtil.info(GdprConsentConstant.ALLOWED_SHOW_PERSONALIZED_ADS);
                         }
                         if (gdprConsentDomain.isAllowedUseLegallyRequiredField()) {
-                            metrics.meter(GdprConsentConstant.ALLOWED_USE_LELALLY_REQUIRED);
+                            MonitorUtil.info(GdprConsentConstant.ALLOWED_USE_LELALLY_REQUIRED);
                         }
                     }
                 }
@@ -160,7 +163,7 @@ public class GdprConsentHandler {
                 gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
             }
         } catch (Exception e) {
-            metrics.meter(GdprConsentConstant.DECODE_CONSENT_ERROR);
+            MonitorUtil.info(GdprConsentConstant.DECODE_CONSENT_ERROR);
             logger.warn("Occurred Exception when decode Consent, " + e);
         }
         return gdprConsentDomain;

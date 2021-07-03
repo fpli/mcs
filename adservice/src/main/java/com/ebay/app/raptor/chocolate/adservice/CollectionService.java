@@ -6,10 +6,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.redirect.AdobeRedirectStrategy;
 import com.ebay.app.raptor.chocolate.adservice.redirect.RedirectContext;
 import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrategy;
-import com.ebay.app.raptor.chocolate.adservice.util.AdserviceCookie;
-import com.ebay.app.raptor.chocolate.adservice.util.DAPResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.util.EpntResponseHandler;
-import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
+import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -27,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.lang.management.MonitorInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -120,7 +118,7 @@ public class CollectionService {
     // invalid mkpid, accepted
     if (EmailPartnerIdEnum.parse(getParam(parameters, Constants.MKPID)) == null) {
       logger.warn(Errors.REDIRECT_INVALID_MKPID);
-      metrics.meter(Errors.REDIRECT_INVALID_MKPID);
+      MonitorUtil.info(Errors.REDIRECT_INVALID_MKPID);
     }
 
     return parameters;
@@ -144,7 +142,7 @@ public class CollectionService {
     try {
       return redirectContext.execute(request, mktClient, endpoint, guid, adguid);
     } catch (Exception e) {
-      metrics.meter("RedirectionRuntimeError");
+      MonitorUtil.info("RedirectionRuntimeError");
       logger.warn("Redirection runtime error: ", e);
     }
 
@@ -159,7 +157,7 @@ public class CollectionService {
    */
   private void logError(String error) throws Exception {
     logger.warn(error);
-    metrics.meter(error);
+    MonitorUtil.info(error);
     throw new Exception(error);
   }
 

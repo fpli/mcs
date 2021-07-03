@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
+import com.ebay.app.raptor.chocolate.filter.util.MonitorUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -91,9 +92,9 @@ public class FilterWorker extends Thread {
             ", input topic " + inputTopic + ", output topic " + outputTopic);
 
     // Init the metrics that we don't use often
-    metrics.meter("FilterError", 0);
-    metrics.meter("messageParseFailure", 0);
-    metrics.mean("FilterPassedPPM", 0);
+    MonitorUtil.info("FilterError", 0);
+    MonitorUtil.info("messageParseFailure", 0);
+    MonitorUtil.latency("FilterPassedPPM", 0);
 
     try {
       consumer.subscribe(Arrays.asList(inputTopic));
@@ -108,7 +109,7 @@ public class FilterWorker extends Thread {
         try {
           long pollStartTime = System.currentTimeMillis();
           ConsumerRecords<Long, ListenerMessage> records = consumer.poll(Duration.ofMillis(POLL_STEP_MS));
-          metrics.mean("PollLatency", System.currentTimeMillis() - pollStartTime);
+          MonitorUtil.latency("PollLatency", System.currentTimeMillis() - pollStartTime);
           Iterator<ConsumerRecord<Long, ListenerMessage>> iterator = records.iterator();
           int count = 0;
           int passed = 0;
@@ -124,14 +125,15 @@ public class FilterWorker extends Thread {
               // cache input messages
               inputMessages.put(message.getSnapshotId(), message);
 
-              metrics.meter("FilterInputCount", 1, message.getTimestamp(),
+              MonitorUtil.info("FilterInputCount", 1,
                       Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
                       Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+
               long latency = System.currentTimeMillis() - message.getTimestamp();
-              metrics.mean("FilterLatency", latency, Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+              MonitorUtil.latency("FilterLatency", latency, Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
               ++count;
-              metrics.meter("FilterThroughput", 1, message.getTimestamp(),
+              MonitorUtil.info("FilterThroughput", 1,
                       Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
                       Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
 
@@ -180,7 +182,8 @@ public class FilterWorker extends Thread {
             if (outputMessages.size() < inputMessages.size()) {
               for (Map.Entry<Long, ListenerMessage> entry : inputMessages.entrySet()) {
                 if (!outputMessages.containsKey(entry.getKey())) {
-                  metrics.meter("FilterPollResultFailure");
+                  MonitorUtil.info("FilterPollResultFailure");
+
                   LOG.warn("Poll failed, rerun filter rules");
                   FilterMessage missingMessage = processMessage(entry.getValue(), true);
                   outputMessages.put(missingMessage.getSnapshotId(), missingMessage);
@@ -192,26 +195,28 @@ public class FilterWorker extends Thread {
             for (FilterMessage outputMessage : outputMessages.values()) {
               if (outputMessage.getRtRuleFlags() == 0) {
                 ++passed;
-                metrics.meter("FilterPassedCount", 1, outputMessage.getTimestamp(),
+                MonitorUtil.info("FilterPassedCount", 1,
                   Field.of(CHANNEL_ACTION, outputMessage.getChannelAction().toString()),
                   Field.of(CHANNEL_TYPE, outputMessage.getChannelType().toString()));
+
               }
               long sendKafkaStartTime = System.currentTimeMillis();
               // If the traffic is received from rover bes pipeline, we will send it to NewROITopic
               // this traffic will not be tracked into imk table
               if (isRoverBESRoi(outputMessage)) {
                 producer.send(new ProducerRecord<>(ApplicationOptions.getInstance().getNewROITopic(), outputMessage.getSnapshotId(), outputMessage), KafkaSink.callback);
-                metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
-                metrics.meter("NewROICount", 1, outputMessage.getTimestamp(),
+                MonitorUtil.latency("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
+                MonitorUtil.info("NewROICount", 1,
                   Field.of(CHANNEL_ACTION, outputMessage.getChannelAction().toString()),
                   Field.of(CHANNEL_TYPE, outputMessage.getChannelType().toString()));
+
               } else {
                 producer.send(new ProducerRecord<>(outputTopic, outputMessage.getSnapshotId(), outputMessage), KafkaSink.callback);
-                metrics.mean("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
+                MonitorUtil.latency("SendKafkaLatency", System.currentTimeMillis() - sendKafkaStartTime);
               }
             }
 
-            metrics.mean("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
+            MonitorUtil.latency("FilterThreadPoolLatency", System.currentTimeMillis() - theadPoolstartTime);
           }
 
           long now = System.currentTimeMillis();
@@ -227,7 +232,7 @@ public class FilterWorker extends Thread {
             // update consumer offset
             consumer.commitSync();
 
-            metrics.mean("FlushLatency", System.currentTimeMillis() - flushStartTime);
+            MonitorUtil.latency("FlushLatency", System.currentTimeMillis() - flushStartTime);
 
             // reset threshold
             flushThreshold = 0;
@@ -245,7 +250,7 @@ public class FilterWorker extends Thread {
               TopicPartition tp = entry.getKey();
               long endOffset = entry.getValue();
               long offset = consumer.position(tp);
-              metrics.mean("FilterKafkaConsumerLag", endOffset - offset,
+              MonitorUtil.latency("FilterKafkaConsumerLag", endOffset - offset,
                       Field.of("topic", tp.topic()),
                       Field.of("consumer", tp.partition()));
             }
@@ -254,17 +259,17 @@ public class FilterWorker extends Thread {
           }
 
           if (count == 0) {
-            metrics.mean("FilterIdle");
+            MonitorUtil.latency("FilterIdle");
             Thread.sleep(POLL_STEP_MS);
           } else {
-            metrics.mean("FilterPassedPPM", 100L * passed / count);
+            MonitorUtil.latency("FilterPassedPPM", 100L * passed / count);
             long timeSpent = System.currentTimeMillis() - startTime;
-            metrics.mean("FilterProcessingTime", timeSpent);
+            MonitorUtil.latency("FilterProcessingTime", timeSpent);
 
             if (timeSpent >= POLL_STEP_MS) {
-              this.metrics.mean("FilterIdle", 0);
+              MonitorUtil.latency("FilterIdle", 0);
             } else {
-              this.metrics.mean("FilterIdle");
+              MonitorUtil.latency("FilterIdle");
               Thread.sleep(POLL_STEP_MS);
             }
           }
@@ -272,22 +277,26 @@ public class FilterWorker extends Thread {
           if (e instanceof IllegalStateException &&
               e.getMessage().startsWith("Coordinator selected invalid")) {
             LOG.warn("Exception in worker thread: ", e);
-            metrics.meter("CoordinatorSelectedError");
+            MonitorUtil.info("CoordinatorSelectedError");
+
             Thread.sleep(30000); // sleep for 30s
           } else if (e instanceof SchemaException) {
             LOG.warn("Exception in worker thread: ", e);
-            metrics.meter("SchemaReadError");
+            MonitorUtil.info("SchemaReadError");
+
             Thread.sleep(30000);
           } else {
             LOG.warn("Exception in worker thread: ", e);
-            metrics.meter("FilterError");
+            MonitorUtil.info("FilterError");
+
             Thread.sleep(5000);
           }
         }
       }
     } catch (Exception e) {
       LOG.warn("Exception in worker thread: ", e);
-      this.metrics.meter("FilterSubscribeError");
+      MonitorUtil.info("FilterSubscribeError");
+
     } finally {
       consumer.close();
     }
@@ -318,7 +327,8 @@ public class FilterWorker extends Thread {
         outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
       } catch (Exception e) {
         LOG.warn("Exception in call GEO service: ", e);
-        this.metrics.meter("FilterGEOError");
+        MonitorUtil.info("FilterGEOError");
+
       }
     }
     // only EPN needs to get publisher id
@@ -350,9 +360,11 @@ public class FilterWorker extends Thread {
     } catch (Exception e) {
       outMessage.setRtRuleFlags(Long.valueOf(FilterRuleType.ERROR.getRuleDigitPosition()));
       LOG.warn("Exception when execute rtFilterRules: ", e);
-      this.metrics.meter("FilterRtRulesError");
+      MonitorUtil.info("FilterRtRulesError");
+
     }
-    metrics.mean("ProcessLatency", System.currentTimeMillis() - processStartTime);
+    MonitorUtil.latency("ProcessLatency", System.currentTimeMillis() - processStartTime);
+
     return outMessage;
   }
 

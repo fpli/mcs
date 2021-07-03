@@ -156,7 +156,7 @@ public class CouchbaseClient {
     try {
       upsertSelfService(id, url);
     } catch (Exception e) {
-      metrics.meter(SELF_SERVICE_METRICS_FAILURE);
+      MonitorUtil.info(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
     }
   }
@@ -174,7 +174,7 @@ public class CouchbaseClient {
             JsonObject.create().put("url", url)));
         logger.info("Adding new self-service record. id=" + id + " url=" + url);
       }
-      metrics.meter(SELF_SERVICE_METRICS_SUCCESS);
+      MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
     } catch (Exception e) {
       throw new Exception(e);
     } finally {

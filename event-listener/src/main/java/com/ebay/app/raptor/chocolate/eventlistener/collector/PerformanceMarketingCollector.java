@@ -101,29 +101,29 @@ public class PerformanceMarketingCollector {
       try {
         statusCode = Integer.parseInt(statusCodeStr);
         if (statusCode == Response.Status.OK.getStatusCode()) {
-          metrics.meter("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          MonitorUtil.info("CollectStatusOK", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
         } else if (statusCode >= Response.Status.MOVED_PERMANENTLY.getStatusCode() &&
             statusCode < Response.Status.BAD_REQUEST.getStatusCode()) {
-          metrics.meter("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          MonitorUtil.info("CollectStatusRedirection", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
           LOGGER.debug("CollectStatusRedirection: URL: " + targetUrl + ", UA: " + endUserContext.getUserAgent());
         } else if (statusCode >= Response.Status.BAD_REQUEST.getStatusCode()) {
-          metrics.meter("CollectStatusError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          MonitorUtil.info("CollectStatusError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
           LOGGER.error("CollectStatusError: " + targetUrl);
         } else {
-          metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+          MonitorUtil.info("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
               Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
         }
       } catch (NumberFormatException ex) {
-        metrics.meter("StatusCodeError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+        MonitorUtil.info("StatusCodeError", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
             Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
         LOGGER.error("Error status code: " + statusCodeStr);
       }
 
     } else {
-      metrics.meter("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+      MonitorUtil.info("CollectStatusDefault", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
           Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
     }
 
@@ -141,7 +141,7 @@ public class PerformanceMarketingCollector {
     // get user id from auth token if it's user token, else we get from end user ctx
     String userId;
     if ("EBAYUSER".equals(raptorSecureContext.getSubjectDomain())) {
-      metrics.meter("ExtractUserIdFromAuthToken", 1);
+      MonitorUtil.info("ExtractUserIdFromAuthToken", 1);
       userId = raptorSecureContext.getSubjectImmutableId();
     } else {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
@@ -208,7 +208,7 @@ public class PerformanceMarketingCollector {
     // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
     // Don't track ubi if the click is from Checkout API
     if (isClickFromCheckoutAPI(channelType.getLogicalChannel().getAvro(), endUserContext)) {
-      metrics.meter("CheckoutAPIClick", 1);
+      MonitorUtil.info("CheckoutAPIClick", 1);
     } else {
       try {
 
@@ -275,7 +275,7 @@ public class PerformanceMarketingCollector {
 
       } catch (Exception e) {
         LOGGER.warn("Error when tracking ubi for imk", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
+        MonitorUtil.info("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, channelAction.getAvro().toString()),
             Field.of(CHANNEL_TYPE, channelType.getLogicalChannel().getAvro().toString()));
       }
     }
@@ -340,11 +340,11 @@ public class PerformanceMarketingCollector {
         rotationId = Long.parseLong(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         LOGGER.warn(Errors.ERROR_INVALID_MKRID);
-        metrics.meter("InvalidMkrid");
+        MonitorUtil.info("InvalidMkrid");
       }
     } else {
       LOGGER.warn(Errors.ERROR_NO_MKRID);
-      metrics.meter("NoMkrid");
+      MonitorUtil.info("NoMkrid");
     }
 
     return rotationId;
@@ -360,11 +360,11 @@ public class PerformanceMarketingCollector {
         sessionId = parameters.get(Constants.MKSID).get(0);
       } catch (Exception e) {
         LOGGER.warn(Errors.ERROR_INVALID_MKSID);
-        metrics.meter("InvalidMksid");
+        MonitorUtil.info("InvalidMksid");
       }
     } else {
       LOGGER.warn(Errors.ERROR_NO_MKSID);
-      metrics.meter("NoMksid");
+      MonitorUtil.info("NoMksid");
     }
 
     return sessionId;
@@ -382,7 +382,7 @@ public class PerformanceMarketingCollector {
       }
     } catch (Exception e) {
       LOGGER.error("Determine whether the click from Checkout API error");
-      metrics.meter("DetermineCheckoutAPIClickError", 1);
+      MonitorUtil.info("DetermineCheckoutAPIClickError", 1);
     }
     return isClickFromCheckoutAPI;
   }

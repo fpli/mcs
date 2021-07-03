@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
+import com.ebay.app.raptor.chocolate.adservice.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -241,7 +242,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private long startTimerAndLogData(Field<String, Object>... additionalFields) {
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("RedirectionInput", 1, startTime, additionalFields);
+    MonitorUtil.info("RedirectionInput", 1,  additionalFields);
     return startTime;
   }
 
@@ -254,8 +255,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("RedirectionSuccess", 1, endTime, additionalFields);
-    metrics.mean("RedirectionLatency", endTime - startTime);
+    MonitorUtil.info("RedirectionSuccess", 1,additionalFields);
+    MonitorUtil.latency("RedirectionLatency", endTime - startTime);
   }
-
 }

@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
+import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
@@ -26,6 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 
 /**
  * For GDPR compliant mode
@@ -75,7 +79,7 @@ public class GdprConsentHandler {
         }
         try {
             if (StringUtils.isNotBlank(parametersMap.get(gdprParameter)) && parametersMap.get(gdprParameter).equals("1")) {
-                metrics.meter(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_MCS);
+                MonitorUtil.info(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_MCS);
                 gdprConsentDomain.setAllowedStoredContextualData(false);
                 gdprConsentDomain.setAllowedStoredPersonalizedData(false);
                 gdprConsentDomain.setTcfCompliantMode(true);
@@ -108,8 +112,8 @@ public class GdprConsentHandler {
                                 if (purposesConsent.contains(7)) {
                                     gdprConsentDomain.setAllowedStoredPersonalizedData(true);
                                     gdprConsentDomain.setAllowedStoredContextualData(true);
-                                    metrics.meter(GdprConsentConstant.ALLOWED_STORED_CONTEXTUAL);
-                                    metrics.meter(GdprConsentConstant.ALLOWED_STORED_PERSONALIZED);
+                                    MonitorUtil.info(GdprConsentConstant.ALLOWED_STORED_CONTEXTUAL);
+                                    MonitorUtil.info(GdprConsentConstant.ALLOWED_STORED_PERSONALIZED);
                                 }
                             }
                         }
@@ -117,7 +121,7 @@ public class GdprConsentHandler {
                 }
             }
         } catch (Exception e) {
-            metrics.meter(GdprConsentConstant.DECODE_CONSENT_ERROR);
+            MonitorUtil.info(GdprConsentConstant.DECODE_CONSENT_ERROR);
             logger.warn("Occurred Exception when decode Consent, " + e);
         }
         return gdprConsentDomain;

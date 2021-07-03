@@ -456,7 +456,7 @@ public class BehaviorMessageParser {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         logger.warn("Param sojTags is wrongly encoded", e);
-        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+        MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
       if (!StringUtils.isEmpty(sojTags)) {

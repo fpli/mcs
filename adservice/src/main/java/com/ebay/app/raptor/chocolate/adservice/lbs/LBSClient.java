@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.lbs;
 
+import com.ebay.app.raptor.chocolate.adservice.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -72,12 +73,12 @@ public class LBSClient {
 //        LOGGER.error("LBS service returns: " + msg);
         LOGGER.error("call LBS service return error, check carefully please! ");
       }
-      metrics.meter("LBSStatus", 1, Field.of("status", status));
+      MonitorUtil.info("LBSStatus", 1, Field.of("status", status));
     } catch (Exception e) {
       LOGGER.error("Failed to call LBS service.", e);
-      metrics.meter("LBSexception");
+      MonitorUtil.info("LBSexception");
     }
-    metrics.mean("LBSLatency", System.currentTimeMillis() - startTime);
+    MonitorUtil.latency("LBSLatency", System.currentTimeMillis() - startTime);
 
     return queryResult;
   }

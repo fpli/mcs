@@ -181,12 +181,12 @@ public class HttpRoverClient {
         public State onStatusReceived(HttpResponseStatus responseStatus) {
           status = responseStatus.getStatusCode();
           if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
-            metrics.meter("ForwardRoverRedirect");
+            MonitorUtil.info("ForwardRoverRedirect");
             logger.warn(buildDebugLog(roverRequest, "ForwardRoverRedirect req. URI: "));
           } else if (status == HttpConstants.ResponseStatusCodes.OK_200) {
-            metrics.meter("ForwardRoverSuccess");
+            MonitorUtil.info("ForwardRoverSuccess");
           } else {
-            metrics.meter("ForwardRoverFail");
+            MonitorUtil.info("ForwardRoverFail");
             logger.warn(buildDebugLog(roverRequest, "ForwardRoverFail req. URI: "));
           }
           return State.ABORT;
@@ -204,7 +204,7 @@ public class HttpRoverClient {
 
         @Override
         public void onThrowable(Throwable t) {
-          metrics.meter("ForwardRoverException");
+          MonitorUtil.info("ForwardRoverException");
           logger.warn(buildDebugLog(roverRequest, "ForwardRoverException req. URI: "));
         }
 
@@ -214,7 +214,7 @@ public class HttpRoverClient {
         }
       });
     } catch (Exception e) {
-      metrics.meter("ForwardRoverExceptionOther");
+      MonitorUtil.info("ForwardRoverExceptionOther");
       logger.warn(e.getMessage());
     }
     return null;
