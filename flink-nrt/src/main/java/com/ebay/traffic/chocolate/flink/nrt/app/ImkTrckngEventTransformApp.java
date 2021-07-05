@@ -75,7 +75,6 @@ public class ImkTrckngEventTransformApp
 
   @Override
   protected void loadProperty() {
-    this.env_config = PropertyMgr.getInstance().loadYaml("");
   }
 
   @Override

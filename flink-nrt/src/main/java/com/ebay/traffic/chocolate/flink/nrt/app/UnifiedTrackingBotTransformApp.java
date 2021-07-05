@@ -79,7 +79,6 @@ public class UnifiedTrackingBotTransformApp
 
   @Override
   protected void loadProperty() {
-    this.env_config = PropertyMgr.getInstance().loadYaml("");
   }
 
   @Override

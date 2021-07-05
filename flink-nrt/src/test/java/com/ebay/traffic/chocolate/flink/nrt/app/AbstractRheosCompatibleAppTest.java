@@ -23,7 +23,6 @@ public class AbstractRheosCompatibleAppTest {
   private static class RheosCompatibleApp extends AbstractRheosCompatibleApp<String, String> {
     @Override
     protected void loadProperty() {
-      this.env_config = PropertyMgr.getInstance().loadYaml("");
     }
 
     @Override

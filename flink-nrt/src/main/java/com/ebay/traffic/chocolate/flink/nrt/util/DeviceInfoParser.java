@@ -5,7 +5,7 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 
 /**
- * Created by jialili1 on 11/20/20
+ * Created by zhofan on 06/30/21
  */
 public class DeviceInfoParser {
     private DDSResponse deviceInfo;

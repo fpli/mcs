@@ -168,7 +168,7 @@ public class UTPPathfinderEventTransformApp
             transformer.transform(message);
             RheosEvent rheosEvent = getRheosEvent(message);
 
-            sherlockioMetrics.meter("UTPRoverEvent", 1, Field.of("channelType", message.getChannelType()),
+            sherlockioMetrics.meter("UTPPathfinderEvent", 1, Field.of("channelType", message.getChannelType()),
                     Field.of("actionType", message.getActionType()), Field.of("isBot", message.getIsBot()));
 
             out.collect(new Tuple3<>(this.topic, DEFAULT_SNAPSHOT_ID, serializeRheosEvent(rheosEvent)));
