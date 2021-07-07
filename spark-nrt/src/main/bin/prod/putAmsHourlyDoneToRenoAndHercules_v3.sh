@@ -29,8 +29,8 @@ USAGE_IMP=epnnrt_scp_imp
 RENO_META_SUFFIX=.epnnrt_reno
 RENO_LOCAL_DONE_DATE_FILE_CLICK=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_rno_click.txt
 RENO_LOCAL_DONE_DATE_FILE_IMP=/datashare/mkttracking/data/epn-nrt-v2/local_done_date_rno_imp.txt
-RENO_MIN_TS_FILE_CLICK=/user/b_marketing_tracking/chocolate/epnnrt_v2/min_ts_rno_click.txt
-RENO_MIN_TS_FILE_IMP=/user/b_marketing_tracking/chocolate/epnnrt_v2/min_ts_rno_imp.txt
+RENO_MIN_TS_FILE_CLICK=/apps/b_marketing_tracking/chocolate/epnnrt_v2/min_ts_rno_click.txt
+RENO_MIN_TS_FILE_IMP=/apps/b_marketing_tracking/chocolate/epnnrt_v2/min_ts_rno_imp.txt
 
 function get_current_done(){
     last_done=`cat $1`
