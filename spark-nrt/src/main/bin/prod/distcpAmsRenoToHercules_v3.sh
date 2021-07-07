@@ -31,16 +31,13 @@ echo "HERCULES_DEST_DIR:${HERCULES_DEST_DIR}"
 HOST_NAME=`hostname -f`
 LOCAL_TMP_DIR='/datashare/mkttracking/data/epn-nrt-v2/distcpTmp'
 echo "HOST_NAME ：${HOST_NAME}"
-dt_hour=$(date +%Y-%m-%d%H)
-dt=${dt_hour:0:10}
-today=${dt}
+today=$(date +%Y-%m-%d)
 yesterday=$(date --date="${today} -1days" +%Y-%m-%d)
-echo "dt ：${dt}"
 echo "today ：${today}"
 echo "yesterday ：${yesterday}"
 
 ENV_PATH='/datashare/mkttracking/tools/cake'
-JOB_NAME='DistcpAmsToRenoAndHerculesBatchJob_v2'
+JOB_NAME='DistcpAmsToRenoAndHerculesBatchJob_v3'
 echo "ENV_PATH:${ENV_PATH}"
 echo "JOB_NAME:${JOB_NAME}"
 

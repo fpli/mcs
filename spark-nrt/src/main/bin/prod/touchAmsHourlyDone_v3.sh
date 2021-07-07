@@ -5,7 +5,7 @@ LOCAL_DONE_DATE_FILE=$2
 ACTION=$3
 DONE_CLUSTER=$4
 
-DONE_FILE_DIR=/user/b_marketing_tracking/watch/
+DONE_FILE_DIR=/apps/b_marketing_tracking/watch/
 
 done_date=${DONE_TIME:0:8}
 repair_date=${done_date:0:4}-${done_date:4:2}-${done_date:6}
@@ -27,8 +27,8 @@ if [ "${DONE_CLUSTER}" == "reno" ]
 then
     command_hive="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
     command_hadoop="/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs"
-    table_click=choco_data.ams_click_v3
-    table_imp=choco_data.ams_imprsn_v3
+    table_click=choco_data.ams_click
+    table_imp=choco_data.ams_imprsn
 elif [ "${DONE_CLUSTER}" == "hercules" ]
 then
     command_hive="/datashare/mkttracking/tools/hercules_lvs/hive-hercules/bin/hive"
