@@ -52,7 +52,7 @@ spark_submit_operator = SparkSubmitOperator(
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/epnnrt_v2.properties,'
           'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/sherlockio.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/couchbase.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/couchbase_v2.properties,'
           'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/df_epn_impression_v2.json,'
           'file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
           'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
