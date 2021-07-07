@@ -9,7 +9,6 @@ import com.ebay.dukes.{CacheClient, CacheSpecificationsStore}
 import com.ebay.dukes.base.BaseDelegatingCacheClient
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
 import com.ebay.dukes.fountclient.{ApplicationConfiguration, FountCacheFactory, FountCacheSpecificationsStoreProvider}
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient.{dataSource, properties}
 import org.slf4j.LoggerFactory
 
 object CorpCouchbaseClient_v2 {

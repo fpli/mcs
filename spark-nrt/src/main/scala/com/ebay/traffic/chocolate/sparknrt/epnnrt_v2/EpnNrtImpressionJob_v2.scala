@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase_v2.CorpCouchbaseClient_v2
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
 import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
@@ -50,7 +50,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
     }
 
     //init couchbase datasource
-    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
+    CorpCouchbaseClient_v2.dataSource = properties.getProperty("epnnrt.datasource")
 
     var timestamp = -1L
 

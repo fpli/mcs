@@ -6,7 +6,7 @@ import java.util.Properties
 import java.util.regex.Pattern
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
-import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
+import com.ebay.traffic.chocolate.sparknrt.couchbase_v2.CorpCouchbaseClient_v2
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
@@ -1216,7 +1216,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
 
   def batchGetPublisherStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -1249,13 +1249,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     }
-    CorpCouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient_v2.returnClient(cacheClient)
     res
   }
 
   def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -1288,13 +1288,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     }
-    CorpCouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient_v2.returnClient(cacheClient)
     res
   }
 
   def batchGetProgMapStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
     try {
       val jsonDocuments = Observable
         .from(list)
@@ -1329,14 +1329,14 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     }
-    CorpCouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient_v2.returnClient(cacheClient)
     res
   }
 
 
   def batchGetAdvClickFilterMap(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
     var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
         .from(list)
@@ -1372,13 +1372,13 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     }
-    CorpCouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient_v2.returnClient(cacheClient)
     res
   }
 
   def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
     var res = new HashMap[String, ListBuffer[PubDomainInfo]]
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
     try {
       val jsonArrayDocuments = Observable
         .from(list)
@@ -1415,7 +1415,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     }
-    CorpCouchbaseClient.returnClient(cacheClient)
+    CorpCouchbaseClient_v2.returnClient(cacheClient)
     res
   }
 
@@ -1499,8 +1499,8 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
     var fixedGuid = guid
     var roverLastClickGuid = ""
     // rewrite couchbase datasource property
-    CorpCouchbaseClient.dataSource = properties.getProperty("epnnrt.datasource")
-    val (cacheClient, bucket) = CorpCouchbaseClient.getBucketFunc()
+    CorpCouchbaseClient_v2.dataSource = properties.getProperty("epnnrt.datasource")
+    val (cacheClient, bucket) = CorpCouchbaseClient_v2.getBucketFunc()
 
     try {
       val chocoTag = getQueryParam(uri, CHOCO_TAG)
@@ -1519,7 +1519,7 @@ class EpnNrtCommon_v2(params: Parameter_v2, df: DataFrame) extends Serializable 
         metrics.meterByGauge("CouchbaseErrorTess",1)
       }
     } finally {
-      CorpCouchbaseClient.returnClient(cacheClient)
+      CorpCouchbaseClient_v2.returnClient(cacheClient)
     }
 
     if (StringUtils.isNotEmpty(roverLastClickGuid)) {
