@@ -33,7 +33,6 @@ import static org.asynchttpclient.Dsl.config;
 @DependsOn("EventListenerService")
 public class HttpRoverClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
-  private Metrics metrics;
   private AsyncHttpClient asyncHttpClient;
   private static final int TIMEOUT=200;
   private static final int EXPIRE_COOKIE = 2;
@@ -51,7 +50,6 @@ public class HttpRoverClient {
 
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
     AsyncHttpClientConfig config = config()
         .setRequestTimeout(TIMEOUT)
         .setConnectTimeout(TIMEOUT)
@@ -66,7 +64,7 @@ public class HttpRoverClient {
   }
 
   void setMetrics(Metrics metrics) {
-    this.metrics = metrics;
+    MonitorUtil.setEsMetrics(metrics);
   }
 
   private String generateTimestampForCookie() {

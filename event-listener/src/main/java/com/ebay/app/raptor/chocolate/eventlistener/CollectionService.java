@@ -321,9 +321,7 @@ public class CollectionService {
       }
     }
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
     // this attribute is used to log actual process time for incoming event in mcs
     long eventProcessStartTime = startTime;
@@ -526,7 +524,7 @@ public class CollectionService {
     String platform = getPlatform(agentInfo);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
-        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
@@ -701,8 +699,7 @@ public class CollectionService {
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
     // add channel specific tags, and produce message for EPN and IMK
     ListenerMessage listenerMessage = null;
