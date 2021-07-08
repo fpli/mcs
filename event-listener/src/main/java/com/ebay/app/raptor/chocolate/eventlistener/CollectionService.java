@@ -434,8 +434,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(eventProcessStartTime, startTime, checkoutAPIClickFlag, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(CHANNEL_TYPE, type));
 
     return true;
   }
@@ -577,7 +576,7 @@ public class CollectionService {
           Field.of(CHANNEL_TYPE, "ROI"));
       stopTimerAndLogData(startTime, startTime, false,
           Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-          ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
+          ChannelType.ROI.toString()));
     }
     return true;
   }
@@ -731,7 +730,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(startTime, startTime, false, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
+        Field.of(CHANNEL_TYPE, type));
 
     return true;
   }
