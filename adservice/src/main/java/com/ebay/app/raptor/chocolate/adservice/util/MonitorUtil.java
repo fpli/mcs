@@ -46,6 +46,13 @@ public final class MonitorUtil {
         esMetrics.mean(key, value,fields);
         Metrics.counter(key,fieldsToTags(fields)).increment(value);
     }
+    public static void latency(String key) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.mean(key);
+        Metrics.counter(key).increment(1L);
+    }
     @SafeVarargs
     public static String[] fieldsToTags(Field<String, Object>... fields){
         int length=fields.length;
