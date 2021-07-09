@@ -41,9 +41,8 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
-current_date=$(date)
-done_dt=$(date -d "${current_date}" '+%Y%m%d')
-partition_dt=$(date -d "${current_date}" '+%Y-%m-%d')
+partition_dt=$(date '+%Y-%m-%d')
+done_dt=$(echo ${partition_dt} | sed 's/-//g')
 
 first_done_file=${DONE_FILE_DIR}/${done_dt}/imk_rvr_trckng_event_hourly.done.${done_dt}0000000000
 

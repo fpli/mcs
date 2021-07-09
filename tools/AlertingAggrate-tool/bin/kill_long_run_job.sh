@@ -44,5 +44,5 @@ echo "diff: $diff"
 
 if [ $diff -gt $MAXTIME ]; then
     $YARN application -kill $application_id
-    echo -e "Kill long run job application: ${JOB} in ${CLUSTER}, execute time ${diff} m!!!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[LONG RUN] Kill long run job application: ${JOB}!!!" -v DL-eBay-Chocolate-GC@ebay.com
+    echo -e "Kill long run job application: ${JOB} in ${CLUSTER}, execute time ${diff} m!" | mailx -S smtp=mx.vip.lvs.ebay.com:25 -s "[LONG RUN] Kill long run job application: ${JOB}!" -v DL-eBay-Chocolate-GC@ebay.com
 fi
