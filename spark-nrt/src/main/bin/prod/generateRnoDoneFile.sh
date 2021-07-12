@@ -2,8 +2,10 @@
 
 set -x
 
-DT=$(date +%Y-%m-%d -d "`date` - 1 day")
-DONE_FILE_DT=$(date +%Y%m%d -d "`date` - 1 day")
+DT=$(date -d "1 day ago" +%Y-%m-%d )
+DONE_FILE_DT=$(date -d "1 day ago" +%Y%m%d )
+
+
 
 RNO_DAILY_DONE_FILE_PATH='viewfs://apollo-rno/apps/b_marketing_tracking/unified_tracking/daily_done_files'
 DONE_FILE='tracking_event_'${DONE_FILE_DT}'.done'

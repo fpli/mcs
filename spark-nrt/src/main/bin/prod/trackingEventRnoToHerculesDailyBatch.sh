@@ -2,8 +2,8 @@
 
 set -x
 
-DT=$(date +%Y-%m-%d -d "`date` - 1 day")
-DONE_FILE_DT=$(date +%Y%m%d -d "`date` - 1 day")
+DT=$(date -d "1 day ago" +%Y-%m-%d )
+DONE_FILE_DT=$(date -d "1 day ago" +%Y%m%d )
 #DT=$1
 #DONE_FILE_DT=$2
 
