@@ -1,19 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <application>
 	<type>Service</type>
 	<public>false</public>
-	<!-- Mandatory field -->
+	
 	<description>Chocolate Listener app</description>
 	<name>chocolis</name>
 	<lifecycleState>Deployed</lifecycleState>
-	<!-- Optional field: Default value will be used if not specified -->
-	<urlStrategy></urlStrategy>
+	
+	<urlStrategy/>
 	<page-Map>
 		<page>
 			<name>DefaultPage</name>
 			<description>This default page that will be inserted for every application. The page id of the default page will be used
 	        for every page that is not registered with AR during development</description>
-			<!-- Mandatory field -->
+			
 			<lifecycleState>Deployed</lifecycleState>
 			<isAjax>false</isAjax>
 			<isDefault>true</isDefault>
@@ -29,6 +29,8 @@
 			</svcMapping-List>
 		</webService>
 	</webService-List>
-	<!-- Optional field: true if your application invokes services that require an IAFToken -->
+	
 	<secureService>true</secureService>
-</application>
+<parameters-Map>
+<parameters key="rio.profile">Operational-Service</parameters>
+</parameters-Map></application>

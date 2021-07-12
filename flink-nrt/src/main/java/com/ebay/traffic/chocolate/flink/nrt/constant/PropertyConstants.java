@@ -122,4 +122,8 @@ public class PropertyConstants {
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.topic.properties";
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.properties";
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.topic.properties";
+
+  public static final String UTP_EVENT_TRACER_ES_PROPERTIES = "utp-event-tracer.es.properties";
+  public static final String UTP_EVENT_TRACER_CONSUMER_TOPIC_PROPERTIES = "utp-event-tracer.consumer.topic.properties";
+  public static final String UTP_EVENT_TRACER_CONSUMER_PROPERTIES = "utp-event-tracer.consumer.properties";
 }

@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.col
@@ -24,12 +23,10 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
   lazy val epnNrtScpMetaClickTempDir = outputDir + "/tmp_scp_meta_click/"
 
   //meta final dir
-  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/ epnnrt_click/"
+  lazy val epnNrtResultMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_click/"
   lazy val epnNrtScpMetaClickDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_click/"
 
   lazy val clickDir = "/click/"
-
-  @transient lazy val schema_epn_click_table = TableSchema("df_epn_click.json")
 
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.click.metafile.batchsize")
@@ -75,8 +72,8 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
           timestamp = df.first().getAs[Long]("timestamp")
 
           logger.info("Processing " + size + " datesFile in metaFile " + file)
-          metrics.meter("DateFileCount", size,  Field.of[String, AnyRef]("channelAction", "CLICK"))
-          metrics.meter("InComingCount", df.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
+          metrics.meterByGauge("DateFileCount", size,  Field.of[String, AnyRef]("channelAction", "CLICK"))
+          metrics.meterByGauge("InComingCount", df.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 
           // filter publisher 5574651234
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
@@ -115,18 +112,18 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
           var df_click_count_after_filter = 0L
           if (debug) {
             df_click_count_after_filter = df_click.count()
-            metrics.meter("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
+            metrics.meterByGauge("ClickFilterCount", df_click_count_before_filter - df_click_count_after_filter)
           }
 
           //3. build click dataframe  save dataframe to files and rename files
           var clickDf = new ClickDataFrame_v2(df_click, epnNrtCommon).build()
           clickDf = clickDf.repartition(params.partitions)
 
-          saveDFToFiles(clickDf, epnNrtTempDir + clickDir, "gzip", "parquet", "tab")
+          saveDFToFiles(clickDf, epnNrtTempDir + clickDir)
 
-          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir, schema_epn_click_table.dfSchema, "parquet", "tab", false)
+          val countClickDf = readFilesAsDF(epnNrtTempDir + clickDir)
 
-          metrics.meter("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
+          metrics.meterByGauge("SuccessfulCount", countClickDf.count(),  Field.of[String, AnyRef]("channelAction", "CLICK"))
 
           val clickFiles = renameFile(outputDir + clickDir, epnNrtTempDir + clickDir, date, "dw_ams.ams_clicks_cs_")
 
@@ -139,7 +136,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
             outputMetadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
             outputMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
-            metrics.meter("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
+            metrics.meterByGauge("OutputMetaSuccessful", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           }
 
@@ -158,7 +155,7 @@ class EpnNrtClickJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(params, p
       inputMetadata.deleteDedupeOutputMeta(file)
 
       logger.info("Successfully processed the meta file: + " + file)
-      metrics.meter("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "CLICK"))
+      metrics.meterByGauge("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "CLICK"))
 
       if (metrics != null)
         metrics.flush()

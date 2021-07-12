@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -556,8 +557,28 @@ public class UnifiedTrackingMessageParser {
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
+    //parse itm from url and put itm to payload
+      parseItmTag(payload, url);
 
-    return encodeTags(payload);
+      return encodeTags(payload);
+  }
+
+  private static void parseItmTag(Map<String, String> payload, String url) {
+    if (!payload.containsKey("itm")) {
+      try {
+        URI uri = new URI(url);
+        String path = uri.getPath();
+        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+          String itemId = path.substring(path.lastIndexOf("/") + 1);
+          if (StringUtils.isNumeric(itemId)) {
+            payload.put("itm", itemId);
+          }
+        }
+      } catch (Exception e) {
+        metrics.meter("putItmToPldError");
+        logger.warn("put itm tag to payload error, url is {}", url);
+      }
+    }
   }
 
   private static void addTags(Map<String, String> payload, MultiValueMap<String, String> parameters,

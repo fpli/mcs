@@ -14,8 +14,8 @@ import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 
 /**
-  * Created by jialili1 on 1/7/19.
-  */
+ * Created by jialili1 on 1/7/19.
+ */
 class TestSchemaSparkCompatible extends BaseFunSuite {
 
   val tmpPath = createTempPath()

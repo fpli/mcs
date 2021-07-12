@@ -411,7 +411,7 @@ class Tools(namespace: String, endpoint: String, user: String, appName: String) 
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
       if(metrics != null)
-        metrics.meter("imk_dump_internalReferer")
+        metrics.meter("imk_dump_internalReferer",1)
       false
     } else {
       true

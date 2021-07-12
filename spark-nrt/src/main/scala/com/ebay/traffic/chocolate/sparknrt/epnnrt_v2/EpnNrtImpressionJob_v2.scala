@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrt_v2
 
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles}
-import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
 import com.ebay.traffic.monitoring.Field
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.col
@@ -27,9 +26,8 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
   lazy val epnNrtResultMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_imp/"
   lazy val epnNrtScpMetaImpDir = outputWorkDir + "/meta/EPN/output/epnnrt_scp_imp/"
 
-  lazy val IMPRESSION_DIR = "/imp/"
+  lazy val IMPRESSION_DIR = "/impression/"
 
-  @transient lazy val schema_epn_impression_table = TableSchema("df_epn_impression.json")
 
   @transient lazy val batchSize: Int = {
     val batchSize = properties.getProperty("epnnrt.impression.metafile.batchsize")
@@ -75,8 +73,8 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
           timestamp = df.first().getAs[Long]("timestamp")
 
           logger.info("Processing " + size + " datesFile in metaFile " + file)
-          metrics.meter("DateFileCount", size,  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
-          metrics.meter("InComingCount", df.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+          metrics.meterByGauge("DateFileCount", size,  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+          metrics.meterByGauge("InComingCount", df.count(),  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           // filter publisher 5574651234
           df = df.withColumn("publisher_filter", epnNrtCommon.filter_specific_pub_udf(col("referer"), col("publisher_id")))
@@ -115,17 +113,17 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
           var df_impression_count_after_filter = 0L
           if (debug) {
             df_impression_count_after_filter = df_impression.count()
-            metrics.meter("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
+            metrics.meterByGauge("ImpressionFilterCount", df_impression_count_before_filter - df_impression_count_after_filter)
           }
 
           //3. build impression dataframe  save dataframe to files and rename files
           var impressionDf = new ImpressionDataFrame_v2(df_impression, epnNrtCommon).build()
           impressionDf = impressionDf.repartition(params.partitions)
-          saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR, "gzip", "parquet", "tab")
+          saveDFToFiles(impressionDf, epnNrtTempDir + IMPRESSION_DIR)
 
-          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR, schema_epn_impression_table.dfSchema, "parquet", "tab", false)
+          val countImpDf = readFilesAsDF(epnNrtTempDir + IMPRESSION_DIR)
 
-          metrics.meter("SuccessfulCount", countImpDf.count(), Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+          metrics.meterByGauge("SuccessfulCount", countImpDf.count(), Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
           //write to EPN NRT output meta files
           val imp_files = renameFile(outputDir + IMPRESSION_DIR, epnNrtTempDir + IMPRESSION_DIR, date, "dw_ams.ams_imprsn_cntnr_cs_")
@@ -137,7 +135,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
             deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
             outputMetadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             logger.info("successfully write EPN NRT impression output meta to HDFS")
-            metrics.meter("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+            metrics.meterByGauge("OutputMetaSuccessful", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
           }
 
           //rename meta files
@@ -155,7 +153,7 @@ class EpnNrtImpressionJob_v2(params: Parameter_v2) extends BaseEpnNrtJob_v2(para
       inputMetadata.deleteDedupeOutputMeta(file)
 
       logger.info("Successfully processed the meta file: + " + file)
-      metrics.meter("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
+      metrics.meterByGauge("MetaFileCount", 1,  Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
 
       if (metrics != null)
         metrics.flush()
