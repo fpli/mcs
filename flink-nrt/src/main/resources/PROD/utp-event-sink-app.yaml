@@ -17,7 +17,7 @@ source:
       rhs-hcrvkiaa-kfk-lvs-8.rheos-streaming-prod.svc.27.tess.io:9092,\
       rhs-hcrvkiaa-kfk-lvs-9.rheos-streaming-prod.svc.27.tess.io:9092,\
       rhs-hcrvkiaa-kfk-lvs-10.rheos-streaming-prod.svc.27.tess.io:9092
-    group.id: utp-event-sink-test-3
+    group.id: marketing-tracking-consumer-utp-event-sink
     session.timeout.ms: 10000
     auto.offset.reset: latest
     receive.buffer.bytes: 16777216
@@ -36,13 +36,13 @@ sink:
     outputFileConfig:
       partPrefix: utp
       partSuffix: .snappy.parquet
-    path: hdfs://apollo-rno-ns01/apps/b_marketing_tracking/preprod/utp/utp_event
+    path: hdfs://apollo-rno-ns01/apps/b_marketing_tracking/utp/utp_event
     name: sink-rno
     uid: sink-rno
   hercules:
     outputFileConfig:
       partPrefix: utp
       partSuffix: .snappy.parquet
-    path: hdfs://hercules/sys/edw/imk/im_tracking/utp/utp_event
+    path: hdfs://hercules/apps/b_marketing_tracking/utp/utp_event
     name: sink-hercules
     uid: sink-hercules
