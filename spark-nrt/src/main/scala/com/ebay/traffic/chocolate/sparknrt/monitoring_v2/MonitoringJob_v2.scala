@@ -75,19 +75,14 @@ class MonitoringJob_v2(params: Parameter_v2)
             val fieldClick = Field.of[String, AnyRef]("channelAction", "CLICK")
             val fieldImp = Field.of[String, AnyRef]("channelAction", "IMPRESSION")
             val fieldEpn = Field.of[String, AnyRef]("channelType", "EPN")
-            val fieldDisplay = Field.of[String, AnyRef]("channelType", "DISPLAY")
 
             if (metrics != null) {
               //Capping output total
               metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
               metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "IMPRESSION", "EPN"), fieldImp, fieldEpn)
-              metrics.meterByGauge("CappingOutput", CappingTotalCount(df, "IMPRESSION", "DISPLAY"), fieldImp, fieldDisplay)
 
               //Capping fail total
               metrics.meterByGauge("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "EPN"), fieldClick, fieldEpn)
-              metrics.meterByGauge("CappingCount", CappingTotalCount(dfMetrics, "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-
               //EPN nrt rules
               metrics.meterByGauge("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
                 "CLICK", "EPN"), fieldClick, fieldEpn)
@@ -114,13 +109,6 @@ class MonitoringJob_v2(params: Parameter_v2)
 //              metrics.meterByGauge("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
 //                "CLICK", "EPN"), fieldClick, fieldEpn)
 
-              //Display nrt rules
-              metrics.meterByGauge("IPLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.IPCappingRule,
-                "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-//              metrics.meterByGauge("SnidShortCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_S,
-//                "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
-//              metrics.meterByGauge("SnidLongCappingCount", CappingCount(dfMetrics, CappingRuleEnum.SnidCappingRule_L,
-//                "CLICK", "DISPLAY"), fieldClick, fieldDisplay)
 
               metrics.flush()
             }
