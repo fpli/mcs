@@ -173,7 +173,7 @@ object BullseyeUtils_v2 {
   def getLastViewItemV3(cguid: String, guid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
     val result = getDataV3(cguid, guid, modelId, count, bullseyeUrl)
-    metrics.mean("BullsEyeLatency", System.currentTimeMillis - start)
+    metrics.mean("BullsEyeLatencyTess", System.currentTimeMillis - start)
 
     try {
       val responseBody = result.get.body
