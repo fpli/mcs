@@ -557,8 +557,8 @@ public class UnifiedTrackingMessageParser {
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
-    //parse itm from url and put itm to payload
-      parseItmTag(payload, url);
+    // parse itm from url and put itm to payload
+      parseItmTag(payload, baseEvent.getUrl());
 
       return encodeTags(payload);
   }
