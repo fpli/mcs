@@ -6,13 +6,13 @@ import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * This class can determine the runtime environment automatically, and also provide some useful methods to get variables
