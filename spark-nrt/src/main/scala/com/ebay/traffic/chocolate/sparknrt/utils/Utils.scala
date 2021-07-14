@@ -68,4 +68,25 @@ object Utils {
       in.close()
     }
   }
+
+  def showString(
+                  df: DataFrame ,
+                  numRows: Int,
+                  truncate: Boolean): String = {
+    if (truncate) {
+      "\n" + showString(df, numRows)
+    } else {
+      "\n" + showString(df, numRows, truncate = 0)
+    }
+  }
+
+  def showString(
+                  df: DataFrame ,
+                  _numRows: Int,
+                  truncate: Int = 20,
+                  vertical: Boolean = false): String = {
+    val showString = classOf[org.apache.spark.sql.DataFrame].getDeclaredMethod("showString", classOf[Int], classOf[Int], classOf[Boolean])
+    showString.setAccessible(true)
+    showString.invoke(df, _numRows.asInstanceOf[Object], truncate.asInstanceOf[Object], vertical.asInstanceOf[Object]).asInstanceOf[String]
+  }
 }
