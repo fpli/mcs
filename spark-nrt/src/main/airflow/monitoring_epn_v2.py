@@ -8,7 +8,7 @@ dag_id = 'monitoring_epn_v2'
 default_args = {
     'owner': 'yuhxiao',
     'start_date': '2021-03-01',
-    'email': ['Marketing-Tracking-oncall@ebay.com','jialili1@ebay.com', 'xiangli4@ebay.com', 'shuangxu@ebay.com',  'zhofan@ebay.com', 'zhiyuawang@ebay.com','yli19@ebay.com','yuhxiao@ebay.com'],
+    'email': ['Marketing-Tracking-oncall@ebay.com','DL-eBay-Chocolate-GC@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
