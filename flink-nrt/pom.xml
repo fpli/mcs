@@ -61,6 +61,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-dds-client-starter</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-core</artifactId>
             <version>${flink.version}</version>
