@@ -8,7 +8,7 @@ dag_id = 'monitoring_epn_v2'
 default_args = {
     'owner': 'yuhxiao',
     'start_date': '2021-03-01',
-    'email': ['yuhxiao@ebay.com'],
+    'email': ['Marketing-Tracking-oncall@ebay.com','jialili1@ebay.com', 'xiangli4@ebay.com', 'shuangxu@ebay.com',  'zhofan@ebay.com', 'zhiyuawang@ebay.com','yli19@ebay.com','yuhxiao@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
@@ -27,7 +27,7 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.monitoring_v2.MonitoringJob_v2',
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.monitoringV2.MonitoringJobV2',
     'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
     'executor_cores': '1',
     'driver_memory': '4G',

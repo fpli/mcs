@@ -10,7 +10,7 @@ default_args = {
     'owner': 'yuhxiao',
     'depends_on_past': False,
     'start_date': '2021-03-01',
-    'email': ['yuhxiao@ebay.com'],
+    'email': ['Marketing-Tracking-oncall@ebay.com','jialili1@ebay.com', 'xiangli4@ebay.com', 'shuangxu@ebay.com',  'zhofan@ebay.com', 'zhiyuawang@ebay.com','yli19@ebay.com','yuhxiao@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
@@ -28,7 +28,7 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtImpressionJob_v2',
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtImpressionJobV2',
     'application': '/datashare/mkttracking/jobs/tracking/epn-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
     'executor_cores': '8',
     'driver_memory': '15G',
@@ -64,7 +64,8 @@ spark_submit_operator = SparkSubmitOperator(
         'spark.hadoop.yarn.timeline-service.enabled': 'false',
         'spark.sql.autoBroadcastJoinThreshold': '33554432',
         'spark.sql.shuffle.partitions': '200',
-        'spark.speculation': 'false',
+        'spark.speculation': 'true',
+        'spark.speculation.quantile': '0.5',
         'spark.yarn.maxAppAttempts': '3',
         'spark.driver.maxResultSize': '10g',
         'spark.kryoserializer.buffer.max': '2040m',

@@ -1,20 +1,20 @@
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from datetime import timedelta
 from airflow import DAG
+from datetime import timedelta
 
-dag_name = 'dedupeAndSinkDuplicateItmClickListener_v2.py'
-dag_id = 'dedupeAndSinkDuplicateItmClickListener_v2.py'
+dag_name = 'epn_nrt_click_v2'
+dag_id = 'epn_nrt_click_v2'
 
 default_args = {
     'owner': 'yuhxiao',
-    'start_date': '2021-02-19',
+    'depends_on_past': False,
+    'start_date': '2021-03-01',
     'email': ['Marketing-Tracking-oncall@ebay.com','jialili1@ebay.com', 'xiangli4@ebay.com', 'shuangxu@ebay.com',  'zhofan@ebay.com', 'zhiyuawang@ebay.com','yli19@ebay.com','yuhxiao@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 0,
-    'retry_delay': timedelta(minutes=5),
-    'depends_on_past': False
+    'retry_delay': timedelta(minutes=5)
 }
 
 dag = DAG(
@@ -27,43 +27,44 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.sinkListenerV2.DedupeAndSinkListenerV2',
-    'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
-    'executor_cores': '1',
-    'driver_memory': '4G',
-    'executor_memory': '6G',
-    'num_executors': '20',
-
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtClickJobV2',
+    'application': '/datashare/mkttracking/jobs/tracking/epn-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
+    'executor_cores': '5',
+    'driver_memory': '20G',
+    'executor_memory': '40G',
+    'num_executors': '40',
     'application_args': [
-        '--appName', 'dedupeAndSinkDuplicateItmClickListener_v2.py',
-        '--channel', 'DUPLICATE_CLICK_LISTENER',
-        '--kafkaTopic', 'marketing.tracking.ssl.listened-duplicate-itm-click',
-        '--workDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-duplicate-click',
-        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-duplicate-click',
-        '--partitions', '1',
-        '--maxConsumeSize', '60000',
-        '--couchbaseDedupe', 'true'
+        '--appName', 'epn_nrt_click_v2',
+        '--mode', 'yarn',
+        '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
+        '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
+        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_v3',
+        '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
+        '--partitions', '3',
+        '--filterTime', '0'
     ]
 }
 
 spark_submit_operator = SparkSubmitOperator(
-    task_id='dedupeAndSinkDuplicateItmClickListener_v2.py',
+    task_id='epn_nrt_click_v2',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
-    files='file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/dedupe_and_sink_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/couchbase_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/kafka-listener_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/sherlockio.properties,'
+    files='file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/epnnrt_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/sherlockio.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/couchbase_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epn-nrt/conf/df_epn_click_v2.json,'
           'file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
           'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
     conf={
         'spark.dynamicAllocation.maxExecutors': '80',
         'spark.ui.view.acls': '*',
+        'spark.yarn.executor.memoryOverhead': '8192',
         'spark.serializer': 'org.apache.spark.serializer.KryoSerializer',
         'spark.hadoop.yarn.timeline-service.enabled': 'false',
         'spark.sql.autoBroadcastJoinThreshold': '33554432',
         'spark.sql.shuffle.partitions': '200',
-        'spark.speculation': 'false',
+        'spark.speculation': 'true',
+        'spark.speculation.quantile': '0.5',
         'spark.yarn.maxAppAttempts': '3',
         'spark.driver.maxResultSize': '10g',
         'spark.kryoserializer.buffer.max': '2040m',
@@ -87,3 +88,4 @@ spark_submit_operator = SparkSubmitOperator(
     dag=dag,
     **__config
 )
+
