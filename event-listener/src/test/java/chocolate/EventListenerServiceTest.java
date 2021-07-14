@@ -26,6 +26,7 @@ import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.monitoring.ESMetrics;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
@@ -223,8 +224,7 @@ public class EventListenerServiceTest {
       "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
       "userAgent=checkoutApi," +
       "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,uri=%2Fsampleappweb%2Fsctest," +
       "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
@@ -292,6 +292,21 @@ public class EventListenerServiceTest {
     if (!StringUtils.isEmpty(tracking)) {
       builder = builder.header("X-EBAY-C-TRACKING", tracking);
     }
+
+    return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
+  private Response postMcsResponseWithExtraHeader(String path, String endUserCtx, String tracking, Event event,
+                                                  String extraKey, String extraValue) {
+    // add headers
+    Invocation.Builder builder = client.target(svcEndPoint).path(path).request();
+    if (!StringUtils.isEmpty(endUserCtx)) {
+      builder = builder.header("X-EBAY-C-ENDUSERCTX", endUserCtx);
+    }
+    if (!StringUtils.isEmpty(tracking)) {
+      builder = builder.header("X-EBAY-C-TRACKING", tracking);
+    }
+    builder = builder.header(extraKey, extraValue);
 
     return builder.header("Authorization", token).accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
@@ -411,18 +426,18 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // no mkevt
-    event.setTargetUrl("https://www.ebay.com?mkcid=2");
+    event.setTargetUrl("https://www.ebay.com/?mkcid=2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // invalid mkevt
-    event.setTargetUrl("https://www.ebay.com?mkcid=2&mkevt=0");
+    event.setTargetUrl("https://www.ebay.com/?mkcid=2&mkevt=0");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // no mkcid
     // service will pass but no message to kafka
-    event.setTargetUrl("https://www.ebay.com?mkevt=1");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -432,24 +447,36 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    // search engine free listings
+    event.setTargetUrl("https://www.ebay.com?mkcid=28&mkevt=1");
+    event.setReferrer("https://www.google.com");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // mkrvrid in url to set rvrid
+    event.setTargetUrl("https://www.ebay.com?mkcid=28&mkevt=1&mkrvrid=201918172817");
+    event.setReferrer("https://www.google.com");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // validate kafka message
     Thread.sleep(3000);
     KafkaSink.get().flush();
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 8, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 9, 30 * 1000);
     consumerPaidSearch.close();
 
     assertEquals(8, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
+    response = postMcsResponseWithExtraHeader(eventsPath, endUserCtxiPhone, tracking, event, "X-Purpose", "preview");
     assertEquals(201, response.getStatus());
 
     // adobe click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=8&mkpid=14&emsid=0&id=h1d3e4e16,2d2cb515,2d03a0a1&segname=" +
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=14&emsid=0&id=h1d3e4e16,2d2cb515,2d03a0a1&segname=" +
         "SOP708_SG49&country=US&pu=hrtHY5sgRPq&crd=20200211040813&sojTags=adcampid%3Did%2Cadcamppu%3Dpu%2Ccrd%3Dcrd%2C" +
         "segname%3Dsegname&adobeParams=id,p1,p2,p3,p4&adcamp_landingpage=https%3A%2F%2Fwww.ebay.de%2Fdeals" +
         "&adcamp_locationsrc=adobe");
@@ -457,17 +484,17 @@ public class EventListenerServiceTest {
     assertEquals(201, response.getStatus());
 
     // site email click events
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
-    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    response = postMcsResponseWithExtraHeader(eventsPath, endUserCtxiPhone, tracking, event, "X-Purpose", "preview");
     assertEquals(201, response.getStatus());
 
     // no partner
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
     // invalid partner
-    event.setTargetUrl("https://www.ebay.com?mkevt=1&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -488,22 +515,22 @@ public class EventListenerServiceTest {
     event.setReferrer("https://pages.ebay.com/sitemap.html?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623&originalRef=https%3A%2F%2Fwww.google.com");
 
-    // CRM
+    // 1. CRM, not in paid search channel, won't get kafka message
     Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // No referer
+    // 2. No referer
     event.setTargetUrl("https://c.ebay.com/marketingtracking/v1/pixel?mkevt=1&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // IMK
+    // 3. IMK pass
     event.setReferrer("https://pages.qa.ebay.com/sitemap.html?mkcid=2&mkrid=710-123456-1234-6&mkevt=1");
     event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // get target url from originalUrl parameter
+    // 4. get target url from originalUrl parameter pass
     event.setReferrer("https://pages.qa.ebay.com/");
     event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com&originalUrl=https%3A%2F%2Fpages.qa.ebay.com%2Fsitemap.html");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
@@ -556,16 +583,110 @@ public class EventListenerServiceTest {
         .header("X-EBAY-C-TRACKING", tracking)
         .header("Authorization", token)
         .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event2));
+    assertEquals(201, response1.getStatus());
+
+    // No item id
+    event2.setItemId(null);
+    event2.setTransactionTimestamp("1677235978009");
+    event2.setTransType("BO-MobileApp@");
+    event2.setUniqueTransactionId("1677235978009");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event2));
+    assertEquals(201, response1.getStatus());
+
+    // no transId
+    event2.setItemId("192658398245");
+    event2.setTransactionTimestamp("1677235978009");
+    event2.setTransType("BO-MobileApp@");
+    event2.setUniqueTransactionId(null);
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event2));
+    assertEquals(201, response1.getStatus());
+
+    // no enduserctx
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(200, response1.getStatus());
+
+    // no tracking
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(200, response1.getStatus());
+
+    //invalid item id
+    event.setItemId("abc");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
         .post(Entity.json(event));
     assertEquals(201, response1.getStatus());
-//    Response response2 = client.target(svcEndPoint).path(roiPath)
-//        .request()
-//        .header("X-EBAY-C-ENDUSERCTX", endUserCtx)
-//        .header("X-EBAY-C-TRACKING", tracking)
-//        .header("Authorization", token)
-//        .accept(MediaType.APPLICATION_JSON_TYPE)
-//        .post(Entity.json(event2));
-//    assertEquals(201, response2.getStatus());
+
+    //assertEquals("", event.getItemId());
+
+    //invalid timestamp
+    event.setTransactionTimestamp("-12423232");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
+    //assertTrue(Long.valueOf(event.getTransactionTimestamp()) > 0);
+
+    // invalid transid
+    event.setUniqueTransactionId("-12312312");
+
+    //assertEquals("", event.getUniqueTransactionId());
+
+    //no referrer in header, header in payload encoded
+    Map<String, String> payload = new HashedMap();
+    payload.put("referrer", "https%3A%2F%2Fwww.google.com");
+    event.setPayload(payload);
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
+    // null referer in payload
+    payload.put("referrer", "");
+    response1 = client.target(svcEndPoint).path(roiPath)
+        .request()
+        .header("X-EBAY-C-ENDUSERCTX", endUserCtxiPhone)
+        .header("X-EBAY-C-TRACKING", tracking)
+        .header("Authorization", token)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(event));
+    assertEquals(201, response1.getStatus());
+
   }
 
   @Test

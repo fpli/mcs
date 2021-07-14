@@ -4,6 +4,10 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class UrlPatternUtil {
@@ -32,4 +36,5 @@ public class UrlPatternUtil {
   // signin pattern
   public static final Pattern signinsites = Pattern.compile("^(http[s]?:\\/\\/)?signin\\.([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)",
       Pattern.CASE_INSENSITIVE);
+
 }

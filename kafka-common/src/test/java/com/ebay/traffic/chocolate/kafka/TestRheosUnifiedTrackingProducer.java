@@ -58,7 +58,7 @@ public class TestRheosUnifiedTrackingProducer {
     int count = 0;
     long start = System.currentTimeMillis();
     long end = start;
-    while (count < 3 && (end - start < 3 * 60 * 1000)) {
+    while (count < 3 && (end - start < 5 * 60 * 1000)) {
       ConsumerRecords<byte[], UnifiedTrackingMessage> consumerRecords = consumer.poll(3000);
       Iterator<ConsumerRecord<byte[], UnifiedTrackingMessage>> iterator = consumerRecords.iterator();
 

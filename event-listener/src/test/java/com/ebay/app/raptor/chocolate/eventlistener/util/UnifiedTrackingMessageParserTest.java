@@ -2,8 +2,12 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.constant.Constants;
+
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
+import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
@@ -49,10 +53,10 @@ public class UnifiedTrackingMessageParserTest {
   public void testParseUEPEvents() throws Exception {
     UnifiedTrackingEvent unifiedTrackingEvent = new UnifiedTrackingEvent();
     unifiedTrackingEvent.setPayload(new HashMap<>());
-    UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent, null);
+    UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
     assertEquals(parse.getProducerEventTs(), parse.getEventTs());
     unifiedTrackingEvent.setProducerEventTs(1L);
-    parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent, null);
+    parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
     assertEquals(Long.valueOf(1L), parse.getProducerEventTs());
     assertNotEquals(parse.getProducerEventTs(), parse.getEventTs());
   }
@@ -79,6 +83,7 @@ public class UnifiedTrackingMessageParserTest {
 
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
     IEndUserContext endUserContext = Mockito.mock(IEndUserContext.class);
+    Mockito.when(endUserContext.getIPAddress()).thenReturn("127.0.0.1");
     RaptorSecureContext raptorSecureContext = Mockito.mock(RaptorSecureContext.class);
     UserAgentInfo agentInfo = new UserAgentParser().parse("ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;" +
             "no-carrier;414x736;3.0");
@@ -94,13 +99,24 @@ public class UnifiedTrackingMessageParserTest {
     boolean isROIFromCheckoutAPI = false;
     long snapshotId = 0L;
     long shortSnapshotId = 0L;
-    Map<String, String> requestHeaders = new TreeMap<>();
+    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     requestHeaders.put(Constants.IS_FROM_UFES_HEADER, "true");
     requestHeaders.put(Constants.NODE_REDIRECTION_HEADER_NAME, "301");
 
-    UnifiedTrackingMessage message = utpParser.parse(requestContext, request, endUserContext, raptorSecureContext,
-        requestHeaders, agentInfo, parameters, url, referer, channelType, channelAction, null,
-        snapshotId, shortSnapshotId, currentTimeMillis);
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(currentTimeMillis);
+    baseEvent.setUrl(url);
+    baseEvent.setReferer(referer);
+    baseEvent.setChannelType(ChannelIdEnum.DAP);
+    baseEvent.setActionType(ChannelActionEnum.CLICK);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setEndUserContext(endUserContext);
+    baseEvent.setUrlParameters(parameters);
+    requestHeaders.put("X-EBAY-C-TRACKING", "cguid=8b34ef1d1740a4d724970d78eec8ee4c644dc2df");
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+
+    UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, snapshotId, shortSnapshotId);
 
     assertNotNull(message.getEventId());
     assertEquals("", message.getProducerEventId());
@@ -132,7 +148,7 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals("5.19.0", message.getAppVersion());
     assertEquals("CHOCOLATE", message.getService());
     assertEquals("localhost", message.getServer());
-    assertEquals("", message.getRemoteIp());
+    assertEquals("127.0.0.1", message.getRemoteIp());
     assertEquals(Integer.valueOf(2547208), message.getPageId());
     assertEquals(Integer.valueOf(101), message.getGeoId());
     assertFalse(message.getIsBot());
