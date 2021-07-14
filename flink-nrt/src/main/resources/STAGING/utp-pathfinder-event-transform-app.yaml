@@ -2,21 +2,15 @@ job:
   name: utp-pathfinder-event-transform-app
 
 source:
-  topic: behavior.pulsar.customized.tracking.install,behavior.pulsar.customized.tracking.install.bot
+  topic: marketing.tracking.staging.behavior.pulsar.customized.tracking.install,marketing.tracking.staging.behavior.pulsar.customized.tracking.install.bot
   name: source
   uid: source
   properties: |-
     bootstrap.servers: \
-      rhs-nbrvkiaa-kfk-lvs-1.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-2.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-3.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-4.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-5.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-6.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-7.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-8.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-9.rheos-streaming-qa.svc.32.tess.io:9092,\
-      rhs-nbrvkiaa-kfk-lvs-10.rheos-streaming-qa.svc.32.tess.io:9092
+      rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092
     group.id: marketing-tracking-consumer-utp-install-event-transform
     session.timeout.ms: 30000
     auto.offset.reset: earliest
@@ -35,10 +29,10 @@ transform:
   uid: transform
   properties: |-
     bootstrap.servers: \
-      rhs-gvrvkiaa-kfk-slc-1.rheos-streaming-qa.svc.33.tess.io:9092,\
-      rhs-gvrvkiaa-kfk-slc-2.rheos-streaming-qa.svc.33.tess.io:9092,\
-      rhs-gvrvkiaa-kfk-slc-3.rheos-streaming-qa.svc.33.tess.io:9092,\
-      rhs-gvrvkiaa-kfk-slc-4.rheos-streaming-qa.svc.33.tess.io:9092
+      rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092
     acks: -1
     buffer.memory: 33554432
     retries: 3
