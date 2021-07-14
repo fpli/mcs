@@ -369,9 +369,6 @@ public class CollectionService {
       if(isDuplicateClick || isInternalRef) {
         Producer<Long, ListenerMessage> producer = KafkaSink.get();
         ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
-        Long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
-        listenerMessage.setSnapshotId(snapshotId);
-        listenerMessage.setShortSnapshotId(0L);
         sendClickToDuplicateItmClickTopic(producer, listenerMessage);
       }
     } catch (Exception e) {
