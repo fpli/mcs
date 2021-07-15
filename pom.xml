@@ -40,7 +40,7 @@
     <sonar.core.codeCoveragePlugin>scoverage</sonar.core.codeCoveragePlugin>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
-    <utp.version>1.1.6-RELEASE</utp.version>
+    <utp.version>1.1.9-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
     
     

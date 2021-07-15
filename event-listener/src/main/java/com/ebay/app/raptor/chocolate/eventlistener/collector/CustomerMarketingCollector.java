@@ -8,9 +8,8 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
-import com.ebay.app.raptor.chocolate.eventlistener.util.EmailPartnerIdEnum;
+import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
@@ -29,7 +28,6 @@ import org.springframework.util.StringUtils;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
@@ -44,12 +42,10 @@ public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
-  private BehaviorMessageParser behaviorMessageParser;
   Metrics metrics;
 
   public void postInit() {
     this.metrics = ESMetrics.getInstance();
-    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
   /**

@@ -968,7 +968,7 @@ public class CollectionService {
    */
   private void sendClickToInternalClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
     producer.send(new ProducerRecord<>(internalClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    metrics.meter("internalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+    metrics.meter("InternalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
         Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 
