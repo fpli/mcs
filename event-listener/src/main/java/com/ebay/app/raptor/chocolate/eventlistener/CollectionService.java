@@ -74,6 +74,7 @@ public class CollectionService {
   private String behaviorTopic;
   private Producer unifiedTrackingProducer;
   private String unifiedTrackingTopic;
+  private String internalClickTopic;
   private static CollectionService instance = null;
   private UnifiedTrackingMessageParser utpParser;
   private static final String TYPE_INFO = "Info";
@@ -116,6 +117,7 @@ public class CollectionService {
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
+    this.internalClickTopic = ApplicationOptions.getInstance().getInternalItmClickTopic();
     this.utpParser = new UnifiedTrackingMessageParser();
   }
 
@@ -351,9 +353,14 @@ public class CollectionService {
       metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
-    // filter click whose referer is internal
+    // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
         baseEvent.getReferer());
+    if(isInternalRef) {
+      Producer<Long, ListenerMessage> producer = KafkaSink.get();
+      ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
+      sendClickToInternalClickTopic(producer, listenerMessage);
+    }
 
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
@@ -954,6 +961,15 @@ public class CollectionService {
     } else {
       metrics.mean("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
     }
+  }
+
+  /**
+   * Drop internal clicks into internalClickTopic
+   */
+  private void sendClickToInternalClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
+    producer.send(new ProducerRecord<>(internalClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
+    metrics.meter("internalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+        Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 
   /**

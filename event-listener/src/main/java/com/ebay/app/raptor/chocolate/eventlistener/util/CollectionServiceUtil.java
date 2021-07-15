@@ -227,61 +227,6 @@ public class CollectionServiceUtil {
     return (url.startsWith("https%3A%2F%2F") || url.startsWith("http%3A%2F%2F"));
   }
 
-  public static boolean isDuplicateItmClick(BaseEvent baseEvent) {
-    boolean isDulicateItemClick = false;
-
-    if (ebayItemNoTitlePage.matcher(baseEvent.getUrl()).find()) {
-      Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(baseEvent.getUrl());
-
-      if (!baseEvent.getUserAgentInfo().getUserAgentRawData().toLowerCase().contains(BOT_USER_AGENT)
-          && !baseEvent.getUserAgentInfo().requestIsFromBot()
-          && !ebaySpecialSitesMatcher.find()
-          && baseEvent.getUserAgentInfo().isMobile()
-          && baseEvent.getUserAgentInfo().requestIsMobileWeb()) {
-
-        String statusCode = baseEvent.getRequestHeaders().get(Constants.NODE_REDIRECTION_HEADER_NAME);
-        if (!StringUtils.isEmpty(statusCode)
-            && statusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
-          isDulicateItemClick = true;
-        }
-      }
-    }
-
-    return isDulicateItemClick;
-  }
-
-  /**
-   * Determine whether the click is a duplicate click from /itm page, if so, we will filter it.
-   * The duplication will happen when there is no title in itm click url on mobile phone web from non-special sites
-   * No filter for bot clicks
-   * No filter for user clicks from special sites
-   * No filter for dweb+Tablet user clicks
-   * No filter for native app user clicks
-   * Filter 301 for user clicks from non-special sites and mobile phone web
-   */
-  public static boolean isDuplicateItmClick(String marketingStatusCode, String userAgent, String targetUrl,
-                                            boolean requestIsFromBot, boolean requestIsMobile,
-                                            boolean requestIsMobileWeb) {
-    boolean isDulicateItemClick = false;
-
-    if (ebayItemNoTitlePage.matcher(targetUrl).find()) {
-      Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
-
-      if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&
-          !ebaySpecialSitesMatcher.find() &&
-          requestIsMobile && requestIsMobileWeb) {
-
-        if (!StringUtils.isEmpty(marketingStatusCode)
-            && marketingStatusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
-          isDulicateItemClick = true;
-        }
-
-      }
-    }
-
-    return isDulicateItemClick;
-  }
-
   /**
    * Determine whether the click is from Promoted Listings iframe on ebay partner sites
    * 1. Channel : ePN

@@ -55,7 +55,6 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
-    // Don't track ubi if the click is a duplicate itm click
     if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())
         && ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find()) {
       MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
