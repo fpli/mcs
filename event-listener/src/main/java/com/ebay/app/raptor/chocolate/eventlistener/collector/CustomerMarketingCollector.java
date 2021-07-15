@@ -62,7 +62,6 @@ public abstract class CustomerMarketingCollector {
     addCommonTags(requestContext, baseEvent, PageIdEnum.CLICK.getId());
 
     // add tags in url param "sojTags"
-    // Don't track ubi if the click is a duplicate itm click
     if (baseEvent.getUrlParameters().containsKey(Constants.SOJ_TAGS)
         && baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0) != null) {
       addGenericSojTags(requestContext, baseEvent);

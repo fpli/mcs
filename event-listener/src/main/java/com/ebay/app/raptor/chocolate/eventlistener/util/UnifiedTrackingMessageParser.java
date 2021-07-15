@@ -53,6 +53,9 @@ public class UnifiedTrackingMessageParser {
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
+  private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
+      "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
+
   public UnifiedTrackingMessageParser() throws Exception {
     UnifiedTrackerFactory.getUnifiedTracker(getEnv());
   }
@@ -140,19 +143,20 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
-   * Bot detection by device type
+   * Bot detection by user agent
    *
    * @param userAgent user agent
    */
   public static boolean isBot(String userAgent) {
-    // isBot. Basic bot detection by user agent.
-    if (StringUtils.isNotEmpty(userAgent) && (
-        userAgent.toLowerCase().contains("bot") ||
-            userAgent.toLowerCase().contains("proxy") ||
-            userAgent.toLowerCase().contains("spider")
-    )) {
-      return true;
+    if (StringUtils.isNotEmpty(userAgent)) {
+      String userAgentLower = userAgent.toLowerCase();
+      for (String botKeyword : BOT_LIST) {
+        if (userAgentLower.contains(botKeyword)) {
+          return true;
+        }
+      }
     }
+
     return false;
   }
 

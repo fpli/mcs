@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
@@ -75,8 +74,7 @@ public class CollectionService {
   private String behaviorTopic;
   private Producer unifiedTrackingProducer;
   private String unifiedTrackingTopic;
-  // collect duplicate click
-  private String duplicateItmClickTopic;
+  private String internalClickTopic;
   private static CollectionService instance = null;
   private UnifiedTrackingMessageParser utpParser;
   private static final String TYPE_INFO = "Info";
@@ -119,7 +117,7 @@ public class CollectionService {
     this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
-    this.duplicateItmClickTopic = ApplicationOptions.getInstance().getDuplicateItmClickTopic();
+    this.internalClickTopic = ApplicationOptions.getInstance().getInternalItmClickTopic();
     this.utpParser = new UnifiedTrackingMessageParser();
   }
 
@@ -355,33 +353,20 @@ public class CollectionService {
       metrics.meter("DeterminePromotedListingsClickError", 1);
     }
 
-    // filter click whose referer is internal
+    // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
         baseEvent.getReferer());
-    // Determine whether the click is a duplicate click
-    // If duplicate click, then drop into duplicateItmClickTopic
-    // If not, drop into normal topic
-    boolean isDuplicateClick = false;
-    try {
-      isDuplicateClick = CollectionServiceUtil.isDuplicateItmClick(baseEvent);
-
-      // send duplicate click to a dedicate listener topic
-      if(isDuplicateClick || isInternalRef) {
-        Producer<Long, ListenerMessage> producer = KafkaSink.get();
-        ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
-        sendClickToDuplicateItmClickTopic(producer, listenerMessage);
-      }
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      LOGGER.error("Determine whether the click is duplicate item click error.");
-      metrics.meter("DetermineDuplicateItmClickError", 1);
+    if(isInternalRef) {
+      Producer<Long, ListenerMessage> producer = KafkaSink.get();
+      ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
+      sendClickToInternalClickTopic(producer, listenerMessage);
     }
 
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
 
-    if(!isDuplicateClick && !isInternalRef ) {
+    if(!isInternalRef) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
 
@@ -918,8 +903,6 @@ public class CollectionService {
     BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
 
     if (message != null) {
-      // If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
-      // else drop into normal topic
       behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
           KafkaSink.callback);
     }
@@ -981,13 +964,12 @@ public class CollectionService {
   }
 
   /**
-   * If the click is a duplicate click from itm page, then drop into duplicateItmClickTopic
-   * else drop into normal topic
+   * Drop internal clicks into internalClickTopic
    */
-  private void sendClickToDuplicateItmClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
-    producer.send(new ProducerRecord<>(duplicateItmClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    metrics.meter("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
-            Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
+  private void sendClickToInternalClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
+    producer.send(new ProducerRecord<>(internalClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
+    metrics.meter("internalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+        Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 
   /**
