@@ -8,7 +8,9 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -26,7 +28,6 @@ import org.springframework.util.StringUtils;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
@@ -41,10 +42,10 @@ public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
-  private BehaviorMessageParser behaviorMessageParser;
+  Metrics metrics;
 
   public void postInit() {
-    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
+    this.metrics = ESMetrics.getInstance();
   }
 
   /**
@@ -57,7 +58,6 @@ public abstract class CustomerMarketingCollector {
     addCommonTags(requestContext, baseEvent, PageIdEnum.CLICK.getId());
 
     // add tags in url param "sojTags"
-    // Don't track ubi if the click is a duplicate itm click
     if (baseEvent.getUrlParameters().containsKey(Constants.SOJ_TAGS)
         && baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0) != null) {
       addGenericSojTags(requestContext, baseEvent);
@@ -118,7 +118,7 @@ public abstract class CustomerMarketingCollector {
       sojTags = URLDecoder.decode(sojTags, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       LOGGER.warn("Param sojTags is wrongly encoded", e);
-      MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+      metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
           Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
     }
     if (!StringUtils.isEmpty(sojTags)) {
@@ -165,13 +165,13 @@ public abstract class CustomerMarketingCollector {
       // no mkpid, accepted
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         LOGGER.warn(Errors.ERROR_NO_MKPID);
-        MonitorUtil.info("NoMkpidParameter");
+        metrics.meter("NoMkpidParameter");
       } else {
         // invalid mkpid, accepted
         partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
         if (StringUtils.isEmpty(partner)) {
           LOGGER.warn(Errors.ERROR_INVALID_MKPID);
-          MonitorUtil.info("InvalidMkpid");
+          metrics.meter("InvalidMkpid");
         }
       }
     }

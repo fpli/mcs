@@ -68,6 +68,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.ebay.traffic</groupId>
+      <artifactId>metrics-common</artifactId>
+      <version>1.3.2-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
 
   <build>

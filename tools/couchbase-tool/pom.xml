@@ -54,7 +54,7 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes</artifactId>
-      <version>1.6.6.raptorio</version>
+      <version>1.6.19.raptorio</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>

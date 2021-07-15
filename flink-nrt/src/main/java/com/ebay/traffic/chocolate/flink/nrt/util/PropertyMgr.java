@@ -113,6 +113,12 @@ public class PropertyMgr {
     return joiner.toString();
   }
 
+  /**
+   * Read property files from config path.
+   *
+   * @param propertyName property file name
+   * @return file content
+   */
   public Map<String, Object> loadYaml(String propertyName) {
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
       Yaml yaml = new Yaml();
@@ -121,5 +127,4 @@ public class PropertyMgr {
       throw new IllegalArgumentException(e);
     }
   }
-
 }
