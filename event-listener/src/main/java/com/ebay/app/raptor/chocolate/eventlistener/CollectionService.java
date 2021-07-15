@@ -309,9 +309,7 @@ public class CollectionService {
 
     String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
@@ -382,8 +380,7 @@ public class CollectionService {
       }
     }
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
-        Field.of(LANDING_PAGE_TYPE, landingPageType));
+        Field.of(CHANNEL_TYPE, type));
 
     return true;
   }
@@ -449,7 +446,7 @@ public class CollectionService {
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
-        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
@@ -508,7 +505,7 @@ public class CollectionService {
         Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-            ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
+            ChannelType.ROI.toString()));
 
     return true;
   }
@@ -608,8 +605,7 @@ public class CollectionService {
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-        Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
@@ -639,7 +635,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
+        Field.of(CHANNEL_TYPE, type));
 
     return true;
   }
