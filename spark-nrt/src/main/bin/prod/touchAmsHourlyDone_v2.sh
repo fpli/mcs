@@ -89,7 +89,7 @@ ${command_hadoop} -test -e ${done_file_full_name}
 done_file_exists=$?
 if [ ${done_file_exists} -eq 0 ]
 then
-    echo "done file exists: ${done_file}"
+    echo "done file exists: ${done_file_full_name}"
     rcode=0
 else
     retry=1
@@ -102,7 +102,7 @@ else
             echo "Successfully touch done file on ${DONE_CLUSTER}: "${done_file_full_name}
             break
         else
-            echo "Failed to touch done file on ${DONE_CLUSTER}: "${done_file_full_name}", retrying ${retry}"
+            echo "Failed to touch done file on ${DONE_CLUSTER}: ${done_file_full_name}, retrying ${retry}"
             retry=`expr ${retry} + 1`
         fi
     done

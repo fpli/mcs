@@ -1,6 +1,6 @@
 CREATE EXTERNAL TABLE choco_data.ams_imprsn_diff_tmp(
-  `click_id` decimal(18),
-  `click_dt` string
+  `imprsn_cntnr_id` decimal(18),
+  `imprsn_dt` string
   )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ''
