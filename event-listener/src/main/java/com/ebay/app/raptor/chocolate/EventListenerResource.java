@@ -61,14 +61,13 @@ public class EventListenerResource implements EventsApi {
   @Context
   private ContainerRequestContext requestContext;
 
-  private Metrics metrics;
 
   /**
    * Initialize function
    */
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
+
   }
 
   /**
