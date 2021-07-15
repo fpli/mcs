@@ -8,10 +8,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
-import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
-import com.ebay.app.raptor.chocolate.eventlistener.util.EmailPartnerIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -45,10 +42,8 @@ public abstract class CustomerMarketingCollector {
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
   private BehaviorMessageParser behaviorMessageParser;
-  Metrics metrics;
 
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
   }
 
@@ -123,7 +118,7 @@ public abstract class CustomerMarketingCollector {
       sojTags = URLDecoder.decode(sojTags, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       LOGGER.warn("Param sojTags is wrongly encoded", e);
-      metrics.meter("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+      MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
           Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
     }
     if (!StringUtils.isEmpty(sojTags)) {
@@ -170,13 +165,13 @@ public abstract class CustomerMarketingCollector {
       // no mkpid, accepted
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         LOGGER.warn(Errors.ERROR_NO_MKPID);
-        metrics.meter("NoMkpidParameter");
+        MonitorUtil.info("NoMkpidParameter");
       } else {
         // invalid mkpid, accepted
         partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
         if (StringUtils.isEmpty(partner)) {
           LOGGER.warn(Errors.ERROR_INVALID_MKPID);
-          metrics.meter("InvalidMkpid");
+          MonitorUtil.info("InvalidMkpid");
         }
       }
     }

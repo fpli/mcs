@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
@@ -68,7 +67,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 @DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionService.class);
-  private Metrics metrics;
   private ListenerMessageParser listenerMessageParser;
   private BehaviorMessageParser behaviorMessageParser;
   private Producer behaviorProducer;
@@ -112,7 +110,6 @@ public class CollectionService {
 
   @PostConstruct
   public void postInit() throws Exception {
-    this.metrics = ESMetrics.getInstance();
     this.listenerMessageParser = ListenerMessageParser.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
@@ -126,14 +123,14 @@ public class CollectionService {
   public boolean missMandatoryParams(MultiValueMap<String, String> parameters) {
     if (parameters.size() == 0) {
       LOGGER.warn(Errors.ERROR_NO_QUERY_PARAMETER);
-      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      MonitorUtil.info(Errors.ERROR_NO_QUERY_PARAMETER);
       return true;
     }
 
     // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKEVT);
-      metrics.meter(Errors.ERROR_NO_MKEVT);
+      MonitorUtil.info(Errors.ERROR_NO_MKEVT);
       return true;
     }
 
@@ -141,7 +138,7 @@ public class CollectionService {
     String mkevt = parameters.get(Constants.MKEVT).get(0);
     if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
       LOGGER.warn(Errors.ERROR_INVALID_MKEVT);
-      metrics.meter(Errors.ERROR_INVALID_MKEVT);
+      MonitorUtil.info(Errors.ERROR_INVALID_MKEVT);
       return true;
     }
 
@@ -149,7 +146,7 @@ public class CollectionService {
     // no mkcid, rejected but return 201 accepted for clients
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKCID);
-      metrics.meter("NoMkcidParameter");
+      MonitorUtil.info("NoMkcidParameter");
       return true;
     }
     return false;
@@ -170,7 +167,7 @@ public class CollectionService {
     // Since Chrome strict policy, referer may be cut off, so use 'originalUrl' parameter first as target url
     // if referer is existed, it will be in the target url (request body) parameter
     if (ePageSites.matcher(targetUrl.toLowerCase()).find()) {
-      metrics.meter("ePageIncoming");
+      MonitorUtil.info("ePageIncoming");
 
       Event staticPageEvent = staticPageRequestHandler.parseStaticPageEvent(targetUrl, referer);
       finalUrl = staticPageEvent.getTargetUrl();
@@ -184,7 +181,7 @@ public class CollectionService {
     // re-construct Chocolate url based on native uri and track (only support /itm page)
     Matcher deeplinkMatcher = deeplinksites.matcher(targetUrl.toLowerCase());
     if (deeplinkMatcher.find()) {
-      metrics.meter("IncomingAppDeepLink");
+      MonitorUtil.info("IncomingAppDeepLink");
 
       Event customizedSchemeEvent = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetUrl, referer);
       if(customizedSchemeEvent == null) {
@@ -212,7 +209,7 @@ public class CollectionService {
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
       LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", targetUrl);
-      metrics.meter("InvalidMkcid");
+      MonitorUtil.info("InvalidMkcid");
       return null;
     }
 
@@ -284,7 +281,7 @@ public class CollectionService {
     }
 
     // UFES metrics
-    metrics.meter("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
+    MonitorUtil.info("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
         Field.of(LANDING_PAGE_TYPE, landingPageType),
         Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
 
@@ -299,10 +296,10 @@ public class CollectionService {
     if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
       if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
           parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
-        metrics.meter("SelfServiceIncoming");
+        MonitorUtil.info("SelfServiceIncoming");
         CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID),
             urlRefChannel.getLeft());
-        metrics.meter("SelfServiceSuccess");
+        MonitorUtil.info("SelfServiceSuccess");
 
         return true;
       }
@@ -336,7 +333,7 @@ public class CollectionService {
     } catch (Exception e) {
       LOGGER.warn(e.getMessage());
       LOGGER.warn("Error click timestamp from Checkout API " + baseEvent.getTimestamp());
-      metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+      MonitorUtil.info("ErrorCheckoutAPIClickTimestamp", 1);
     }
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
@@ -348,11 +345,11 @@ public class CollectionService {
 
       if (isEPNClickFromPromotedListings) {
         baseEvent.setReferer(URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name()));
-        metrics.meter("OverwriteRefererForPromotedListingsClick");
+        MonitorUtil.info("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
       LOGGER.error("Determine whether the click is from promoted listings iframe error");
-      metrics.meter("DeterminePromotedListingsClickError", 1);
+      MonitorUtil.info("DeterminePromotedListingsClickError", 1);
     }
 
     // filter click whose referer is internal
@@ -374,7 +371,7 @@ public class CollectionService {
     } catch (Exception e) {
       LOGGER.error(e.getMessage());
       LOGGER.error("Determine whether the click is duplicate item click error.");
-      metrics.meter("DetermineDuplicateItmClickError", 1);
+      MonitorUtil.info("DetermineDuplicateItmClickError", 1);
     }
 
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
@@ -480,7 +477,7 @@ public class CollectionService {
 
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase(STR_NULL)) {
       LOGGER.warn(Errors.ERROR_NO_REFERER);
-      metrics.meter(Errors.ERROR_NO_REFERER);
+      MonitorUtil.info(Errors.ERROR_NO_REFERER);
       referer = "";
     }
     // decode referer if necessary
@@ -492,7 +489,7 @@ public class CollectionService {
     // Don't write into ubi if roi is from Checkout API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
     if(isRoiFromCheckoutAPI) {
-      metrics.meter("CheckoutAPIROI", 1);
+      MonitorUtil.info("CheckoutAPIROI", 1);
     }
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
@@ -515,10 +512,10 @@ public class CollectionService {
     // fire roi events
     fireROIEvent(baseEvent, requestContext);
 
-    metrics.meter("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
+    MonitorUtil.info("NewROICountAPI", 1, Field.of(CHANNEL_ACTION, "New-ROI"),
         Field.of(CHANNEL_TYPE, "New-ROI"), Field.of(ROI_SOURCE, String.valueOf(payloadMap.get(ROI_SOURCE))));
     // Log the roi lag between transation time and receive time
-    metrics.mean("RoiTransationLag", startTime - Longs.tryParse(roiEvent.getTransactionTimestamp()),
+    MonitorUtil.latency("RoiTransationLag", startTime - Longs.tryParse(roiEvent.getTransactionTimestamp()),
         Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
@@ -564,14 +561,14 @@ public class CollectionService {
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
       LOGGER.warn(Errors.ERROR_NO_QUERY_PARAMETER);
-      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      MonitorUtil.info(Errors.ERROR_NO_QUERY_PARAMETER);
       return true;
     }
 
     // parse action from query param mkevt
     if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKEVT);
-      metrics.meter(Errors.ERROR_NO_MKEVT);
+      MonitorUtil.info(Errors.ERROR_NO_MKEVT);
     }
 
     // TODO refactor ChannelActionEnum
@@ -598,7 +595,7 @@ public class CollectionService {
     // no mkcid, accepted
     if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKCID);
-      metrics.meter("NoMkcidParameter");
+      MonitorUtil.info("NoMkcidParameter");
       return true;
     }
 
@@ -606,7 +603,7 @@ public class CollectionService {
     channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
     if (channelType == null) {
       LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", uri);
-      metrics.meter("InvalidMkcid");
+      MonitorUtil.info("InvalidMkcid");
       return true;
     }
 
@@ -718,7 +715,7 @@ public class CollectionService {
           mockClickListenerMessage.getShortSnapshotId(), null);
 
       // Log mock click for pre-install ROI by transaction type
-      metrics.meter("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
+      MonitorUtil.info("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
           Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
           Field.of(ROI_TRANS_TYPE, baseEvent.getRoiEvent().getTransType()));
     }
@@ -751,7 +748,7 @@ public class CollectionService {
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
     if (parameters.size() == 0) {
       LOGGER.warn(Errors.ERROR_NO_QUERY_PARAMETER);
-      metrics.meter(Errors.ERROR_NO_QUERY_PARAMETER);
+      MonitorUtil.info(Errors.ERROR_NO_QUERY_PARAMETER);
       return true;
     }
 
@@ -790,7 +787,7 @@ public class CollectionService {
 
     } catch (Exception e) {
       LOGGER.warn("Error when tracking ubi for adguid", e);
-      metrics.meter("ErrorWriteAdguidToUBI");
+      MonitorUtil.info("ErrorWriteAdguidToUBI");
     }
 
     return true;
@@ -845,12 +842,12 @@ public class CollectionService {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
             utpMessage), UnifiedTrackingKafkaSink.callback);
       } else {
-        metrics.meter("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().toString()),
+        MonitorUtil.info("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().toString()),
             Field.of(CHANNEL_TYPE, baseEvent.getChannelType().toString()));
       }
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
-      metrics.meter("UTPMessageError");
+      MonitorUtil.info("UTPMessageError");
     }
   }
 
@@ -937,7 +934,7 @@ public class CollectionService {
    */
   private void logError(String error) throws Exception {
     LOGGER.warn(error);
-    metrics.meter(error);
+    MonitorUtil.info(error);
     throw new Exception(error);
   }
 
@@ -952,7 +949,7 @@ public class CollectionService {
     // use the timestamp from request as the start time
     long startTime = System.currentTimeMillis();
     LOGGER.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("CollectionServiceIncoming", 1, startTime, additionalFields);
+    MonitorUtil.info("CollectionServiceIncoming", 1,additionalFields);
     return startTime;
   }
 
@@ -965,18 +962,18 @@ public class CollectionService {
   private void stopTimerAndLogData(long eventProcessStartTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     LOGGER.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("CollectionServiceSuccess", 1, eventProcessStartTime, additionalFields);
-    metrics.mean("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
+    MonitorUtil.info("CollectionServiceSuccess", 1, additionalFields);
+    MonitorUtil.latency("CollectionServiceAverageLatency", endTime - eventProcessStartTime);
   }
 
   private void stopTimerAndLogData(BaseEvent baseEvent, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     LOGGER.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("CollectionServiceSuccess", 1, baseEvent.getTimestamp(), additionalFields);
+    MonitorUtil.info("CollectionServiceSuccess", 1, additionalFields);
     if (baseEvent.isCheckoutApi()) {
-      metrics.mean("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
+      MonitorUtil.latency("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
     } else {
-      metrics.mean("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
+      MonitorUtil.latency("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
     }
   }
 
@@ -986,7 +983,7 @@ public class CollectionService {
    */
   private void sendClickToDuplicateItmClickTopic(Producer<Long, ListenerMessage> producer, ListenerMessage message) {
     producer.send(new ProducerRecord<>(duplicateItmClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
-    metrics.meter("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
+    MonitorUtil.info("DuplicateItmClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
             Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
 

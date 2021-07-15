@@ -5,6 +5,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -32,11 +33,9 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
 public class ROICollector {
   private static final Logger LOGGER = LoggerFactory.getLogger(ROICollector.class);
 
-  private Metrics metrics;
-
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
+
   }
 
   /**
@@ -48,13 +47,13 @@ public class ROICollector {
     if (roiEvent.getItemId() == null) {
       roiEvent.setItemId("");
       LOGGER.warn("Error item id null");
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+      MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
     } else {
       Long itemId = Longs.tryParse(roiEvent.getItemId());
       if (itemId == null || itemId < 0) {
         roiEvent.setItemId("");
         LOGGER.warn("Error itemId " + itemId);
-        metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+        MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       }
     }
   }
@@ -63,13 +62,13 @@ public class ROICollector {
     if (roiEvent.getTransactionTimestamp() == null) {
       roiEvent.setTransactionTimestamp(Long.toString(System.currentTimeMillis()));
       LOGGER.warn("Error timestamp null");
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+      MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
     } else {
       Long transTimestamp = Longs.tryParse(roiEvent.getTransactionTimestamp());
       if (transTimestamp == null || transTimestamp <= 0) {
         roiEvent.setTransactionTimestamp(Long.toString(System.currentTimeMillis()));
         LOGGER.warn("Error timestamp " + transTimestamp);
-        metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+        MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
       }
     }
   }
@@ -78,13 +77,13 @@ public class ROICollector {
     if (roiEvent.getUniqueTransactionId() == null) {
       roiEvent.setUniqueTransactionId("");
       LOGGER.warn("Error transactionId null");
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+      MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
     }
     Long transId = Longs.tryParse(roiEvent.getUniqueTransactionId());
     if (transId == null || transId < 0) {
       roiEvent.setUniqueTransactionId("");
       LOGGER.warn("Error transactionId " + transId);
-      metrics.meter("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
+      MonitorUtil.info("ErrorNewROIParam", 1, Field.of(CHANNEL_ACTION, "New-ROI"), Field.of(CHANNEL_TYPE, "New-ROI"));
     }
   }
 

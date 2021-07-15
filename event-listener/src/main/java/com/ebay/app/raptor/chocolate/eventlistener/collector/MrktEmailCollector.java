@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.monitoring.Field;
@@ -113,7 +114,7 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
         }
       } catch (UnsupportedEncodingException e) {
         LOGGER.warn("adcamp_landingpage is wrongly encoded", e);
-        metrics.meter("ErrorEncoded_adcamp_landingpage", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+        MonitorUtil.info("ErrorEncoded_adcamp_landingpage", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
             Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
       }
 

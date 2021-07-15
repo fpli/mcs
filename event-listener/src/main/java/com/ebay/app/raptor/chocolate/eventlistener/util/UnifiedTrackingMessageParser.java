@@ -575,7 +575,7 @@ public class UnifiedTrackingMessageParser {
           }
         }
       } catch (Exception e) {
-        metrics.meter("putItmToPldError");
+        MonitorUtil.info("putItmToPldError");
         logger.warn("put itm tag to payload error, url is {}", url);
       }
     }
