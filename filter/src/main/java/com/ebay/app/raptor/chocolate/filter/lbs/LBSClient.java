@@ -1,9 +1,9 @@
 package com.ebay.app.raptor.chocolate.filter.lbs;
 
-import com.ebay.app.raptor.chocolate.filter.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;

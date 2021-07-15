@@ -1,16 +1,14 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
-import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.adservice.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.util.Base64;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import com.iabtcf.decoder.TCString;
-import com.iabtcf.exceptions.TCStringDecodeException;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.lang.management.MonitorInfo;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;

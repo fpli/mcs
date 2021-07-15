@@ -5,14 +5,12 @@
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

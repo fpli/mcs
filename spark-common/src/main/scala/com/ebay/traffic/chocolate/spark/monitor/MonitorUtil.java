@@ -1,4 +1,4 @@
-package com.ebay.app.raptor.chocolate.filter.util;
+package com.ebay.traffic.chocolate.spark.monitor;
 
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
@@ -65,3 +65,4 @@ public final class MonitorUtil {
         return additional;
     }
 }
+

@@ -7,7 +7,6 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.constant.Constants;
@@ -21,8 +20,7 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

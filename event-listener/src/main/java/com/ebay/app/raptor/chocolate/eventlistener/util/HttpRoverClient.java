@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.kernel.util.StringUtils;
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import com.ebay.traffic.monitoring.Metrics;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.http.NameValuePair;

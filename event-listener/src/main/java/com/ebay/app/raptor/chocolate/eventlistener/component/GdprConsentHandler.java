@@ -4,12 +4,11 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.eventlistener.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import com.iabtcf.decoder.TCString;
-import com.iabtcf.exceptions.TCStringDecodeException;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -21,15 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
-import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 
 /**
  * For GDPR compliant mode
