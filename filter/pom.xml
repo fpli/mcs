@@ -305,6 +305,18 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-envoyhealth-status-starter</artifactId>
     </dependency>
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-sparkcommon</artifactId>
+            <version>3.8.0-RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-sparkcommon</artifactId>
+            <version>3.8.0-RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 
