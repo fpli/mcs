@@ -802,7 +802,7 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
-    UnifiedTrackingMessage message = utpParser.parse(event);
+    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event);
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
     SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, message.getProducerEventId());
     SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
@@ -834,7 +834,7 @@ public class CollectionService {
           || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
               baseEvent.getReferer())
           || !m.find()) {
-        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
+        UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(baseEvent, requestContext, snapshotId,
             shortSnapshotId);
         if(!StringUtils.isEmpty(eventId)) {
           utpMessage.setEventId(eventId);
