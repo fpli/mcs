@@ -46,7 +46,7 @@ public abstract class AbstractRheosEventSinkApp {
 
   private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
 
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.MINUTES.toMillis(2);
+  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.MINUTES.toMillis(3);
 
   private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
 
