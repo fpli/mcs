@@ -49,7 +49,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
  */
 public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
-  private static Metrics metrics = ESMetrics.getInstance();
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
