@@ -9,6 +9,9 @@ public class PropertyConstants {
   public static final String SHERLOCKIO_USER = "sherlockio.user";
 
   public static final String TOPIC = "topic";
+  public static final String SOURCE = "source";
+  public static final String TRANSFORM = "transform";
+  public static final String PRORERTIES = "properties";
   public static final String TOPIC_IMK_TRCKNG_EVENT_WIDE = "topic";
   public static final String TOPIC_IMK_RVR_TRCKNG_EVENT = "topic.imk-rvr-trckng-event";
   public static final String TOPIC_IMK_RVR_TRCKNG_EVENT_DTL = "topic.imk-rvr-trckng-event-dtl";
@@ -122,4 +125,10 @@ public class PropertyConstants {
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.consumer.topic.properties";
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.properties";
   public static final String UTP_ROVER_EVENT_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "utp-rover-event-bot-transform-app.rheos.producer.topic.properties";
+
+  public static final String UTP_EVENT_TRACER_ES_PROPERTIES = "utp-event-tracer.es.properties";
+  public static final String UTP_EVENT_TRACER_CONSUMER_TOPIC_PROPERTIES = "utp-event-tracer.consumer.topic.properties";
+  public static final String UTP_EVENT_TRACER_CONSUMER_PROPERTIES = "utp-event-tracer.consumer.properties";
+
+  public static final String UTP_PATHFINDER_EVENT_TRANSFORM_APP_YAML = "utp-pathfinder-event-transform-app.yaml";
 }

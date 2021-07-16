@@ -58,22 +58,22 @@ public class HttpRequestUtil {
     return null;
   }
 
-  /**
-   * Get remote ip
-   */
-  public static String getRemoteIp(HttpServletRequest request) {
-    String remoteIp = null;
-    String xForwardFor = request.getHeader("X-Forwarded-For");
-    if (xForwardFor != null && !xForwardFor.isEmpty()) {
-      remoteIp = xForwardFor.split(",")[0];
-    }
-
-    if (remoteIp == null || remoteIp.isEmpty()) {
-      remoteIp = RequestUtil.getRemoteAddr(request);
-    }
-
-    return remoteIp == null ? "" : remoteIp;
-  }
+//  /**
+//   * Get remote ip
+//   */
+//  public static String getRemoteIp(HttpServletRequest request) {
+//    String remoteIp = null;
+//    String xForwardFor = request.getHeader("X-Forwarded-For");
+//    if (xForwardFor != null && !xForwardFor.isEmpty()) {
+//      remoteIp = xForwardFor.split(",")[0];
+//    }
+//
+//    if (remoteIp == null || remoteIp.isEmpty()) {
+//      remoteIp = RequestUtil.getRemoteAddr(request);
+//    }
+//
+//    return remoteIp == null ? "" : remoteIp;
+//  }
 
   /**
    * Parse tag from url query string

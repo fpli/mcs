@@ -2,131 +2,33 @@ package chocolate.util;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = EventListenerApplication.class)
 public class CollectionServiceUtilTest {
-    @Test
-    public void testIsDuplicateItmClick() {
-        boolean isDuplicateItemClick = false;
-
-        // non-itm page
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/i/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.co.uk/scp/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        // item page with title
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/asdfwerw/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/23362adfawerqwet/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/adfawerqwe321434/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        // bot click
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "GingerClient"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", true, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        // user clicks from special sites
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.nl/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://befr.ebay.be/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com.my/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        // user clicks from dweb
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, false, false);
-        assertEquals(false, isDuplicateItemClick);
-
-        // user clicks from tablet
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, false);
-        assertEquals(false, isDuplicateItemClick);
-
-        // user clicks from native app
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, false, false);
-        assertEquals(false, isDuplicateItemClick);
-
-        // user clicks from non-special sites and mobile phone web
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(true, isDuplicateItemClick);
-
-        // other marketing status code
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("200", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("404", "checkoutApi"
-                , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
-        assertEquals(false, isDuplicateItemClick);
-
-        // throw exception
-        isDuplicateItemClick = false;
-        try {
-            isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", "checkoutApi"
-                    , null, false, true, true);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        assertEquals(false, isDuplicateItemClick);
-
-        try {
-            isDuplicateItemClick = CollectionServiceUtil.isDuplicateItmClick("301", null
-                    , "https://www.ebay.com/itm/233622232591?mkevt=1", false, true, true);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        assertEquals(false, isDuplicateItemClick);
-
-    }
-
     @Test
     public void testGetAppIdFromUserAgent() {
         UserAgentParser agentParser = new UserAgentParser();
@@ -220,7 +122,76 @@ public class CollectionServiceUtilTest {
 
         String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
         assertEquals("https://www.ebay.fr/itm/154347659933?mkevt=1&mkcid=1&mkrid=709-53481-19255-0&campid=5337369893&toolid=11800&customid=test&ff17=chocodeeplink", viewItemChocolateURL);
+
+        assertEquals("", CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(null));
+        assertEquals("?ff17=referrerdeeplink", CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(""));
     }
+
+    @Test
+    public void testIsPreinstallROI() {
+        Map<String, String> roiPayloadMap = new HashMap<>();
+        roiPayloadMap.put("mppid", "92");
+        roiPayloadMap.put("rlutype", "1");
+        roiPayloadMap.put("usecase", "prm");
+
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BIN-MobileApp"));
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BID-MobileApp"));
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "Sell-MobileApp"));
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "Reg-MobileApp"));
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BO-MobileApp"));
+        assertEquals(true, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "RegSell-MobileApp"));
+        assertEquals(false, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BIN-FP"));
+
+        roiPayloadMap.put("rlutype", "2");
+        assertEquals(false, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BIN-MobileApp"));
+
+        roiPayloadMap.put("rlutype", "1");
+        roiPayloadMap.put("usecase", "");
+        assertEquals(false, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BID-MobileApp"));
+
+        roiPayloadMap.put("usecase", "prm");
+        roiPayloadMap.put("mppid", "");
+        assertEquals(false, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "Sell-MobileApp"));
+
+        roiPayloadMap.clear();
+        assertEquals(false, CollectionServiceUtil.isPreinstallROI(roiPayloadMap, "BIN-MobileApp"));
+    }
+
+    @Test
+    public void testCreatePrmClickUrl() {
+        IEndUserContext mockIEndUserContext = Mockito.mock(IEndUserContext.class);
+        Mockito.when(mockIEndUserContext.getDeviceId()).thenReturn("023b4ffe1711e42a157a2480012d3864");
+
+        Map<String, String> roiPayloadMap = new HashMap<>();
+        roiPayloadMap.put("mppid", "92");
+        assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.com?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=0&udid=023b4ffe1711e42a157a2480012d3864");
+
+        roiPayloadMap.put("siteId", "3");
+        assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.co.uk?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=3&udid=023b4ffe1711e42a157a2480012d3864");
+
+        roiPayloadMap.put("siteId", "999");
+        assertEquals(CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, mockIEndUserContext), "https://www.ebay.com?mkevt=1&mkcid=4&mkrid=14362-130847-18990-0&mppid=92&rlutype=1&site=999&udid=023b4ffe1711e42a157a2480012d3864");
+
+        assertEquals("", CollectionServiceUtil.createPrmClickUrl(roiPayloadMap, null));
+    }
+
+    @Test
+    public void testSubstring() {
+        assertNull(CollectionServiceUtil.substring(null, "", ""));
+        assertNull(CollectionServiceUtil.substring("abcd", "efg", ""));
+        assertNull(CollectionServiceUtil.substring("abcd", "d", ""));
+        assertEquals("cd", CollectionServiceUtil.substring("abcd", "ab", ""));
+    }
+
+    @Test
+    public void testFacebookPrefetchEnabled() {
+        Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        requestHeaders.put("X-Purpose", "preview");
+        assertTrue(CollectionServiceUtil.isFacebookPrefetchEnabled(requestHeaders));
+        requestHeaders.remove("X-Purpose");
+        assertFalse(CollectionServiceUtil.isFacebookPrefetchEnabled(requestHeaders));
+    }
+
 
     public MultiValueMap<String, String> getTargetUrlParameters(String targetUrl) {
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();

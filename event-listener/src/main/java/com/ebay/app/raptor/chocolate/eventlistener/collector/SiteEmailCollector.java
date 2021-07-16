@@ -4,23 +4,20 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
+import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
-
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
-import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
 
 /**
@@ -43,56 +40,49 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
   }
 
   /**
-   * @param parameters    url parameters
-   * @param type          channel type
-   * @param action        action type
-   * @param request       http request
-   * @param uri           url
-   * @param channelAction channel action enum
+   * Track ubi
+   *
+   * @param requestContext request context
+   * @param baseEvent      base event
    */
   @Override
-  public void trackUbi(ContainerRequestContext requestContext, MultiValueMap<String, String> parameters,
-                       String type, String action, HttpServletRequest request, String uri, String referer,
-                       String utpEventId, ChannelAction channelAction) {
+  public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
-    // Don't track ubi if the click is a duplicate itm click
-    if (ChannelAction.CLICK.equals(channelAction) && ebaysites.matcher(uri.toLowerCase()).find()) {
-      try {
-        // Ubi tracking
-        IRequestScopeTracker requestTracker =
-            (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())
+        && ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find()) {
 
-        // common tags and soj tags
-        super.trackUbi(requestContext, parameters, type, action, request, uri, referer, utpEventId, channelAction);
+      MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
 
-        // event family
-        requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+      // Ubi tracking
+      IRequestScopeTracker requestTracker =
+          (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-        // fbprefetch
-        if (isFacebookPrefetchEnabled(request)) {
-          requestTracker.addTag("fbprefetch", true, Boolean.class);
-        }
+      // common tags and soj tags
+      super.trackUbi(requestContext, baseEvent);
 
-        // channel id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+      // event family
+      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
 
-        // source id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
-
-        // email unique id
-        addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
-
-        // email experienced treatment
-        addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
-
-        // decrypted user id
-        addDecrytpedUserIDFromBu(parameters, requestTracker);
-
-      } catch (Exception e) {
-        LOGGER.warn("Error when tracking ubi for site email click tags", e);
-        metrics.meter("ErrorTrackUbi", 1, Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+      // fbprefetch
+      if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
+        requestTracker.addTag("fbprefetch", true, Boolean.class);
       }
+
+      // channel id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.MKCID, "chnl", String.class);
+
+      // source id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.SOURCE_ID, "emsid", String.class);
+
+      // email unique id
+      addTagFromUrlQuery(parameters, requestTracker, Constants.EMAIL_UNIQUE_ID, "euid", String.class);
+
+      // email experienced treatment
+      addTagFromUrlQuery(parameters, requestTracker, Constants.EXPRCD_TRTMT, "ext", String.class);
+
+      // decrypted user id
+      addDecrytpedUserIDFromBu(parameters, requestTracker);
     }
   }
 }

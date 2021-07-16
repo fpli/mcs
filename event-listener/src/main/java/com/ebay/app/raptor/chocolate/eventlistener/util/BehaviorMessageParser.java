@@ -3,12 +3,14 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
+import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
-import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -33,6 +35,8 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.*;
+
+import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
 
 /**
  * Created by jialili1 on 7/29/20
@@ -69,133 +73,8 @@ public class BehaviorMessageParser {
     return INSTANCE;
   }
 
-  public BehaviorMessage parseAmsAndImkEvent(final HttpServletRequest request, ContainerRequestContext requestContext,
-                                             IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
-                                             UserAgentInfo agentInfo, String uri, Long startTime, final ChannelType channelType,
-                                             final ChannelAction channelAction, Long snapshotId, int pageId, String pageName, int rdt,
-                                             String referer, String guid, String cguid, String userId, String rotationId) {
-    try {
-      Map<String, String> applicationPayload = new HashMap<>();
-      Map<String, String> clientData = new HashMap<>();
-      List<Map<String, String>> data = new ArrayList<>();
 
-      // set default value
-      BehaviorMessage record = new BehaviorMessage("", "", 0L, null, 0, null, null, null, null, null, null, null,
-              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-              null, applicationPayload, null, clientData, "", "", "", data);
-
-      RequestTracingContext tracingContext = (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
-      DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
-
-      // guid
-      record.setGuid(guid);
-
-      // adguid
-      String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-      String adguid = getData(Constants.ADGUID, trackingHeader);
-      if (adguid != null) {
-        record.setAdguid(adguid);
-      }
-
-      // source id
-      record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
-
-      record.setUserId(userId);
-
-      // eventTimestamp
-      record.setEventTimestamp(startTime);
-
-      // page info
-      record.setPageId(pageId);
-      record.setPageName(pageName);
-
-      // event family and action
-      record.setEventFamily(Constants.EVENT_FAMILY_CRM);
-      record.setEventAction(Constants.EVENT_ACTION);
-
-      // snapshotId
-      record.setSnapshotId(String.valueOf(snapshotId));
-
-      // fake session info
-      record.setSessionId(String.valueOf(snapshotId));
-      record.setSeqNum("1");
-
-      // agent info
-      record.setAgentInfo(endUserContext.getUserAgent());
-
-      // app info
-      String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
-      record.setAppId(appId);
-      if (agentInfo.getAppInfo() != null) {
-        record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
-      }
-
-      // url query string
-      record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
-              false));
-
-      // device info
-      DDSResponse deviceInfo = agentInfo.getDeviceInfo();
-      record.setDeviceFamily(getDeviceFamily(deviceInfo));
-      record.setDeviceType(deviceInfo.getOsName());
-      record.setBrowserVersion(deviceInfo.getBrowserVersion());
-      record.setBrowserFamily(deviceInfo.getBrowser());
-      record.setOsVersion(deviceInfo.getDeviceOSVersion());
-      record.setOsFamily(deviceInfo.getDeviceOS());
-      record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
-
-      Map<String, String> applicationPayload1 = getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
-              domainRequest, deviceInfo, channelType, channelAction, guid, pageId);
-      applicationPayload1.put(Constants.CGUID, cguid);
-      applicationPayload1.put("u", userId);
-      applicationPayload1.put("userid", userId);
-      applicationPayload1.put("rotid", rotationId);
-      // applicationPayload
-      record.setApplicationPayload(applicationPayload1);
-
-      // cobrand
-      record.setCobrand(cobrandParser.parse(appId, endUserContext.getUserAgent()));
-
-      // rlogid
-      record.setRlogid(tracingContext.getRlogId());
-
-      // client data
-      record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referer));
-
-      // web server
-      record.setWebServer(domainRequest.getHost());
-
-      // ip
-      record.setRemoteIP(getRemoteIp(request));
-      record.setClientIP(domainRequest.getClientIp());
-
-      // referer hash
-      if (domainRequest.getReferrerUrl() != null) {
-        record.setRefererHash(String.valueOf(domainRequest.getReferrerUrl().hashCode()));
-      }
-
-      // site id
-      record.setSiteId(String.valueOf(domainRequest.getSiteId()));
-
-      // rdt
-      record.setRdt(rdt);
-
-      // channel type and action
-      record.setChannelType(channelType.toString());
-      record.setChannelAction(channelAction.toString());
-
-      return record;
-    } catch (Exception e) {
-      logger.warn("Failed to parse behavior message {} {}", uri, e.getMessage());
-      return null;
-    }
-  }
-
-  public BehaviorMessage parse(final HttpServletRequest request, ContainerRequestContext requestContext,
-                               IEndUserContext endUserContext, MultiValueMap<String, String> parameters,
-                               UserAgentInfo agentInfo, String referrer, String uri, Long startTime,
-                               final ChannelType channelType, final ChannelAction channelAction,
-                               Long snapshotId, int rdt) {
+  public BehaviorMessage parse(BaseEvent baseEvent, ContainerRequestContext requestContext) {
 
     Map<String, String> applicationPayload = new HashMap<>();
     Map<String, String> clientData = new HashMap<>();
@@ -210,11 +89,19 @@ public class BehaviorMessageParser {
         (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
 
-    // guid
-    String trackingHeader = request.getHeader("X-EBAY-C-TRACKING");
-    String guid = getData(Constants.GUID, trackingHeader);
-    if (guid != null) {
-      record.setGuid(guid);
+    // guid from tracking header
+    String trackingHeader = baseEvent.getRequestHeaders().get(TRACKING_HEADER);
+    String guid = "";
+    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
+      for (String seg : trackingHeader.split(",")) {
+        String[] keyValue = seg.split("=");
+        if (keyValue.length == 2) {
+          if (keyValue[0].equalsIgnoreCase(Constants.GUID)) {
+            guid = keyValue[1];
+            record.setGuid(guid);
+          }
+        }
+      }
     }
 
     // adguid
@@ -224,17 +111,17 @@ public class BehaviorMessageParser {
     }
 
     // source id
-    record.setSid(parseTagFromParams(parameters, Constants.SOURCE_ID));
+    record.setSid(parseTagFromParams(baseEvent.getUrlParameters(), Constants.SOURCE_ID));
 
-    // user id
-    record.setUserId(parseTagFromParams(parameters, Constants.BEST_GUESS_USER));
+    String userId = Long.toString(baseEvent.getEndUserContext().getOrigUserOracleId());
+    record.setUserId(userId);
 
     // eventTimestamp
-    record.setEventTimestamp(startTime);
+    record.setEventTimestamp(baseEvent.getTimestamp());
 
     int pageId = 0;
     // page info
-    switch(channelAction) {
+    switch(baseEvent.getActionType()) {
       case EMAIL_OPEN:
         pageId = PageIdEnum.EMAIL_OPEN.getId();
         record.setPageId(pageId);
@@ -252,6 +139,7 @@ public class BehaviorMessageParser {
     record.setEventAction(Constants.EVENT_ACTION);
 
     // snapshotId
+    long snapshotId = SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation();
     record.setSnapshotId(String.valueOf(snapshotId));
 
     // fake session info
@@ -259,21 +147,21 @@ public class BehaviorMessageParser {
     record.setSeqNum("1");
 
     // agent info
-    record.setAgentInfo(endUserContext.getUserAgent());
+    record.setAgentInfo(baseEvent.getEndUserContext().getUserAgent());
 
     // app info
-    String appId = CollectionServiceUtil.getAppIdFromUserAgent(agentInfo);
+    String appId = CollectionServiceUtil.getAppIdFromUserAgent(baseEvent.getUserAgentInfo());
     record.setAppId(appId);
-    if (agentInfo.getAppInfo() != null) {
-      record.setAppVersion(agentInfo.getAppInfo().getAppVersion());
+    if (baseEvent.getUserAgentInfo().getAppInfo() != null) {
+      record.setAppVersion(baseEvent.getUserAgentInfo().getAppInfo().getAppVersion());
     }
 
     // url query string
-    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(parameters, uri), domainRequest.isSecure(),
-        false));
+    record.setUrlQueryString(UrlProcessHelper.getMaskedUrl(removeBsParam(baseEvent.getUrlParameters(),
+        baseEvent.getUrl()), domainRequest.isSecure(), false));
 
     // device info
-    DDSResponse deviceInfo = agentInfo.getDeviceInfo();
+    DDSResponse deviceInfo = baseEvent.getUserAgentInfo().getDeviceInfo();
     record.setDeviceFamily(getDeviceFamily(deviceInfo));
     record.setDeviceType(deviceInfo.getOsName());
     record.setBrowserVersion(deviceInfo.getBrowserVersion());
@@ -283,23 +171,25 @@ public class BehaviorMessageParser {
     record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
 
     // applicationPayload
-    record.setApplicationPayload(getApplicationPayload(applicationPayload, parameters, agentInfo, requestContext, uri,
-        domainRequest, deviceInfo, channelType, channelAction, guid, pageId));
+    record.setApplicationPayload(getApplicationPayload(applicationPayload, baseEvent.getUrlParameters(),
+        baseEvent.getUserAgentInfo(), requestContext, baseEvent.getUrl(), domainRequest, deviceInfo,
+        baseEvent.getChannelType().getLogicalChannel().getAvro(), baseEvent.getActionType().getAvro(), guid, pageId));
 
     // cobrand
-    record.setCobrand(cobrandParser.parse(appId, endUserContext.getUserAgent()));
+    record.setCobrand(cobrandParser.parse(appId, baseEvent.getEndUserContext().getUserAgent()));
 
     // rlogid
     record.setRlogid(tracingContext.getRlogId());
 
     // client data
-    record.setClientData(getClientData(clientData, domainRequest, endUserContext, request, referrer));
+    record.setClientData(getClientData(clientData, domainRequest, baseEvent.getEndUserContext(),
+        baseEvent.getReferer()));
 
     // web server
     record.setWebServer(domainRequest.getHost());
 
     // ip
-    record.setRemoteIP(getRemoteIp(request));
+    record.setRemoteIP(baseEvent.getEndUserContext().getIPAddress());
     record.setClientIP(domainRequest.getClientIp());
 
     // referer hash
@@ -311,22 +201,20 @@ public class BehaviorMessageParser {
     record.setSiteId(String.valueOf(domainRequest.getSiteId()));
 
     // rdt
-    record.setRdt(rdt);
+    record.setRdt(0);
 
     // channel type and action
-    record.setChannelType(channelType.toString());
-    record.setChannelAction(channelAction.toString());
+    record.setChannelType(baseEvent.getChannelType().toString());
+    record.setChannelAction(baseEvent.getChannelType().toString());
 
     return record;
   }
-
 
   /**
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, HttpServletRequest request,
-                                            String referrer) {
+                                            IEndUserContext endUserContext, String referrer) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -336,7 +224,7 @@ public class BehaviorMessageParser {
     }
     clientData.put("TName", domainRequest.getCommandName());
     clientData.put(AGENT_TAG, endUserContext.getUserAgent());
-    clientData.put("RemoteIP", getRemoteIp(request));
+    clientData.put("RemoteIP", endUserContext.getIPAddress());
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String ref = referrer;
     if(StringUtils.isEmpty(ref)) {
@@ -352,7 +240,7 @@ public class BehaviorMessageParser {
   /**
    * Get device family
    */
-  private String getDeviceFamily(DDSResponse deviceInfo) {
+  String getDeviceFamily(DDSResponse deviceInfo) {
     String deviceFamily;
 
     if (deviceInfo.isTablet()) {
@@ -387,7 +275,7 @@ public class BehaviorMessageParser {
     }
 
     // add tags in url param "sojTags" into applicationPayload
-    applicationPayload = addSojTags(applicationPayload, parameters, channelType, channelAction);
+    applicationPayload = addSojTags(applicationPayload, parameters);
 
     // add other tags
     // app id
@@ -448,16 +336,13 @@ public class BehaviorMessageParser {
   /**
    * Add tags in param sojTags
    */
-  private Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
-                          ChannelType channelType, ChannelAction channelAction) {
+  Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters) {
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
       try {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         logger.warn("Param sojTags is wrongly encoded", e);
-        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
-            Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
       if (!StringUtils.isEmpty(sojTags)) {
         StringTokenizer stToken = new StringTokenizer(sojTags, PresentationConstants.COMMA);
@@ -493,7 +378,7 @@ public class BehaviorMessageParser {
   /**
    * Parse tag from url query string and add to sojourner
    */
-  public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
+  public String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.get(param).get(0) != null) {
       return parameters.getFirst(param);
     }
@@ -504,7 +389,7 @@ public class BehaviorMessageParser {
   /**
    * Get the address of the local host
    */
-  private static InetAddress getInetAddress() {
+  private InetAddress getInetAddress() {
     try {
       return InetAddress.getLocalHost();
     } catch (UnknownHostException e) {
@@ -549,7 +434,7 @@ public class BehaviorMessageParser {
   /**
    * Get request header value
    */
-  private String getData(String key, String headerValue) {
+  String getData(String key, String headerValue) {
     try {
       HeaderMultiValue headerMultiValue;
       if (headerValue != null) {
@@ -566,7 +451,7 @@ public class BehaviorMessageParser {
   /**
    * Soj tag fbprefetch
    */
-  private static boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
+  boolean isFacebookPrefetchEnabled(ContainerRequestContext requestContext) {
     String facebookprefetch = requestContext.getHeaderString("X-Purpose");
     if (facebookprefetch != null && facebookprefetch.trim().equals("preview")) {
       return true;
@@ -577,7 +462,7 @@ public class BehaviorMessageParser {
   /**
    * Remove choco_bs param if it exists
    */
-  private String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
+  String removeBsParam(MultiValueMap<String, String> parameters, String uri) {
     if (parameters.containsKey(Constants.CHOCO_BUYER_ACCESS_SITE_ID)) {
       try {
         uri = HttpRequestUtil.removeParam(uri, Constants.CHOCO_BUYER_ACCESS_SITE_ID);
@@ -587,23 +472,6 @@ public class BehaviorMessageParser {
     }
 
     return uri;
-  }
-
-  /**
-   * Get remote ip
-   */
-  private String getRemoteIp(HttpServletRequest request) {
-    String remoteIp = null;
-    String xForwardFor = request.getHeader("X-Forwarded-For");
-    if (xForwardFor != null && !xForwardFor.isEmpty()) {
-      remoteIp = xForwardFor.split(",")[0];
-    }
-
-    if (remoteIp == null || remoteIp.isEmpty()) {
-      remoteIp = RequestUtil.getRemoteAddr(request);
-    }
-
-    return remoteIp == null ? "" : remoteIp;
   }
 
 }

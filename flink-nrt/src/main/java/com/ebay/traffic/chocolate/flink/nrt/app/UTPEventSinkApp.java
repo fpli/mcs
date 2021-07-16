@@ -7,9 +7,11 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.functions.sink.filesystem.BucketAssigner;
+import org.apache.flink.streaming.api.functions.sink.filesystem.OutputFileConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -29,21 +31,8 @@ public class UTPEventSinkApp extends AbstractRheosEventSinkApp {
   }
 
   @Override
-  protected List<String> getConsumerTopics() {
-    return Arrays.asList(PropertyMgr.getInstance()
-            .loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
-            .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
-  }
-
-  @Override
-  protected Properties getConsumerProperties() {
-    return PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_RHEOS_CONSUMER_PROPERTIES);
-  }
-
-  @Override
-  protected Path getSinkBasePath() {
-    Properties properties = PropertyMgr.getInstance().loadProperty(PropertyConstants.UTP_EVENT_SINK_APP_HDFS_PROPERTIES);
-    return new Path(properties.getProperty(PropertyConstants.PATH));
+  protected void loadProperty() {
+    this.config = PropertyMgr.getInstance().loadYaml("utp-event-sink-app.yaml");
   }
 
   @Override
@@ -51,7 +40,7 @@ public class UTPEventSinkApp extends AbstractRheosEventSinkApp {
     return new AbstractEventDateTimeBucketAssigner<GenericRecord>() {
       @Override
       protected long getEventTimestamp(GenericRecord element) {
-        return (Long) element.get("eventTs");
+        return (Long) element.get("producerEventTs");
       }
     };
   }

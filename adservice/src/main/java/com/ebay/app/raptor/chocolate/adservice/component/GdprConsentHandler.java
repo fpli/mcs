@@ -159,7 +159,7 @@ public class GdprConsentHandler {
                 gdprConsentDomain.setTcfCompliantMode(false);
                 gdprConsentDomain.setAllowedUseLegallyRequiredField(true);
             }
-        } catch (TCStringDecodeException | IOException e) {
+        } catch (Exception e) {
             metrics.meter(GdprConsentConstant.DECODE_CONSENT_ERROR);
             logger.warn("Occurred Exception when decode Consent, " + e);
         }

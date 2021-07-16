@@ -1,8 +1,12 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.constant.RoiTransactionEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import org.apache.http.client.utils.URIBuilder;
@@ -13,6 +17,8 @@ import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,9 +72,14 @@ public class CollectionServiceUtil {
   private static final String ROI_SOURCE = "roisrc";
   private static final String MPUID = "mpuid";
   private static final String BOT_USER_AGENT = "bot";
-  private static final String PROMOTED_LISTINGS_SOURCE= "PromotedListings";
+  private static final String PROMOTED_LISTINGS_SOURCE = "PromotedListings";
+  private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
   private static final String DEEP_LINK_WITH_CHOCO_PARAMS = "chocodeeplink";
   private static final String DEEP_LINK_WITH_REFERRER_PARAMS = "referrerdeeplink";
+  private static final String PRE_INSTALL_APP_RLUTYPE = "1";
+  private static final String PRE_INSTALL_APP_USECASE = "prm";
+  private static final String CLICK_EVENT_FLAG = "1";
+  private static final String PRM_CLICK_ROTATION_ID = "14362-130847-18990-0";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -81,6 +92,8 @@ public class CollectionServiceUtil {
 
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
+
+  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
 
   /**
    * get app id from user agent info
@@ -112,6 +125,24 @@ public class CollectionServiceUtil {
   }
 
   /**
+   * Check platform by user agent
+   */
+  public static String getPlatform(UserAgentInfo agentInfo) {
+    String platform = Constants.PLATFORM_UNKNOWN;
+    if (agentInfo.isDesktop()) {
+      platform = Constants.PLATFORM_DESKTOP;
+    } else if (agentInfo.isTablet()) {
+      platform = Constants.PLATFORM_TABLET;
+    } else if (agentInfo.isMobile()) {
+      platform = Constants.PLATFORM_MOBILE;
+    } else if (agentInfo.isNativeApp()) {
+      platform = Constants.PLATFORM_NATIVE_APP;
+    }
+
+    return platform;
+  }
+
+  /**
    * populate device tags
    *
    * @param info    user agent info
@@ -136,13 +167,19 @@ public class CollectionServiceUtil {
     return true;
   }
 
-  public static String generateQueryString(ROIEvent roiEvent, Map<String, String> payloadMap, String localTimestamp, String userId) throws UnsupportedEncodingException {
-    String queryString = "tranType=" +URLEncoder.encode(roiEvent.getTransType() == null ? "" : roiEvent.getTransType(), "UTF-8")
-        + "&uniqueTransactionId=" + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
-        + "&itemId=" + URLEncoder.encode(roiEvent.getItemId() == null ? "" : roiEvent.getItemId(), "UTF-8")
-        + "&transactionTimestamp=" + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
+  public static String generateQueryString(ROIEvent roiEvent, Map<String, String> payloadMap, String localTimestamp,
+                                           String userId) throws UnsupportedEncodingException {
+    String queryString = "tranType="
+        + URLEncoder.encode(roiEvent.getTransType() == null ? "" : roiEvent.getTransType(), "UTF-8")
+        + "&uniqueTransactionId="
+        + URLEncoder.encode(roiEvent.getUniqueTransactionId() == null ? "" : roiEvent.getUniqueTransactionId(), "UTF-8")
+        + "&itemId="
+        + URLEncoder.encode(roiEvent.getItemId() == null ? "" : roiEvent.getItemId(), "UTF-8")
+        + "&transactionTimestamp="
+        + URLEncoder.encode(roiEvent.getTransactionTimestamp() == null ? localTimestamp : roiEvent.getTransactionTimestamp(), "UTF-8");
 
-    // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp}, don't append them into the url
+    // If the field in payload is in {transType, uniqueTransactionId, itemId, transactionTimestamp},
+    // don't append them into the url
     payloadMap.remove(TRANSACTION_TIMESTAMP);
     payloadMap.remove(TRANSACTION_TYPE);
     payloadMap.remove(TRANSACTION_ID);
@@ -167,7 +204,7 @@ public class CollectionServiceUtil {
         // our query. So if MPUID is encoded in this place, it will cause split error in imkETL
         if (key.equalsIgnoreCase(MPUID)) {
           queryString = String.format("%s&%s=%s", queryString, key, value);
-        } else if (isEncodedUrl(value)){
+        } else if (isEncodedUrl(value)) {
           // If payload value is encoded, query will not encode it twice
           queryString = String.format("%s&%s=%s", queryString, key, value);
         } else {
@@ -191,36 +228,6 @@ public class CollectionServiceUtil {
   }
 
   /**
-   * Determine whether the click is a duplicate click from /itm page, if so, we will filter it.
-   * The duplication will happen when there is no title in itm click url on mobile phone web from non-special sites
-   * No filter for bot clicks
-   * No filter for user clicks from special sites
-   * No filter for dweb+Tablet user clicks
-   * No filter for native app user clicks
-   * Filter 301 for user clicks from non-special sites and mobile phone web
-   */
-   public static boolean isDuplicateItmClick(String marketingStatusCode, String userAgent,
-                                             String targetUrl, boolean requestIsFromBot, boolean requestIsMobile, boolean requestIsMobileWeb) {
-    boolean isDulicateItemClick = false;
-
-    if (ebayItemNoTitlePage.matcher(targetUrl).find()) {
-       Matcher ebaySpecialSitesMatcher = ebaySpecialSites.matcher(targetUrl);
-
-       if (!userAgent.toLowerCase().contains(BOT_USER_AGENT) && !requestIsFromBot &&
-               !ebaySpecialSitesMatcher.find() &&
-               requestIsMobile && requestIsMobileWeb) {
-
-         if (!StringUtils.isEmpty(marketingStatusCode) && marketingStatusCode.equals(Constants.NODE_REDIRECTION_STATUS_CODE)) {
-           isDulicateItemClick = true;
-         }
-
-       }
-    }
-
-    return isDulicateItemClick;
-  }
-
-  /**
    * Determine whether the click is from Promoted Listings iframe on ebay partner sites
    * 1. Channel : ePN
    * 2. In the click URL, mksrc=PromotedListings
@@ -232,8 +239,8 @@ public class CollectionServiceUtil {
     boolean isEPNPromotedListingClick = false;
 
     if (channelType == ChannelIdEnum.EPN &&
-            parameters.containsKey(Constants.MKSRC) && parameters.get(Constants.MKSRC).get(0) != null &&
-            parameters.containsKey(Constants.PLRFR) && parameters.get(Constants.PLRFR).get(0) != null) {
+        parameters.containsKey(Constants.MKSRC) && parameters.get(Constants.MKSRC).get(0) != null &&
+        parameters.containsKey(Constants.PLRFR) && parameters.get(Constants.PLRFR).get(0) != null) {
 
       // This flag is used to distinguish if the click is from Promoted Listings iframe on ebay partner sites
       String mksrc = parameters.get(Constants.MKSRC).get(0);
@@ -242,9 +249,9 @@ public class CollectionServiceUtil {
       String actualPromotedListingsClickReferer = parameters.get(Constants.PLRFR).get(0);
 
       if (mksrc.equals(PROMOTED_LISTINGS_SOURCE) &&
-              promotedListsingsRefererWithEbaySites.matcher(originalReferer.toLowerCase()).find() &&
-              (!StringUtils.isEmpty(actualPromotedListingsClickReferer))) {
-          isEPNPromotedListingClick = true;
+          promotedListsingsRefererWithEbaySites.matcher(originalReferer.toLowerCase()).find() &&
+          (!StringUtils.isEmpty(actualPromotedListingsClickReferer))) {
+        isEPNPromotedListingClick = true;
       }
     }
     return isEPNPromotedListingClick;
@@ -252,9 +259,10 @@ public class CollectionServiceUtil {
 
   /**
    * Get the substring between start and end. Compatible with com.ebay.hadoop.udf.soj.StrBetweenEndList
-   * @param url source string
+   *
+   * @param url   source string
    * @param start start string
-   * @param end end string
+   * @param end   end string
    * @return substring
    */
   public static String substring(String url, String start, String end) {
@@ -311,7 +319,7 @@ public class CollectionServiceUtil {
         String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
         deeplinkURIBuilder.setPath(deeplinkURIPath);
 
-        for (String key: deeplinkParamMap.keySet()) {
+        for (String key : deeplinkParamMap.keySet()) {
           if (!key.equals(NAV) && !key.equals(ID) && !key.equals(REFERRER)) {
             deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
           }
@@ -360,5 +368,112 @@ public class CollectionServiceUtil {
     }
 
     return clientId;
+  }
+
+  /**
+   * Determine whether the roi is from Checkout API
+   * If so, don't track into ubi
+   */
+  public static Boolean isROIFromCheckoutAPI(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
+    boolean isROIFromCheckoutAPI = false;
+    if (roiPayloadMap.containsKey(ROI_SOURCE)) {
+      if (roiPayloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.CHECKOUT_SOURCE.getId()))
+          && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
+        isROIFromCheckoutAPI = true;
+      }
+    }
+    return isROIFromCheckoutAPI;
+  }
+
+  /**
+   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
+   *
+   * @param channelType channel type
+   * @param referer     referer
+   * @return in whitelist or not
+   */
+  public static boolean inRefererWhitelist(ChannelType channelType, String referer) {
+    // currently, this case only exists in display channel
+    if (ChannelType.DISPLAY != channelType) {
+      return false;
+    }
+    String lowerCase = referer.toLowerCase();
+    for (String referWhitelist : REFERER_WHITELIST) {
+      if (lowerCase.startsWith(referWhitelist)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check if the click is from UFES
+   */
+  public static Boolean isFromUFES(Map<String, String> headers) {
+    return headers.containsKey(Constants.IS_FROM_UFES_HEADER)
+        && "true".equals(headers.get(Constants.IS_FROM_UFES_HEADER));
+  }
+  /*
+   * determine if the ROI is generated from pre-install App on Android
+   */
+  public static boolean isPreinstallROI(Map<String, String> roiPayloadMap, String transType) {
+    boolean isPreInstallROI = false;
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String rlutype = roiPayloadMap.getOrDefault(RLUTYPE, "");
+    String usecase = roiPayloadMap.getOrDefault(USECASE, "");
+
+    RoiTransactionEnum roiTransactionEnum = RoiTransactionEnum.getByTransTypeName(transType);
+
+    if (!StringUtils.isEmpty(mppid) && rlutype.equals(PRE_INSTALL_APP_RLUTYPE)
+         && usecase.equals(PRE_INSTALL_APP_USECASE) && PRE_INSTALL_ROI_TRANS_TYPES.contains(roiTransactionEnum)) {
+      isPreInstallROI = true;
+    }
+
+    return isPreInstallROI;
+  }
+
+  /**
+   * Mock click URL if we receive ROI event from pre-install App on Android (XC-3464)
+   */
+  public static String createPrmClickUrl(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
+    String prmClickUrl = "";
+
+    String mppid = roiPayloadMap.getOrDefault(MPPID, "");
+    String siteId = roiPayloadMap.getOrDefault(SITEID, "0");
+    String clickUrlHost = siteIdHostMap.getOrDefault(siteId, "https://www.ebay.com");
+
+    try {
+      if (!StringUtils.isEmpty(clickUrlHost)) {
+        URIBuilder clickURIBuilder = new URIBuilder(clickUrlHost);
+        clickURIBuilder.addParameter(MKEVT, CLICK_EVENT_FLAG);
+        clickURIBuilder.addParameter(MKCID, ChannelIdEnum.DAP.getValue());
+        clickURIBuilder.addParameter(MKRID, PRM_CLICK_ROTATION_ID);
+        clickURIBuilder.addParameter(MPPID, URLEncoder.encode(mppid, "UTF-8"));
+        clickURIBuilder.addParameter(RLUTYPE, PRE_INSTALL_APP_RLUTYPE);
+        clickURIBuilder.addParameter(SITE, URLEncoder.encode(siteId, "UTF-8"));
+
+        if (endUserContext.getDeviceId() != null) {
+          clickURIBuilder.addParameter(UDID, URLEncoder.encode(endUserContext.getDeviceId(), "UTF-8"));
+        }
+
+        prmClickUrl = clickURIBuilder.build().toString();
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Construct dummy click for pre-install App ROI error." + ex.getMessage());
+      return "";
+    }
+
+    return prmClickUrl;
+  }
+
+  /**
+   * Is facebook prefetch enabled
+   * @param requestHeaders http request headers
+   * @return enabled or not
+   */
+  public static boolean isFacebookPrefetchEnabled(Map<String, String> requestHeaders) {
+    String facebookprefetch = requestHeaders.get("X-Purpose");
+    return facebookprefetch != null && "preview".equals(facebookprefetch.trim());
   }
 }
