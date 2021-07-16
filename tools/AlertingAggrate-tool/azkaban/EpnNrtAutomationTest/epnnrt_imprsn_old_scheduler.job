@@ -1,4 +1,0 @@
-type=command
-dependencies=epnnrt_imprsn_create_meta
-command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_old_test/bin/prod" "./epnnrt_imprsn_old_test-scheduler.sh"
-failure.emails=yuhxiao@ebay.com

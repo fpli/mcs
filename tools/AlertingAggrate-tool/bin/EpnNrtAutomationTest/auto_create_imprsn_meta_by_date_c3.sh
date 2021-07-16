@@ -6,28 +6,29 @@ usage="Usage:auto_create_meta_by_date_c3.sh"
 date=`date -d '5 days ago' +%Y-%m-%d`
 
 export HADOOP_USER_NAME=chocolate
-work_path="hdfs://elvisha/apps/tracking-events"
+work_path="viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events"
 local_path="/datashare/mkttracking/test/EPN/imprsn"
 cd $local_path;
 channel_file_list_file="${local_path}/channel_file_list_file.txt"
+apollo_command=/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs
 
 function createMeta() {
     channel=$1;
     rm -r ${local_path}/EPN/imprsn/*
     local_channel_path="${local_path}/${date}"
-    dest_channel_path_old_test="hdfs://slickha/apps/tracking-events-workdir-old-test/meta/EPN/output/capping"
-    dest_channel_path_new_test="hdfs://slickha/apps/tracking-events-workdir-new-test/meta/EPN/output/capping"
+    dest_channel_path_old_test="viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test/meta/EPN/output/capping"
+    dest_channel_path_new_test="viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test/meta/EPN/output/capping"
     if [ ! -d "${local_channel_path}" ]; then
       mkdir -p "${local_channel_path}"
     fi
-    cd "$local_channel_path"
+    cd $local_channel_path
     rm ./capping_output_*.meta.epnnrtimp_v2
-    hdfs dfs -ls "${work_path}/${channel}/capping/date=${date}" | grep -v "^$" | awk '{print $NF}' | grep "part" > $channel_file_list_file
+    ${apollo_command} dfs -ls "${work_path}/${channel}/capping/date=${date}" | grep -v "^$" | awk '{print $NF}' | grep "part" > $channel_file_list_file
     channel_files=`cat ${channel_file_list_file} | tr "\n" " "`
     file_total_count=`cat ${channel_file_list_file} | grep -v "^$" | wc -l`
     file_count=0
     file_index=0
-     meta_file_count=0
+    meta_file_count=0
     meta_file_header="{\"metaFiles\":[{\"date\":\"date=${date}\",\"files\":["
     meta_file_footer="]}]}"
     timestamp=`date +%s`
@@ -52,15 +53,15 @@ function createMeta() {
       fi
     done
 
-    echo "hdfs dfs -rm ${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
-    hdfs dfs -rm "${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
-    echo "hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}"
-    hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}
+    echo "${apollo_command} dfs -rm ${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
+    ${apollo_command} dfs -rm "${dest_channel_path_old_test}/capping_output_*.meta.epnnrtimp_v2"
+    echo "${apollo_command} dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}"
+    ${apollo_command} dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_old_test}
 
-    echo "hdfs dfs -rm ${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
-    hdfs dfs -rm "${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
-    echo "hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}"
-    hdfs dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}
+    echo "${apollo_command} dfs -rm ${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
+    ${apollo_command} dfs -rm "${dest_channel_path_new_test}/capping_output_*.meta.epnnrtimp_v2"
+    echo "${apollo_command} dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}"
+    ${apollo_command} dfs -put capping_output_*.meta.epnnrtimp_v2 ${dest_channel_path_new_test}
 }
 
 createMeta EPN

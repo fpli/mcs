@@ -1,3 +1,0 @@
-type=command
-command=bash ./SubmitJob.sh "SLC" "/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/prod" "./auto_create_click_meta_by_date_c3.sh"
-failure.emails=yuhxiao@ebay.com
