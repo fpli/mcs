@@ -39,7 +39,7 @@ __config = {
         '--mode', 'yarn',
         '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
         '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
-        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_v3',
+        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt_v2',
         '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
         '--partitions', '3',
         '--filterTime', '0'
