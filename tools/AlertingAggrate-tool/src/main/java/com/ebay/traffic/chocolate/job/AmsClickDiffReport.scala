@@ -109,17 +109,17 @@ class AmsClickDiffReport(val clickDt:String,val outputPath: String, val mode: St
     (newTotalCount,oldTotalCount)
   }
   def getUserIdNotNullPercent:(Double, Double)={
-    val newUserIdNotNullPercent:Double=sqlsc.sql("select count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\"and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL )" +
-      "/(SELECT count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%'").head.getDouble(0)
-    val oldUserIdNotNullPercent:Double=sqlsc.sql("select count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\"and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL )" +
-      "/(SELECT count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%'").head.getDouble(0)
+    val newUserIdNotNullPercent:Double=sqlsc.sql("select (select count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL)" +
+      "/(SELECT count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%')").head.getDouble(0)
+    val oldUserIdNotNullPercent:Double=sqlsc.sql("select count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL)" +
+      "/(SELECT count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%')").head.getDouble(0)
     (newUserIdNotNullPercent,oldUserIdNotNullPercent)
   }
   def getLastVwdItemIdNotNullPercent:(Double, Double)={
-    val newLastVwdItemIdNotNullPercent:Double=sqlsc.sql("select count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\"and  lower(brwsr_name) not like '%bot%' and LAST_VWD_ITEM_ID is not null )" +
-      "/(SELECT count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%'").head.getDouble(0)
-    val oldLastVwdItemIdNotNullPercent:Double=sqlsc.sql("select count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\"and  lower(brwsr_name) not like '%bot%' and LAST_VWD_ITEM_ID is not null )" +
-      "/(SELECT count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%'").head.getDouble(0)
+    val newLastVwdItemIdNotNullPercent:Double=sqlsc.sql("select (select count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and  lower(brwsr_name) not like '%bot%' and LAST_VWD_ITEM_ID is not null)" +
+      "/(SELECT count(*) from choco_data.ams_click_new_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%')").head.getDouble(0)
+    val oldLastVwdItemIdNotNullPercent:Double=sqlsc.sql("select (select count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and  lower(brwsr_name) not like '%bot%' and LAST_VWD_ITEM_ID is not null)" +
+      "/(SELECT count(*) from choco_data.ams_click_old_test where click_dt=\""+clickDt+"\" and lower(brwsr_name) not like '%bot%')").head.getDouble(0)
     (newLastVwdItemIdNotNullPercent,oldLastVwdItemIdNotNullPercent)
   }
   def getDiffColumnsAndCount:mutable.HashMap[String,Long]={
