@@ -17,7 +17,7 @@ source:
       rhs-okrvkiaa-kfk-rno-8.rheos-streaming-prod.svc.25.tess.io:9092,\
       rhs-okrvkiaa-kfk-rno-9.rheos-streaming-prod.svc.25.tess.io:9092,\
       rhs-okrvkiaa-kfk-rno-10.rheos-streaming-prod.svc.25.tess.io:9092
-    group.id: marketing-tracking-consumer-utp-install-event-transform-test
+    group.id: marketing-tracking-consumer-utp-install-event-transform
     session.timeout.ms: 30000
     auto.offset.reset: earliest
     receive.buffer.bytes: 16777216
@@ -30,7 +30,7 @@ source:
       iafEnv="production";
     rheos.services.urls: http://rheos-services.stratus.ebay.com
 transform:
-  topic: marketing.tracking.events.install.test
+  topic: marketing.tracking.events.total
   name: transform
   uid: transform
   properties: |-
