@@ -31,7 +31,7 @@ DEST_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp/imprsn_dt=${impr
 --num-executors 160 \
 --executor-memory 32G \
 --executor-cores 8 \
-${bin}/../../lib/chocolate-spark-nrt-*.jar \
+/datashare/mkttracking/jobs/tracking/epnnrt_old_test/lib/chocolate-spark-nrt-*.jar \
 --sqlFile "${sql}"
 
 spark_sql_result_code=$?;

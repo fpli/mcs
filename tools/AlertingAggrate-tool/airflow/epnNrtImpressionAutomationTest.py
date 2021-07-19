@@ -1,6 +1,7 @@
 from airflow import DAG
 from datetime import timedelta
 from airflow.operators.bash import BashOperator
+from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 
 __author__ = "yuhxiao"
 
@@ -17,7 +18,7 @@ default_args = {
 
 
 dag = DAG(
-    dag_id='epnNrtimprsnAutomationTest',
+    dag_id='epnNrtImprsnAutomationTest',
     default_args=default_args,
     catchup=False,
     max_active_runs=1
@@ -29,17 +30,128 @@ auto_create_imprsn_meta = BashOperator(
     task_id='auto_create_imprsn_meta'
 )
 
-epnnrt_imprsn_new_scheduler = BashOperator(
+epnnrt_imprsn_new_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_imprsn_new_scheduler',
+    pool='spark_pool',
+    conn_id='hdlq-commrce-mkt-tracking-high-mem',
+    files='file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/epnnrt_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/sherlockio.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/couchbase_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/df_epn_impression_v2.json,'
+          'file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
+          'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
+    conf={
+        'spark.dynamicAllocation.maxExecutors': '80',
+        'spark.ui.view.acls': '*',
+        'spark.yarn.executor.memoryOverhead': '8192',
+        'spark.serializer': 'org.apache.spark.serializer.KryoSerializer',
+        'spark.hadoop.yarn.timeline-service.enabled': 'false',
+        'spark.sql.autoBroadcastJoinThreshold': '33554432',
+        'spark.sql.shuffle.partitions': '200',
+        'spark.speculation': 'true',
+        'spark.yarn.maxAppAttempts': '3',
+        'spark.driver.maxResultSize': '10g',
+        'spark.kryoserializer.buffer.max': '2040m',
+        'spark.eventLog.enabled': 'true',
+        'spark.eventLog.compress': 'false',
+        'spark.task.maxFailures': '3',
+        'spark.executorEnv.TRF_GRANT_FILE': '/ebay/trustfabric.cg',
+        'spark.executorEnv.CHECK_TF_TOKEN_IN_FOUNT': 'true',
+        'spark.executorEnv.APP_INSTANCE_NAME': 'default-appinstance',
+        'spark.executorEnv.APP_NAME': 'hadoopapollorno',
+        'spark.executorEnv.APP_ENV': 'production',
+        'spark.executorEnv.TRF_ENABLE_V2': 'true',
+        'spark.yarn.appMasterEnv.TRF_GRANT_FILE': '/ebay/trustfabric.cg',
+        'spark.yarn.appMasterEnv.CHECK_TF_TOKEN_IN_FOUNT': 'true',
+        'spark.yarn.appMasterEnv.APP_INSTANCE_NAME': 'default-appinstance',
+        'spark.yarn.appMasterEnv.APP_NAME': 'hadoopapollorno',
+        'spark.yarn.appMasterEnv.APP_ENV': 'production',
+        'spark.yarn.appMasterEnv.TRF_ENABLE_V2': 'true'
+    },
     dag=dag,
-    bash_command='/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/epnnrt_imprsn_new_test-scheduler.sh ',
-    task_id='epnnrt_imprsn_new_scheduler'
+    spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
+    **{
+        'name': 'epnnrt_imprsn_new_scheduler',
+        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtImpressionJobV2',
+        'application': '/datashare/mkttracking/jobs/tracking/epnnrt_new_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
+        'executor_cores': '8',
+        'driver_memory': '15G',
+        'executor_memory': '30G',
+        'num_executors': '50',
+        'application_args': [
+            '--appName', 'epnnrt_imprsn_new_scheduler',
+            '--mode', 'yarn',
+            '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
+            '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
+            '--outputDir', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-new-test/',
+            '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
+            '--partitions', '3',
+            '--filterTime', '0'
+        ]
+    }
 )
+
 epnnrt_imprsn_new_scheduler.set_upstream(auto_create_imprsn_meta)
 
-epnnrt_imprsn_old_scheduler = BashOperator(
+epnnrt_imprsn_old_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_imprsn_old_scheduler',
+    pool='spark_pool',
+    conn_id='hdlq-commrce-mkt-tracking-high-mem',
+    files='file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/epnnrt_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/sherlockio.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/couchbase_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/df_epn_impression_v2.json,'
+          'file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
+          'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
+    conf={
+        'spark.dynamicAllocation.maxExecutors': '80',
+        'spark.ui.view.acls': '*',
+        'spark.yarn.executor.memoryOverhead': '8192',
+        'spark.serializer': 'org.apache.spark.serializer.KryoSerializer',
+        'spark.hadoop.yarn.timeline-service.enabled': 'false',
+        'spark.sql.autoBroadcastJoinThreshold': '33554432',
+        'spark.sql.shuffle.partitions': '200',
+        'spark.speculation': 'false',
+        'spark.yarn.maxAppAttempts': '3',
+        'spark.driver.maxResultSize': '10g',
+        'spark.kryoserializer.buffer.max': '2040m',
+        'spark.eventLog.enabled': 'true',
+        'spark.eventLog.compress': 'false',
+        'spark.task.maxFailures': '3',
+        'spark.executorEnv.TRF_GRANT_FILE': '/ebay/trustfabric.cg',
+        'spark.executorEnv.CHECK_TF_TOKEN_IN_FOUNT': 'true',
+        'spark.executorEnv.APP_INSTANCE_NAME': 'default-appinstance',
+        'spark.executorEnv.APP_NAME': 'hadoopapollorno',
+        'spark.executorEnv.APP_ENV': 'production',
+        'spark.executorEnv.TRF_ENABLE_V2': 'true',
+        'spark.yarn.appMasterEnv.TRF_GRANT_FILE': '/ebay/trustfabric.cg',
+        'spark.yarn.appMasterEnv.CHECK_TF_TOKEN_IN_FOUNT': 'true',
+        'spark.yarn.appMasterEnv.APP_INSTANCE_NAME': 'default-appinstance',
+        'spark.yarn.appMasterEnv.APP_NAME': 'hadoopapollorno',
+        'spark.yarn.appMasterEnv.APP_ENV': 'production',
+        'spark.yarn.appMasterEnv.TRF_ENABLE_V2': 'true'
+    },
     dag=dag,
-    bash_command='/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/epnnrt_imprsn_old_test-scheduler.sh ',
-    task_id='epnnrt_imprsn_old_scheduler'
+    spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
+    **{
+        'name': 'epnnrt_imprsn_old_scheduler',
+        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtImpressionJobV2',
+        'application': '/datashare/mkttracking/jobs/tracking/epnnrt_old_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
+        'executor_cores': '8',
+        'driver_memory': '15G',
+        'executor_memory': '30G',
+        'num_executors': '50',
+        'application_args': [
+            '--appName', 'epnnrt_imprsn_old_scheduler',
+            '--mode', 'yarn',
+            '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
+            '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
+            '--outputDir', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-old-test/',
+            '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
+            '--partitions', '3',
+            '--filterTime', '0'
+        ]
+    }
 )
 epnnrt_imprsn_old_scheduler.set_upstream(auto_create_imprsn_meta)
 

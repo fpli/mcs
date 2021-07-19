@@ -389,7 +389,6 @@ CREATE EXTERNAL TABLE choco_data.epnnrt_click_automation_diff_tmp(
     `new_nrt_rule_flag79` tinyint,
     `old_nrt_rule_flag80` tinyint,
     `new_nrt_rule_flag80` tinyint
-
 )
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'

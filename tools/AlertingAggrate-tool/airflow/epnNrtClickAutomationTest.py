@@ -1,6 +1,7 @@
 from airflow import DAG
 from datetime import timedelta
 from airflow.operators.bash import BashOperator
+from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 
 __author__ = "yuhxiao"
 
@@ -8,7 +9,7 @@ default_args = {
     'owner': 'yuhxiao',
     'depends_on_past': False,
     'start_date': '2021-03-01',
-    'email': ['Marketing-Tracking-oncall@ebay.com','DL-eBay-Chocolate-GC@ebay.com'],
+    'email': ['yuhxiao@ebay.com'],
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 0,
@@ -70,9 +71,9 @@ epnnrt_click_new_scheduler = SparkSubmitOperator(
     },
     spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
     dag=dag,
-    __config={
+    **{
         'name': "epnnrt_click_new_test_scheduler",
-        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtClickJob_v2',
+        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtClickJobV2',
         'application': '/datashare/mkttracking/jobs/tracking/epnnrt_new_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
         'executor_cores': '5',
         'driver_memory': '20G',
@@ -133,9 +134,9 @@ epnnrt_click_old_scheduler = SparkSubmitOperator(
     },
     spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
     dag=dag,
-    __config={
+    **{
         'name': "epnnrt_click_old_test_scheduler",
-        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrt_v2.EpnNrtClickJob_v2',
+        'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtClickJobV2',
         'application': '/datashare/mkttracking/jobs/tracking/epnnrt_old_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
         'executor_cores': '5',
         'driver_memory': '20G',
