@@ -9,7 +9,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.primitives.Longs;
 import org.jetbrains.annotations.NotNull;

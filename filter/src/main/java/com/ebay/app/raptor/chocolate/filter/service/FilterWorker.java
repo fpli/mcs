@@ -10,7 +10,7 @@ import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;

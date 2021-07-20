@@ -9,7 +9,7 @@ import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;

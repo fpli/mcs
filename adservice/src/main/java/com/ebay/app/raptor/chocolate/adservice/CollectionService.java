@@ -9,7 +9,7 @@ import com.ebay.app.raptor.chocolate.adservice.redirect.ThirdpartyRedirectStrate
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
-import java.lang.management.MonitorInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;

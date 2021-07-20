@@ -9,7 +9,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;

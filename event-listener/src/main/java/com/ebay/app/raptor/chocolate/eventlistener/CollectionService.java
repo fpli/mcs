@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;

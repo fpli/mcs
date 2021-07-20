@@ -6,7 +6,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.HttpUtil;
 import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;

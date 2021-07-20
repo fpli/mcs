@@ -97,6 +97,10 @@
       <groupId>com.ebay.traffic</groupId>
       <artifactId>chocolate-utp-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-micrometer-starter</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

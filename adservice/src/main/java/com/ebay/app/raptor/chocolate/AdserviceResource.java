@@ -22,7 +22,7 @@ import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.geo.utils.GeoUtils;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;

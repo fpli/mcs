@@ -5,7 +5,7 @@ import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.util.Base64;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import com.iabtcf.decoder.TCString;

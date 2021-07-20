@@ -7,7 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
-import com.ebay.traffic.chocolate.spark.monitor.MonitorUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
