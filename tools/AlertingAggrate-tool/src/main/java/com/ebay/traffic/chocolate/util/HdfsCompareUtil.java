@@ -53,8 +53,8 @@ public class HdfsCompareUtil {
     list.add(getHdfsFiles("imk_rvr_trckng_event_v2",false));
     list.add(getHdfsFiles("imk_rvr_trckng_event",false));
     list.add(getHdfsFiles("imk_rvr_trckng_event_dtl",false));
-    list.add(getHdfsFiles("ams_click",true));
-    list.add(getHdfsFiles("ams_impression",true));
+    list.add(getHdfsFiles("ams_click",false));
+    list.add(getHdfsFiles("ams_impression",false));
     return list;
   }
 
