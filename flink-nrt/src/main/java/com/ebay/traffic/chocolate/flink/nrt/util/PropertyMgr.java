@@ -6,6 +6,7 @@ import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -112,4 +113,18 @@ public class PropertyMgr {
     return joiner.toString();
   }
 
+  /**
+   * Read property files from config path.
+   *
+   * @param propertyName property file name
+   * @return file content
+   */
+  public Map<String, Object> loadYaml(String propertyName) {
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
+      Yaml yaml = new Yaml();
+      return yaml.load(in);
+    } catch (IOException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
 }

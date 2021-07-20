@@ -10,6 +10,7 @@ public class TransformerConstants {
   public static final String GUID = "guid";
   public static final String USER_AGENT = "user_agent";
   public static final String REFERER = "referer";
+  public static final String REFERRER = "referrer";
   public static final String SRC_ROTATION_ID = "src_rotation_id";
   public static final String DST_ROTATION_ID = "dst_rotation_id";
   public static final String MT_ID = "mt_id";
@@ -74,4 +75,5 @@ public class TransformerConstants {
   public static final String TRACKING_ID = "trkId";
   public static final String BEST_GUESS_USER_ID = "bu";
   public static final String RVRID = "rvrid";
+  public static final String MPPID = "mppid";
 }

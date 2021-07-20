@@ -89,7 +89,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Duplicate Itm Click Kafka Topic
    */
-  private static final String DUPLICATE_ITM_CLICK_TOPIC = "chocolate.event-listener.kafka.producer.duplicateclick.topic";
+  private static final String INTERNAL_CLICK_TOPIC = "chocolate.event-listener.kafka.producer.duplicateclick.topic";
 
   /**
    * default driver ID
@@ -311,11 +311,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * Get Duplicate Itm Click Topic
    */
-  public String getDuplicateItmClickTopic() {
-    if (!properties.containsKey(DUPLICATE_ITM_CLICK_TOPIC)) {
-      logger.error(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
-      throw new UnsupportedOperationException(DUPLICATE_ITM_CLICK_TOPIC + " not found in properties file!");
+  public String getInternalItmClickTopic() {
+    if (!properties.containsKey(INTERNAL_CLICK_TOPIC)) {
+      logger.error(INTERNAL_CLICK_TOPIC + " not found in properties file!");
+      throw new UnsupportedOperationException(INTERNAL_CLICK_TOPIC + " not found in properties file!");
     }
-    return properties.getProperty(DUPLICATE_ITM_CLICK_TOPIC);
+    return properties.getProperty(INTERNAL_CLICK_TOPIC);
   }
 }

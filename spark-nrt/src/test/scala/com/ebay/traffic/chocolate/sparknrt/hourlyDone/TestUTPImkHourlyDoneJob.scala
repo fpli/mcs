@@ -142,7 +142,7 @@ class TestUTPImkHourlyDoneJob extends BaseFunSuite {
     fs.mkdirs(new Path(doneDir + "/20210125"))
     val file1 = new File("src/test/resources/hourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202101250500000000")
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20210125/imk_rvr_trckng_event_hourly.done.202101250500000000"))
-    val now = ZonedDateTime.of(2021, 1, 25, 22, 0, 0, 0, ZoneId.systemDefault())
+    val now = ZonedDateTime.of(2021, 1, 25, 18, 0, 0, 0, ZoneId.systemDefault())
 
     val df = job.readSource(now)
     assert(df.count() == 1)
@@ -173,7 +173,7 @@ class TestUTPImkHourlyDoneJob extends BaseFunSuite {
     fs.mkdirs(new Path(doneDir + "/20210125"))
     val file1 = new File("src/test/resources/hourlyDone.data/done/imk_rvr_trckng_event_hourly.done.202101250500000000")
     fs.copyFromLocalFile(new Path(file1.getAbsolutePath), new Path(doneDir + "/20210125/imk_rvr_trckng_event_hourly.done.202101250500000000"))
-    val now = ZonedDateTime.of(2021, 1, 25, 21, 10, 0, 0, ZoneId.systemDefault())
+    val now = ZonedDateTime.of(2021, 1, 25, 16, 10, 0, 0, ZoneId.systemDefault())
 
     // read source df
     val sourceDf = job.readSource(now)
