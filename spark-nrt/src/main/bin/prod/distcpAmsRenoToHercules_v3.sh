@@ -7,7 +7,7 @@ if [ $# -le 1 ]; then
   echo $usage
   exit 1
 fi
-cd /mnt/jobs/tracking/epn-nrt/bin
+cd /datashare/mkttracking/jobs/tracking/epn-nrt/bin
 export HADOOP_USER_NAME=chocolate
 whoami
 RENO_DEST_DIR=$1

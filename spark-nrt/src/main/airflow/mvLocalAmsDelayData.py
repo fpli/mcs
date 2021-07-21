@@ -26,7 +26,7 @@ dag = DAG(
 
 mvLocalAmsDelayData = BashOperator(
     dag=dag,
-    bash_command='/datashare/mkttracking/jobs/tracking/epn-nrt/bin/mvLocalAmsDelayData.sh',
+    bash_command='/datashare/mkttracking/jobs/tracking/epn-nrt/bin/mvLocalAmsDelayData.sh ',
     task_id='mvLocalAmsDelayData'
 )
 

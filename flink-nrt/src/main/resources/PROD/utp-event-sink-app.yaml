@@ -43,6 +43,6 @@ sink:
     outputFileConfig:
       partPrefix: utp
       partSuffix: .snappy.parquet
-    path: hdfs://hercules/apps/b_marketing_tracking/utp/utp_event
+    path: hdfs://hercules/sys/edw/imk/im_tracking/utp/utp_event/snapshot
     name: sink-hercules
     uid: sink-hercules

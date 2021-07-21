@@ -26,9 +26,8 @@ dag = DAG(
 
 distcpRenoToHerculesClick = BashOperator(
     dag=dag,
-    bash_command='/mnt/jobs/tracking/epn-nrt/bin/distcpAmsRenoToHercules_v3.sh /apps/b_marketing_tracking/chocolate/epnnrt_v3/click /apps/b_marketing_tracking/epn/ams_click_v3/snapshot click && '
-                 '/mnt/jobs/tracking/epn-nrt/bin/distcpAmsRenoToHercules_v3.sh /apps/b_marketing_tracking/chocolate/epnnrt_v3/impression /apps/b_marketing_tracking/epn/ams_imprsn_v3/snapshot imp',
+    bash_command='/datashare/mkttracking/jobs/tracking/epn-nrt/bin/distcpAmsRenoToHercules_v3.sh /apps/b_marketing_tracking/chocolate/epnnrt_v2/click /sys/edw/imk/im_tracking/epn/ams_click_v2/snapshot click && '
+                 '/datashare/mkttracking/jobs/tracking/epn-nrt/bin/distcpAmsRenoToHercules_v3.sh /apps/b_marketing_tracking/chocolate/epnnrt_v2/imp /sys/edw/imk/im_tracking/epn/ams_imprsn_v2/snapshot imp',
     task_id='distcpRenoToHerculesClick'
 )
-
 
