@@ -43,6 +43,7 @@ public final class MonitorUtil {
             esMetrics= ESMetrics.getInstance();
         }
         esMetrics.mean(key, value,fields);
+        Metrics.summary(key,fieldsToTags(fields)).record(value);
         Metrics.counter(key,fieldsToTags(fields)).increment(value);
         Metrics.counter(key+"_count",fieldsToTags(fields)).increment(1L);
     }
@@ -51,6 +52,7 @@ public final class MonitorUtil {
             esMetrics= ESMetrics.getInstance();
         }
         esMetrics.mean(key);
+        Metrics.summary(key).record(1);
         Metrics.counter(key).increment(1L);
         Metrics.counter(key+"_count").increment(1L);
     }
