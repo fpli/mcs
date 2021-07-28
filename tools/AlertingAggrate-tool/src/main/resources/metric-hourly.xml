@@ -20,7 +20,4 @@
     <project name="Chocolate-RT-roi-data" id="6">
         <metric name="Filter Latency" value="FilterLatency" source="chocolate-metrics" condition="channelType:roi" threshold="90000" thresholdFactor="10.0" computeType="avg" alert="false"/>
     </project>
-    <project name="Chocolate-ETL-EPN" id="8">
-        <metric name="EPN ETL processedMeta" value="MetaFileCount" source="chocolate-metrics" condition="" threshold="5" thresholdFactor="0.1" computeType="sum" alert="true"/>
-    </project>
 </projects>
