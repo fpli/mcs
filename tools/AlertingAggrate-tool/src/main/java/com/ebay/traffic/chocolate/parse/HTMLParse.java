@@ -33,7 +33,7 @@ public class HTMLParse {
         html.append(HourlyEmailHtml.getESAlertHtml("hourly"));
         html.append(HourlyEmailHtml.getDoneFileHtml());
         html.append(HourlyEmailHtml.getHourlyEPNClusterFileVerifyHtml());
-        html.append(HourlyEmailHtml.getRotationAlertHtml());
+//        html.append(HourlyEmailHtml.getRotationAlertHtml());
         html.append(HourlyEmailHtml.getEPNHourlyReportHtml());
         html.append(HourlyEmailHtml.getAzkabanReportHtml());
         html.append(HourlyEmailHtml.getAirflowReportHtml());
