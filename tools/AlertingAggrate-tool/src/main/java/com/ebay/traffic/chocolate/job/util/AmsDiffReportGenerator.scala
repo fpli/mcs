@@ -1,13 +1,12 @@
 package com.ebay.traffic.chocolate.job.util
 
+import scala.collection.mutable
+
 object AmsDiffReportGenerator {
-  def getTable(new_count:Long,
-               old_count:Long,
-               new_user_id_percent:Double,
-               old_user_id_percent:Double,
-               new_last_percent:Double,
-               old_last_percent:Double,
-               diff_count:Map[String,Long]):String={
+  def getTable(totalCount:(Long, Long),
+               userIdPercent: (Double, Double),
+               lastVwdItemIdPercent: (Double, Double),
+               diff_count:mutable.LinkedHashMap[String,Long]):String={
 
     var diffResultHtml:String="";
     diff_count.foreach(t => {
@@ -20,12 +19,11 @@ object AmsDiffReportGenerator {
     })
     val html:String=scala.io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("html/amsDiffReport.html")).mkString
     html
-      .replaceAll("/new_count/",new_count.toString)
-      .replaceAll("/old_count/",old_count.toString)
-      .replaceAll("/new_user_id_percent/",new_user_id_percent.toString+"%")
-      .replaceAll("/old_user_id_percent/",old_user_id_percent.toString+"%")
-      .replaceAll("/new_last_percent/",new_last_percent.toString+"%")
-      .replaceAll("/old_last_percent/",old_last_percent.toString+"%")
+      .replaceAll("/new_total_count/",totalCount._1.toString)
+      .replaceAll("/old_total_count/",totalCount._2.toString)
+      .replaceAll("/old_user_id_percent/",userIdPercent._2.toString+"%")
+      .replaceAll("/new_last_percent/",lastVwdItemIdPercent._1.toString+"%")
+      .replaceAll("/old_last_percent/",lastVwdItemIdPercent._2.toString+"%")
       .replaceAll("/diff_result_html/",diffResultHtml)
   }
 }

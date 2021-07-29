@@ -9,7 +9,8 @@ bin=$(
 )
 
 JOB_NAME="EpnnrtClickAutomationParity"
-click_dt=`date -d '5 days ago' +%Y-%m-%d`
+#click_dt=`date -d '5 days ago' +%Y-%m-%d`
+click_dt='2021-07-18'
 sql_file="/datashare/mkttracking/jobs/tracking/epnnrt_new_test/sql/tmp/count_diff_epnnrt_automation_by_click_dt_${click_dt}.sql"
 touch "$sql_file"
 chmod 777 "$sql_file"

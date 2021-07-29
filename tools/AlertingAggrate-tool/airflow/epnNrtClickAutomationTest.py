@@ -163,3 +163,55 @@ epnnrt_click_data_parity = BashOperator(
 )
 epnnrt_click_data_parity.set_upstream(epnnrt_click_new_scheduler)
 epnnrt_click_data_parity.set_upstream(epnnrt_click_old_scheduler)
+
+ams_click_diff_report = SparkSubmitOperator(
+    task_id='ams_click_diff_report',
+    pool='spark_pool',
+    conn_id='hdlq-commrce-mkt-tracking-high-mem',
+    files='file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
+          'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
+    conf={
+        'spark.dynamicAllocation.maxExecutors': '80',
+        'spark.ui.view.acls': '*',
+        'spark.yarn.executor.memoryOverhead': '8192',
+        'spark.serializer': 'org.apache.spark.serializer.KryoSerializer',
+        'spark.hadoop.yarn.timeline-service.enabled': 'false',
+        'spark.sql.autoBroadcastJoinThreshold': '33554432',
+        'spark.sql.shuffle.partitions': '200',
+        'spark.speculation': 'true',
+        'spark.speculation.quantile': '0.5',
+        'spark.yarn.maxAppAttempts': '3',
+        'spark.driver.maxResultSize': '10g',
+        'spark.kryoserializer.buffer.max': '2040m',
+        'spark.eventLog.enabled': 'true',
+        'spark.eventLog.compress': 'false',
+        'spark.task.maxFailures': '3'
+    },
+    spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
+    dag=dag,
+    **{
+        'name': "ams_click_diff_report",
+        'java_class': 'com.ebay.traffic.chocolate.job.AmsClickDiffReport',
+        'application': '/datashare/mkttracking/jobs/tracking/epnnrt_new_test/lib/AlertingAggrate-tool-3.7.1-RELEASE-fat.jar',
+        'executor_cores': '5',
+        'driver_memory': '20G',
+        'executor_memory': '40G',
+        'num_executors': '40',
+        'application_args': [
+            '--appName', 'ams_click_diff_report',
+            '--mode', 'yarn',
+            '--outputPath', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-automation-report/result.txt',
+            '--clickDt', '2021-07-18'
+        ]
+    }
+)
+ams_click_diff_report.set_upstream(epnnrt_click_data_parity)
+
+epnnrt_click_send_report = BashOperator(
+    dag=dag,
+    bash_command='/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/epnnrt_click_send_report.sh ',
+    task_id='epnnrt_click_send_report'
+)
+epnnrt_click_send_report.set_upstream(ams_click_diff_report)
+
+

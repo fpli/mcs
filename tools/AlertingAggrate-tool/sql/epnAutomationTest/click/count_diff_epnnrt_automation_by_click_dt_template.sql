@@ -196,7 +196,7 @@ select
     new.nrt_rule_flag79           as new_nrt_rule_flag79           , old.nrt_rule_flag79           as old_nrt_rule_flag79           ,
     new.nrt_rule_flag80           as new_nrt_rule_flag80           , old.nrt_rule_flag80           as old_nrt_rule_flag80
 FROM (select * from choco_data.ams_click_old_test where click_dt='#{click_dt}' and click_id is not  null) old
-         left outer join (select * from choco_data.ams_click_new_test where click_dt='#{click_dt}' and click_id is not  null) new
+         left join (select * from choco_data.ams_click_new_test where click_dt='#{click_dt}' and click_id is not  null) new
                          on  old.click_id = new.click_id where !(
     (
             (old.imprsn_cntnr_id            is null  or new.imprsn_cntnr_id            <=>     old.imprsn_cntnr_id           ) and
