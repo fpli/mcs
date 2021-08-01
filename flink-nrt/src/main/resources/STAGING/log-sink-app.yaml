@@ -1,0 +1,22 @@
+job:
+  name: log-sink-app
+
+source:
+  topic: chocolate-log-qa
+  name: source
+  uid: source
+  properties: |-
+    bootstrap.servers: \
+      choco-2217601.lvs02.dev.ebayc3.com:6667,\
+      choco-cent-1659401.slc07.dev.ebayc3.com:6667,\
+      choco-cent-2218337.lvs02.dev.ebayc3.com:6667
+    group.id: log-sink-1
+    session.timeout.ms: 10000
+    auto.offset.reset: latest
+    receive.buffer.bytes: 16777216
+    request.timeout.ms: 305000
+
+sink:
+  appKey: 98fadf1582cd4070bba0c17628f2ecc5
+  appSecret: yfpIsMvVpnDd6yYsGPI9bIjbcz8W0QDcGg9hGVnndlGswC2LofOvp0wdbsJndSGM
+  uri: https://estess721test-dataslc.stratus.qa.ebay.com

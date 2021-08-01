@@ -1,0 +1,21 @@
+job:
+  name: log-sink-app
+
+source:
+  topic: chocolate-log,chocolate-log-preprod,metadata-api-log,self-service-log,self-service-log-preprod
+  name: source
+  uid: source
+  properties: |-
+    bootstrap.servers: chocolate-kafka-pits.vip.lvs.ebay.com:6667
+    group.id: log-sink-1
+    session.timeout.ms: 10000
+    auto.offset.reset: latest
+    receive.buffer.bytes: 16777216
+    request.timeout.ms: 305000
+
+sink:
+  name: sink
+  uid: sink
+  appKey: C5fd0e7e347a49ed835b40b017dafb25
+  appSecret: 5Dll8FeORzHwO0ELicK9skOEnMGEYKRnYQweJQC8yZnHjZZedxTtQUOZLygZMO5x
+  uri: https://esutptracer-datarno.vip.ebay.com
