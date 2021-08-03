@@ -1,7 +1,7 @@
 #!/bin/bash
 export HADOOP_USER_NAME=chocolate
-RESULT_PATH=viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-automation-report/click_result.txt
-SUBJECT="epnnrt click automation result"
+RESULT_PATH=viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-automation-report/imprsn_result.txt
+SUBJECT="epnnrt impression automation result"
 EMAIL_CONTENT=`/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -text ${RESULT_PATH}`
 export mail_list='yuhxiao@ebay.com'
 export mail_smtp='mx.vip.lvs.ebay.com:25'

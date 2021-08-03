@@ -2,15 +2,14 @@ package com.ebay.traffic.chocolate.job
 
 import scopt.OptionParser
 
-case class Parameter(appName: String = "AmsClickDiffReport",
+case class Parameter(appName: String = "AmsDiffReport",
                      mode: String = "yarn",
-                     clickDt: String = "",
                      outputPath: String="")
 
 object Parameter {
 
-  private lazy val parser = new OptionParser[Parameter]("AmsClickDiffReport") {
-    head("AmsClickDiffReport")
+  private lazy val parser = new OptionParser[Parameter]("AmsClickReport") {
+    head("AmsDiffReport")
 
     opt[String]("appName")
       .optional
@@ -21,11 +20,6 @@ object Parameter {
       .optional
       .valueName("mode")
       .action((cont, param) => param.copy(mode = cont))
-
-    opt[String]("clickDt")
-      .required
-      .valueName("clickDt")
-      .action((cont, param) => param.copy(clickDt = cont))
 
     opt[String]("outputPath")
       .required
