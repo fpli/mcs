@@ -37,17 +37,19 @@
             </layout>
             <charset>UTF-8</charset>
         </encoder>
-        <topic>chocolate-log-qa</topic>
+        <topic>marketing.tracking.staging.chocolate-log-qa</topic>
         <!-- ensure that every message sent by the executing host is partitioned to the same partition strategy -->
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
         <!-- use async delivery. the application threads are not blocked by logging -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
         <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
-        <producerConfig>max.block.ms=0</producerConfig>
+        <producerConfig>max.block.ms=120000</producerConfig>
         <producerConfig>request.timeout.ms=3000</producerConfig>
         <producerConfig>acks=0</producerConfig>
-        <producerConfig>bootstrap.servers=choco-2217601.lvs02.dev.ebayc3.com:6667,choco-cent-1659401.slc07.dev.ebayc3.com:6667,
-            choco-cent-2218337.lvs02.dev.ebayc3.com:6667</producerConfig>
+        <producerConfig>bootstrap.servers=rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092</producerConfig>
+        <producerConfig>security.protocol=SASL_PLAINTEXT</producerConfig>
+        <producerConfig>sasl.jaas.config=io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639" iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960" iafEnv="staging"</producerConfig>
+        <producerConfig>rheos.services.urls=https://rheos-services.qa.ebay.com</producerConfig>
     </appender>
 
     <appender name="CAL"

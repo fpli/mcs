@@ -55,16 +55,20 @@
             </layout>
             <charset>UTF-8</charset>
         </encoder>
-        <topic>chocolate-log</topic>
+        <topic>marketing.tracking.chocolate-log</topic>
         <!-- ensure that every message sent by the executing host is partitioned to the same partition strategy -->
         <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
         <!-- use async delivery. the application threads are not blocked by logging -->
         <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
         <!-- even if the producer buffer runs full, do not block the application but start to drop messages -->
-        <producerConfig>max.block.ms=0</producerConfig>
+        <producerConfig>max.block.ms=120000</producerConfig>
         <producerConfig>request.timeout.ms=3000</producerConfig>
         <producerConfig>acks=0</producerConfig>
-        <producerConfig>bootstrap.servers=chocolate-kafka-pits.vip.lvs.ebay.com:6667</producerConfig>
+        <producerConfig>bootstrap.servers=rhs-hcrvkiaa-kfk-lvs-1.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-2.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-3.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-4.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-5.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-6.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-7.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-8.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-9.rheos-streaming-prod.svc.27.tess.io:9092,rhs-hcrvkiaa-kfk-lvs-10.rheos-streaming-prod.svc.27.tess.io:9092</producerConfig>
+        <producerConfig>sasl.mechanism=IAF</producerConfig>
+        <producerConfig>security.protocol=SASL_PLAINTEXT</producerConfig>
+        <producerConfig>sasl.jaas.config=io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639" iafSecret="eb97c77a-92a6-490e-8808-09fd29ad03c5" iafEnv="production"</producerConfig>
+        <producerConfig>rheos.services.urls=http://rheos-services.stratus.ebay.com</producerConfig>
     </appender>
 
     <appender name="CAL"

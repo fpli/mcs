@@ -3,10 +3,10 @@
     <project name="Chocolate-EPN-data" id="1">
         <metric name="Listener Input: click" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
         <metric name="Capping Output: click" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:click" threshold="20000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
-        <metric name="EPN click: click" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:click" threshold="20000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+<!--        <metric name="EPN click: click" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:click" threshold="20000000" thresholdFactor="0.7" computeType="sum" alert="true"/>-->
         <metric name="Listener Input: impression" value="ProxyIncomingCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
         <metric name="Capping Output: impression" value="DedupeInputCount" source="chocolate-metrics" condition="channelType:epn,channelAction:impression" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
-        <metric name="EPN Impression: impression" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:impression" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
+<!--        <metric name="EPN Impression: impression" value="SuccessfulCount" source="chocolate-metrics" condition="channelAction:impression" threshold="30000000" thresholdFactor="0.7" computeType="sum" alert="true"/>-->
     </project>
     <project name="Chocolate-PaidSearch-data" id="2">
         <metric name="Collectionsvc Input: click" value="CollectionServiceIncoming" source="chocolate-metrics" condition="channelType:paid_search" threshold="10000000" thresholdFactor="0.7" computeType="sum" alert="true"/>
