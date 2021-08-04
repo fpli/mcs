@@ -24,13 +24,15 @@
         <producerConfig>request.timeout.ms=3000</producerConfig>
         <producerConfig>acks=0</producerConfig>
         <producerConfig>bootstrap.servers=rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092</producerConfig>
+        <producerConfig>sasl.mechanism=IAF</producerConfig>
         <producerConfig>security.protocol=SASL_PLAINTEXT</producerConfig>
-        <producerConfig>sasl.jaas.config=io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639" iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960" iafEnv="staging"</producerConfig>
+        <producerConfig>sasl.jaas.config=io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639" iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960" iafEnv="staging";</producerConfig>
         <producerConfig>rheos.services.urls=https://rheos-services.qa.ebay.com</producerConfig>
     </appender>
 
     <root level="info">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="KafkaAppender" />
     </root>
 
     <logger name="org.opensaml.xml.XMLConfigurator" level="warn"/>
