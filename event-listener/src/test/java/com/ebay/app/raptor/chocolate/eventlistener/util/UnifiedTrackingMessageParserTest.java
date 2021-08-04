@@ -163,6 +163,7 @@ public class UnifiedTrackingMessageParserTest {
     assertTrue(UnifiedTrackingMessageParser.isBot("googleBot"));
     assertTrue(UnifiedTrackingMessageParser.isBot("yahooProxy"));
     assertTrue(UnifiedTrackingMessageParser.isBot("Spiderman"));
+    assertTrue(UnifiedTrackingMessageParser.isBot("Mediapartners-Google"));
     assertFalse(UnifiedTrackingMessageParser.isBot("eBayAndroid/6.7.2"));
     assertFalse(UnifiedTrackingMessageParser.isBot(""));
   }

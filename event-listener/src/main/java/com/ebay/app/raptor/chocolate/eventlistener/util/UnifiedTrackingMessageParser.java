@@ -151,7 +151,7 @@ public class UnifiedTrackingMessageParser {
     if (StringUtils.isNotEmpty(userAgent)) {
       String userAgentLower = userAgent.toLowerCase();
       for (String botKeyword : BOT_LIST) {
-        if (userAgentLower.contains(botKeyword)) {
+        if (userAgentLower.contains(botKeyword.toLowerCase())) {
           return true;
         }
       }
