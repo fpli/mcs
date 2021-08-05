@@ -29,6 +29,7 @@ source:
       iafSecret="eb97c77a-92a6-490e-8808-09fd29ad03c5"\n\
       iafEnv="production";
     rheos.services.urls: http://rheos-services.stratus.ebay.com
+    flink.partition-discovery.interval-millis: 60000
 transform:
   topic: marketing.tracking.events.total
   name: transform

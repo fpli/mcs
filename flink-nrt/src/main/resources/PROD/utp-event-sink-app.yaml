@@ -30,7 +30,7 @@ source:
       iafEnv="production";
     rheos.services.urls: http://rheos-services.stratus.ebay.com
     rheos.topic.schema: marketing.tracking.events.schema
-
+    flink.partition-discovery.interval-millis: 60000
 sink:
   rno:
     outputFileConfig:
