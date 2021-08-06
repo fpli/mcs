@@ -62,6 +62,7 @@ public class BehaviorEventSinkAppTest {
     properties.setProperty("security.protocol", "SASL_PLAINTEXT");
     properties.setProperty("sasl.jaas.config", "io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId=\"urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639\" iafSecret=\"f660cc36-bf60-4528-befc-bb2fc203a960\" iafEnv=\"staging\";");
     properties.setProperty("rheos.services.urls", "https://rheos-services.qa.ebay.com");
+    properties.setProperty("flink.partition-discovery.interval-millis","60000");
     assertEquals(properties, behaviorEventSinkApp.getConsumerProperties());
   }
 
