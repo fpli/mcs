@@ -348,7 +348,7 @@ object BullseyeUtilsV2 {
     try {
       secret=Http(secretEndPoint).method("GET")
         .asString.body
-      logger.error("successfully get secret by fidelius {} " + secret)
+      logger.error("successfully get secret by fidelius {} ", secret)
     } catch {
       case e: Exception =>
     }
