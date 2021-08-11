@@ -1,22 +1,23 @@
 package com.ebay.traffic.chocolate.job.util
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 object AmsDiffReportGenerator {
   def getClickTable(totalCount:(Long, Long),
                userIdPercent: (Double, Double),
                lastVwdItemIdPercent: (Double, Double),
-               diff_count:mutable.LinkedHashMap[String,Long]):String={
+               diff_count:ArrayBuffer[(String,Long)]):String={
 
     var diffResultHtml:String=""
-    diff_count.foreach(t => {
-      val columnName: String = t._1
-      val diffCount: Long = t._2
+    for(i<-diff_count.indices){
+      val columnName: String =diff_count(i)._1
+      val diffCount: Long =diff_count(i)._2
       val tr:String="<tr>\n        <td class=\"a\">/column_name/</td>\n        <td class=\"a\">/diff_count/</td>\n    </tr> \n"
         .replaceAll("/column_name/",columnName)
         .replaceAll("/diff_count/",diffCount+"")
       diffResultHtml+=tr
-    })
+    }
     val html:String=scala.io.Source.fromInputStream(getClass.getClassLoader.getResourceAsStream("html/amsClickDiffReport.html")).mkString
     html
       .replaceAll("/new_total_count/",totalCount._1.toString)

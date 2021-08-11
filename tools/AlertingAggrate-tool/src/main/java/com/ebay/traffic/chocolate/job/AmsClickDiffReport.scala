@@ -12,6 +12,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 object AmsClickDiffReport extends App {
 
@@ -129,8 +130,8 @@ class AmsClickDiffReport(params: Parameter)  {
       "/(SELECT count(*) from choco_data.ams_click_old_test where click_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%')").head.getDouble(0)*100
     (newLastVwdItemIdNotNullPercent,oldLastVwdItemIdNotNullPercent)
   }
-  def getDiffColumnsAndCount():mutable.LinkedHashMap[String,Long]={
-    val map=new mutable.LinkedHashMap[String,Long]()
+  def getDiffColumnsAndCount():ArrayBuffer[(String,Long)]={
+    val buffer=new ArrayBuffer[(String, Long)]()
     val df: DataFrame =sqlsc.sql("select * from choco_data.epnnrt_click_automation_diff where click_dt=\""+getCheckDay()+"\"")
     val columns: Array[String] = df.columns
     var index:Int=0
@@ -143,12 +144,12 @@ class AmsClickDiffReport(params: Parameter)  {
       if(count!=0) {
         val columnName: String = columns(index).substring(4)
         logger.info("{} has different value",columnName)
-        map.put(columnName,count)
+        buffer+=Tuple2(columnName,count)
       }
       index+=2
     }
-    map.put("Total",df.count())
-    map
+    buffer+=Tuple2("Total",df.count())
+    buffer
   }
   /**
     * stop the spark com.xl.traffic.chocolate.job.
