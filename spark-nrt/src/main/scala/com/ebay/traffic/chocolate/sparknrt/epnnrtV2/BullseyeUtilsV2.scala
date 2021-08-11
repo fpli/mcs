@@ -298,7 +298,7 @@ object BullseyeUtilsV2 {
   def getOauthAuthorization(): String = {
     var authorization = ""
     try {
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientId(properties.getProperty("epnnrt.clientId"))
+      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
       authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
     } catch {
       case e: Exception => {
@@ -338,6 +338,23 @@ object BullseyeUtilsV2 {
     if (secret == null) {
       secret = ""
       metrics.meterByGauge("getClientSecretNullTess",1)
+    }
+    secret
+  }
+
+  def getSecretByClientIdV2(): String = {
+    var secret = ""
+    val secretEndPoint: String = properties.getProperty("epnnrt.fideliusUrl")
+    try {
+      secret=Http(secretEndPoint).method("GET")
+        .asString.body
+      logger.error("successfully get secret by fidelius {} " + secret)
+    } catch {
+      case e: Exception =>
+    }
+    if (secret == null) {
+      secret = ""
+      metrics.meterByGauge("getClientSecretNullFideliusTess",1)
     }
     secret
   }

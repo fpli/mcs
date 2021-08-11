@@ -93,6 +93,6 @@ class TestBullseyeUtilsV2 extends FlatSpec with Matchers{
 //  }
 
   "FetchClientSecret" must "work" in  {
-    assert(BullseyeUtilsV2.getSecretByClientId(properties.getProperty("epnnrt.clientId")) == "e884b0bd-8f38-4d1d-a161-f85038c3d0f3")
+    assert(BullseyeUtilsV2.getSecretByClientIdV2() == "e884b0bd-8f38-4d1d-a161-f85038c3d0f3")
   }
 }
