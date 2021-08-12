@@ -22,6 +22,7 @@ object AmsDiffReportGenerator {
     html
       .replaceAll("/new_total_count/",totalCount._1.toString)
       .replaceAll("/old_total_count/",totalCount._2.toString)
+      .replaceAll("/new_user_id_percent/",userIdPercent._2.toString+"%")
       .replaceAll("/old_user_id_percent/",userIdPercent._2.toString+"%")
       .replaceAll("/new_last_percent/",lastVwdItemIdPercent._1.toString+"%")
       .replaceAll("/old_last_percent/",lastVwdItemIdPercent._2.toString+"%")

@@ -49,3 +49,5 @@ if [ $spark_sql_result_code -ne 0 ]; then
 fi
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -cp ${SOURCE_PATH}/* ${DEST_PATH}
+
+$command_hive -e "set hive.msck.path.validation=ignore; MSCK REPAIR TABLE choco_data.epnnrt_click_automation_diff"

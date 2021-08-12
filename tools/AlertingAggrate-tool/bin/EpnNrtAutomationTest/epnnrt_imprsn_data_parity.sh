@@ -15,10 +15,10 @@ sed "s/#{imprsn_dt}/${imprsn_dt}/g" ../../sql/count_diff_epnnrt_automation_by_im
 
 sql=`cat $sql_file`;
 
+command_hive="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
 $command_hive -e "set hive.msck.path.validation=ignore; MSCK REPAIR TABLE choco_data.ams_imprsn_new_test"
 $command_hive -e "set hive.msck.path.validation=ignore; MSCK REPAIR TABLE choco_data.ams_imprsn_old_test"
 
-command_hive="/datashare/mkttracking/tools/apollo_rno/hive_apollo_rno/bin/hive"
 SOURCE_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp-tmp
 DEST_PATH=/apps/b_marketing_tracking/epnnrt-automation-diff/imp/imprsn_dt=${imprsn_dt}
 
@@ -46,3 +46,5 @@ if [ $spark_sql_result_code -ne 0 ]; then
 fi
 
 /datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs dfs -cp ${SOURCE_PATH}/* ${DEST_PATH}
+
+$command_hive -e "set hive.msck.path.validation=ignore; MSCK REPAIR TABLE choco_data.epnnrt_imprsn_automation_diff"
