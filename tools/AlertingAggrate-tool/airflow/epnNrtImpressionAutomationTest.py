@@ -83,7 +83,7 @@ epnnrt_imprsn_new_test_scheduler = SparkSubmitOperator(
             '--mode', 'yarn',
             '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
             '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
-            '--outputDir', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-new-test/',
+            '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-new-test/',
             '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
             '--partitions', '3',
             '--filterTime', '0'
@@ -146,7 +146,7 @@ epnnrt_imprsn_old_test_scheduler = SparkSubmitOperator(
             '--mode', 'yarn',
             '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
             '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
-            '--outputDir', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-old-test/',
+            '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-old-test/',
             '--resourceDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-resources',
             '--partitions', '3',
             '--filterTime', '0'
@@ -199,7 +199,7 @@ ams_imprsn_diff_report = SparkSubmitOperator(
         'application_args': [
             '--appName', 'ams_imprsn_diff_report',
             '--mode', 'yarn',
-            '--outputPath', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-automation-report/imprsn_result.txt'
+            '--outputPath', 'viewfs://apollo-rno/apps/b_marketing_tracking/chocolate/epnnrt-automation-report/imprsn_result.txt'
         ]
     }
 )

@@ -168,10 +168,9 @@ select
     new.nrt_rule_flag71           as new_nrt_rule_flag71           , old.nrt_rule_flag71           as old_nrt_rule_flag71           ,
     new.nrt_rule_flag72           as new_nrt_rule_flag72           , old.nrt_rule_flag72           as old_nrt_rule_flag72
 from (select * from choco_data.ams_imprsn_new_test where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is not  null) new
-         LEFT outer join (select * from choco_data.ams_imprsn_old_test where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is not  null) old
-                         on  old.imprsn_cntnr_id = new.imprsn_cntnr_id  and old.guid_txt=new.guid_txt and new.user_id=old.user_id and new.ams_trans_rsn_cd = old.ams_trans_rsn_cd
+         full outer join (select * from choco_data.ams_imprsn_old_test where imprsn_dt='#{imprsn_dt}' and imprsn_cntnr_id is not  null) old
+                         on  old.imprsn_cntnr_id = new.imprsn_cntnr_id
 where  !(
-            length(trim(old.rover_url_txt))<=>0 or trim(old.rover_url_txt)<=>'0' or (
             (old.imprsn_cntnr_id           is null or new.imprsn_cntnr_id            <=>     old.imprsn_cntnr_id           ) and
             (old.file_schm_vrsn_num        is null or new.file_schm_vrsn_num         <=>     old.file_schm_vrsn_num        ) and
             (old.file_id                   is null or new.file_id                    <=>     old.file_id                   ) and
@@ -339,5 +338,4 @@ where  !(
             (old.nrt_rule_flag70           is null or new.nrt_rule_flag70            <=>     old.nrt_rule_flag70           ) and
             (old.nrt_rule_flag71           is null or new.nrt_rule_flag71            <=>     old.nrt_rule_flag71           ) and
             (old.nrt_rule_flag72           is null or new.nrt_rule_flag72            <=>     old.nrt_rule_flag72           )
-        )
     )
