@@ -9,7 +9,7 @@ default_args = {
     'owner': 'yuhxiao',
     'depends_on_past': False,
     'start_date': '2021-03-01',
-    'email': ['yuhxiao@ebay.com'],
+    'email': ['Marketing-Tracking-oncall@ebay.com','DL-eBay-Chocolate-GC@ebay.com'],
     'email_on_failure': True,
     'email_on_retry': True,
     'retries': 0,
@@ -30,8 +30,8 @@ auto_create_click_meta = BashOperator(
     task_id='auto_create_click_meta'
 )
 
-epnnrt_click_new_scheduler = SparkSubmitOperator(
-    task_id='epnnrt_click_new_scheduler',
+epnnrt_click_new_test_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_click_new_test_scheduler',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/epnnrt_v2.properties,'
@@ -80,7 +80,7 @@ epnnrt_click_new_scheduler = SparkSubmitOperator(
         'executor_memory': '40G',
         'num_executors': '40',
         'application_args': [
-            '--appName', 'epn_nrt_click_new_test',
+            '--appName', 'epn_nrt_click_new_test_scheduler',
             '--mode', 'yarn',
             '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
             '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-new-test',
@@ -91,10 +91,10 @@ epnnrt_click_new_scheduler = SparkSubmitOperator(
         ]
     }
 )
-epnnrt_click_new_scheduler.set_upstream(auto_create_click_meta)
+epnnrt_click_new_test_scheduler.set_upstream(auto_create_click_meta)
 
-epnnrt_click_old_scheduler = SparkSubmitOperator(
-    task_id='epnnrt_click_old_scheduler',
+epnnrt_click_old_test_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_click_old_test_scheduler',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/epnnrt_v2.properties,'
@@ -143,7 +143,7 @@ epnnrt_click_old_scheduler = SparkSubmitOperator(
         'executor_memory': '40G',
         'num_executors': '40',
         'application_args': [
-            '--appName', 'epn_nrt_click_old_test',
+            '--appName', 'epn_nrt_click_old_test_scheduler',
             '--mode', 'yarn',
             '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
             '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
@@ -154,15 +154,15 @@ epnnrt_click_old_scheduler = SparkSubmitOperator(
         ]
     }
 )
-epnnrt_click_old_scheduler.set_upstream(auto_create_click_meta)
+epnnrt_click_old_test_scheduler.set_upstream(auto_create_click_meta)
 
 epnnrt_click_data_parity = BashOperator(
     dag=dag,
     bash_command='/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/epnnrt_click_data_parity.sh ',
     task_id='epnnrt_click_data_parity'
 )
-epnnrt_click_data_parity.set_upstream(epnnrt_click_new_scheduler)
-epnnrt_click_data_parity.set_upstream(epnnrt_click_old_scheduler)
+epnnrt_click_data_parity.set_upstream(epnnrt_click_new_test_scheduler)
+epnnrt_click_data_parity.set_upstream(epnnrt_click_old_test_scheduler)
 
 ams_click_diff_report = SparkSubmitOperator(
     task_id='ams_click_diff_report',

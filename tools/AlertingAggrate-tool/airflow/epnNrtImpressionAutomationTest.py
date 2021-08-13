@@ -30,8 +30,8 @@ auto_create_imprsn_meta = BashOperator(
     task_id='auto_create_imprsn_meta'
 )
 
-epnnrt_imprsn_new_scheduler = SparkSubmitOperator(
-    task_id='epnnrt_imprsn_new_scheduler',
+epnnrt_imprsn_new_test_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_imprsn_new_test_scheduler',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/epnnrt_new_test/conf/epnnrt_v2.properties,'
@@ -71,7 +71,7 @@ epnnrt_imprsn_new_scheduler = SparkSubmitOperator(
     dag=dag,
     spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
     **{
-        'name': 'epnnrt_imprsn_new_scheduler',
+        'name': 'epnnrt_imprsn_new_test_scheduler',
         'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtImpressionJobV2',
         'application': '/datashare/mkttracking/jobs/tracking/epnnrt_new_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
         'executor_cores': '8',
@@ -91,10 +91,10 @@ epnnrt_imprsn_new_scheduler = SparkSubmitOperator(
     }
 )
 
-epnnrt_imprsn_new_scheduler.set_upstream(auto_create_imprsn_meta)
+epnnrt_imprsn_new_test_scheduler.set_upstream(auto_create_imprsn_meta)
 
-epnnrt_imprsn_old_scheduler = SparkSubmitOperator(
-    task_id='epnnrt_imprsn_old_scheduler',
+epnnrt_imprsn_old_test_scheduler = SparkSubmitOperator(
+    task_id='epnnrt_imprsn_old_test_scheduler',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/epnnrt_old_test/conf/epnnrt_v2.properties,'
@@ -134,7 +134,7 @@ epnnrt_imprsn_old_scheduler = SparkSubmitOperator(
     dag=dag,
     spark_binary="/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno/bin/spark-submit",
     **{
-        'name': 'epnnrt_imprsn_old_scheduler',
+        'name': 'epnnrt_imprsn_old_test_scheduler',
         'java_class': 'com.ebay.traffic.chocolate.sparknrt.epnnrtV2.EpnNrtImpressionJobV2',
         'application': '/datashare/mkttracking/jobs/tracking/epnnrt_old_test/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
         'executor_cores': '8',
@@ -142,7 +142,7 @@ epnnrt_imprsn_old_scheduler = SparkSubmitOperator(
         'executor_memory': '30G',
         'num_executors': '50',
         'application_args': [
-            '--appName', 'epnnrt_imprsn_old_scheduler',
+            '--appName', 'epnnrt_imprsn_old_test_scheduler',
             '--mode', 'yarn',
             '--inputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
             '--outputWorkDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-old-test',
@@ -153,15 +153,15 @@ epnnrt_imprsn_old_scheduler = SparkSubmitOperator(
         ]
     }
 )
-epnnrt_imprsn_old_scheduler.set_upstream(auto_create_imprsn_meta)
+epnnrt_imprsn_old_test_scheduler.set_upstream(auto_create_imprsn_meta)
 
 epnnrt_imprsn_data_parity = BashOperator(
     dag=dag,
     bash_command='/datashare/mkttracking/jobs/tracking/epnnrt_new_test/bin/epnnrt_imprsn_data_parity.sh ',
     task_id='epnnrt_imprsn_data_parity'
 )
-epnnrt_imprsn_data_parity.set_upstream(epnnrt_imprsn_new_scheduler)
-epnnrt_imprsn_data_parity.set_upstream(epnnrt_imprsn_old_scheduler)
+epnnrt_imprsn_data_parity.set_upstream(epnnrt_imprsn_new_test_scheduler)
+epnnrt_imprsn_data_parity.set_upstream(epnnrt_imprsn_old_test_scheduler)
 
 ams_imprsn_diff_report = SparkSubmitOperator(
     task_id='ams_imprsn_diff_report',
