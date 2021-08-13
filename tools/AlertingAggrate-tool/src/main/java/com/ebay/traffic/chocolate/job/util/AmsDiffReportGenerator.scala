@@ -30,7 +30,7 @@ object AmsDiffReportGenerator {
   }
   def getImprsnTable(totalCount:(Long, Long),
                userIdPercent: (Double, Double),
-               diff_count:mutable.LinkedHashMap[String,Long]):String={
+               diff_count:ArrayBuffer[(String,Long)]):String={
 
     var diffResultHtml:String="";
     diff_count.foreach(t => {

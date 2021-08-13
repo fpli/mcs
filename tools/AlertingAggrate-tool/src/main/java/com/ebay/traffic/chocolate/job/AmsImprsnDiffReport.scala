@@ -10,7 +10,7 @@ import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
-
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 
 object AmsImprsnDiffReport extends App {
@@ -120,8 +120,8 @@ class AmsImprsnDiffReport(params: Parameter)  {
       "/(SELECT count(*) from choco_data.ams_imprsn_old_test where imprsn_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%'),2)").head.getDouble(0)*100
     (newUserIdNotNullPercent,oldUserIdNotNullPercent)
   }
-  def getDiffColumnsAndCount():mutable.LinkedHashMap[String,Long]={
-    val map=new mutable.LinkedHashMap[String,Long]()
+  def getDiffColumnsAndCount():ArrayBuffer[(String,Long)]={
+    val buffer=new ArrayBuffer[(String, Long)]()
     val df: DataFrame =sqlsc.sql("select * from choco_data.epnnrt_imprsn_automation_diff where imprsn_dt=\""+getCheckDay()+"\"")
     val columns: Array[String] = df.columns
     var index:Int=0
@@ -134,12 +134,12 @@ class AmsImprsnDiffReport(params: Parameter)  {
       if(count!=0) {
         val columnName: String = columns(index).substring(4)
         logger.info("{} has different value",columnName)
-        map.put(columnName,count)
+        buffer+=Tuple2(columnName,count)
       }
       index+=2
     }
-    map.put("Total",df.count())
-    map
+    buffer+=Tuple2("Total",df.count())
+    buffer
   }
   /**
     * stop the spark com.xl.traffic.chocolate.job.
