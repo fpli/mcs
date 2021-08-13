@@ -202,7 +202,9 @@ public class CollectionServiceUtil {
         // If payload key is mpuid, query will not encode its value, the reason is that
         // MPUID will be used in imkETL process to parse item_id and transaction_id, imkETL process will not decode
         // our query. So if MPUID is encoded in this place, it will cause split error in imkETL
-        if (isEncodedUrl(value)) {
+        if (key.equalsIgnoreCase(MPUID)) {
+          queryString = String.format("%s&%s=%s", queryString, key, value);
+        } else if (isEncodedUrl(value)) {
           // If payload value is encoded, query will not encode it twice
           queryString = String.format("%s&%s=%s", queryString, key, value);
         } else {
