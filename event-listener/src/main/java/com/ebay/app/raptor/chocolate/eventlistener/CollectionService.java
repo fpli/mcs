@@ -899,12 +899,13 @@ public class CollectionService {
       cmCollector.trackUbi(requestContext, baseEvent);
     }
 
-    // 2. send email open/click to behavior topic
-    BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
-
-    if (message != null) {
-      behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-          KafkaSink.callback);
+    // 2. send email open to behavior topic
+    if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())) {
+      BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
+      if (message != null) {
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+            KafkaSink.callback);
+      }
     }
 
     // 3. fire utp event
