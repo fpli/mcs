@@ -21,7 +21,8 @@ dag = DAG(
     dag_id='epnNrtClickAutomationTest',
     default_args=default_args,
     catchup=False,
-    max_active_runs=1
+    max_active_runs=1,
+    schedule_interval=None
 )
 
 auto_create_click_meta = BashOperator(

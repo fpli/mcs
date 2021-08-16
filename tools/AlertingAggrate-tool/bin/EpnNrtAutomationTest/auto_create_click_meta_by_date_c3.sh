@@ -11,7 +11,8 @@ local_path="/datashare/mkttracking/test/EPN/click"
 cd $local_path;
 channel_file_list_file="${local_path}/channel_file_list_file.txt"
 apollo_command=/datashare/mkttracking/tools/apollo_rno/hadoop_apollo_rno/bin/hdfs
-
+${apollo_command} dfs -rm -r viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-new-test/click/click_dt=${date}
+${apollo_command} dfs -rm -r viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-old-test/click/click_dt=${date}
 function createMeta() {
     channel=$1;
     rm -r ${local_path}/EPN/click/*

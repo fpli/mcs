@@ -115,9 +115,9 @@ class AmsImprsnDiffReport(params: Parameter)  {
   }
   def getUserIdNotNullPercent():(Double, Double)={
     val newUserIdNotNullPercent:Double=sqlsc.sql("select round((select count(*) from choco_data.ams_imprsn_new_test where imprsn_dt=\""+getCheckDay()+"\" and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL)*100" +
-      "/(SELECT count(*) from choco_data.ams_imprsn_new_test where imprsn_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%'),2)").head.getDouble(0)*100
+      "/(SELECT count(*) from choco_data.ams_imprsn_new_test where imprsn_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%'),2)").head.getDouble(0)
     val oldUserIdNotNullPercent:Double=sqlsc.sql("select round((select count(*) from choco_data.ams_imprsn_old_test where imprsn_dt=\""+getCheckDay()+"\" and  lower(brwsr_name) not like '%bot%' and USER_ID <>0 AND USER_ID <>-1 AND  USER_ID IS NOT NULL)*100" +
-      "/(SELECT count(*) from choco_data.ams_imprsn_old_test where imprsn_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%'),2)").head.getDouble(0)*100
+      "/(SELECT count(*) from choco_data.ams_imprsn_old_test where imprsn_dt=\""+getCheckDay()+"\" and lower(brwsr_name) not like '%bot%'),2)").head.getDouble(0)
     (newUserIdNotNullPercent,oldUserIdNotNullPercent)
   }
   def getDiffColumnsAndCount():ArrayBuffer[(String,Long)]={
