@@ -371,9 +371,11 @@ public class CollectionService {
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
 
         firePMEvent(baseEvent, requestContext);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.SITE_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
       } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
           || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
@@ -629,9 +631,9 @@ public class CollectionService {
 
 
     // add channel specific tags, and produce message for EPN and IMK
-    if (channelType == ChannelIdEnum.SITE_EMAIL) {
+    if (channelType == ChannelIdEnum.SITE_EMAIL || channelType == ChannelIdEnum.SITE_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-    } else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+    } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
     } else {
       firePMEvent(baseEvent, requestContext);

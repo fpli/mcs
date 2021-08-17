@@ -164,7 +164,8 @@ public abstract class CustomerMarketingCollector {
   public String getEmailPartner(MultiValueMap<String, String> parameters, ChannelIdEnum channelType) {
     // check partner for email click
     String partner = null;
-    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType) ||
+            ChannelIdEnum.SITE_MESSAGE_CENTER.equals(channelType) || ChannelIdEnum.MRKT_MESSAGE_CENTER.equals(channelType)) {
       // no mkpid, accepted
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         LOGGER.warn(Errors.ERROR_NO_MKPID);
