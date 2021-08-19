@@ -881,7 +881,7 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
+    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE) && !baseEvent.isCheckoutApi()) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
