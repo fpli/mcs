@@ -91,17 +91,9 @@ public class BehaviorMessageParser {
 
     // guid from tracking header
     String trackingHeader = baseEvent.getRequestHeaders().get(TRACKING_HEADER);
-    String guid = "";
-    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
-      for (String seg : trackingHeader.split(",")) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase(Constants.GUID)) {
-            guid = keyValue[1];
-            record.setGuid(guid);
-          }
-        }
-      }
+    String guid = getData(Constants.GUID, trackingHeader);
+    if (guid != null) {
+      record.setGuid(guid);
     }
 
     // adguid
@@ -113,7 +105,7 @@ public class BehaviorMessageParser {
     // source id
     record.setSid(parseTagFromParams(baseEvent.getUrlParameters(), Constants.SOURCE_ID));
 
-    String userId = Long.toString(baseEvent.getEndUserContext().getOrigUserOracleId());
+    String userId = parseTagFromParams(baseEvent.getUrlParameters(), Constants.BEST_GUESS_USER);
     record.setUserId(userId);
 
     // eventTimestamp
