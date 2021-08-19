@@ -205,7 +205,7 @@ public class BehaviorMessageParser {
 
     // channel type and action
     record.setChannelType(baseEvent.getChannelType().toString());
-    record.setChannelAction(baseEvent.getChannelType().toString());
+    record.setChannelAction(baseEvent.getActionType().toString());
 
     return record;
   }
