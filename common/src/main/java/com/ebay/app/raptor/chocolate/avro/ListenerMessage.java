@@ -1,6 +1,6 @@
 package com.ebay.app.raptor.chocolate.avro;
 
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
 import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV4;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import org.apache.avro.Schema;
@@ -13,7 +13,7 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class ListenerMessage extends ListenerMessageV5 {
+public class ListenerMessage extends ListenerMessageV6 {
   public static Schema getClassSchema() { return SCHEMA$; }
 
   private static Schema getV4Schema() {
