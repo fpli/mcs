@@ -22,7 +22,7 @@ object BullseyeUtilsV2 {
   }
 
   @transient lazy val metrics: SherlockioMetrics = {
-    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"), properties.getProperty("sherlockio.endpoint"), properties.getProperty("sherlockio.user"))
     val sherlockioMetrics = SherlockioMetrics.getInstance()
     sherlockioMetrics.setJobName("bullseyeUtil")
     sherlockioMetrics
@@ -98,7 +98,40 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case e: Exception => {
-        logger.error("error when parse last view item : CGUID:" + cguid +  " , GUID:" + guid + " response: " + e)
+        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + e)
+        // metrics.meterByGauge("BullsEyeError", 1)
+        None
+      }
+    }
+  }
+
+  def getDataV4(cguid: String, guid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
+    logger.debug(s"Bullseye sending, cguid=$cguid, guid=$guid")
+    try {
+      val option: Option[HttpResponse[String]] = RetryUtil.retry(3, 3000)({
+        val response = Http(bullseyeUrl).method("GET")
+          .header("Authorization", s"Bearer $token")
+          .param("uuid", "cguid:" + cguid)
+          .param("uuid", "guid:" + guid)
+          .param("modelid", modelId)
+          .param("count", count)
+          .asString
+
+        if (response.isNotError) {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
+          Some(response)
+        } else {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
+          token = generateToken2
+          logger.warn(s"get new token: $token")
+          metrics.meterByGauge("BullsEyeErrorTess", 1)
+          throw new Exception
+        }
+      })
+      option
+    } catch {
+      case e: Exception => {
+        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + e)
         // metrics.meterByGauge("BullsEyeError", 1)
         None
       }
@@ -226,7 +259,7 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case _: Exception =>
-        logger.error("error when parse last view item : CGUID:" + cguid +  " , GUID:" + guid + " response: " + result.toString)
+        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + result.toString)
         ("", "")
     }
   }
@@ -332,12 +365,12 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case e: Exception =>
-        metrics.meterByGauge("getSecretByClientIdErrorTess",1)
+        metrics.meterByGauge("getSecretByClientIdErrorTess", 1)
         logger.error("get client secret failed " + e)
     }
     if (secret == null) {
       secret = ""
-      metrics.meterByGauge("getClientSecretNullTess",1)
+      metrics.meterByGauge("getClientSecretNullTess", 1)
     }
     secret
   }
@@ -346,7 +379,7 @@ object BullseyeUtilsV2 {
     var secret = ""
     val secretEndPoint: String = properties.getProperty("epnnrt.fideliusUrl")
     try {
-      secret=Http(secretEndPoint).method("GET")
+      secret = Http(secretEndPoint).method("GET")
         .asString.body
       logger.error("successfully get secret by fidelius {} ", secret)
     } catch {
@@ -354,7 +387,7 @@ object BullseyeUtilsV2 {
     }
     if (secret == null) {
       secret = ""
-      metrics.meterByGauge("getClientSecretNullFideliusTess",1)
+      metrics.meterByGauge("getClientSecretNullFideliusTess", 1)
     }
     secret
   }
