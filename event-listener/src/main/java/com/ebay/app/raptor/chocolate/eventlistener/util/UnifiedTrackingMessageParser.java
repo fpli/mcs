@@ -264,7 +264,7 @@ public class UnifiedTrackingMessageParser {
     record.setServer(domainRequest.getHost());
 
     // remote ip
-    record.setRemoteIp(baseEvent.getEndUserContext().getIPAddress());
+    record.setRemoteIp(baseEvent.getRemoteIp());
 
     // page id
     int pageId = PageIdEnum.getPageIdByAction(baseEvent.getActionType().getAvro());

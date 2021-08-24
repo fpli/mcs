@@ -74,6 +74,7 @@ public class Constants {
 
   public static final String REFERER_HEADER = "referer";
   public static final String REFERER_HEADER_UPCASE = "Referer";
+  public static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
   // Adobe url params
   public static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";

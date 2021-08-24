@@ -308,6 +308,9 @@ public class CollectionService {
 
     String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -317,6 +320,7 @@ public class CollectionService {
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(urlRefChannel.getLeft());
     baseEvent.setReferer(urlRefChannel.getMiddle());
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.CLICK);
     baseEvent.setChannelType(urlRefChannel.getRight());
     baseEvent.setUriComponents(uriComponents);
@@ -365,6 +369,10 @@ public class CollectionService {
     // until now, generate eventId in advance of utp tracking so that it can be emitted into both ubi&utp only for click
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
+
+    // log all request headers for UFES debug
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
+    SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
 
     if(!isInternalRef) {
       // add channel specific tags, and produce message for EPN and IMK
@@ -480,11 +488,15 @@ public class CollectionService {
       metrics.meter("CheckoutAPIROI", 1);
     }
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
     baseEvent.setUrl(targetUrl);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.ROI);
     baseEvent.setChannelType(ChannelIdEnum.ROI);
     baseEvent.setUriComponents(uriComponents);
@@ -610,12 +622,15 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(uri);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(channelAction);
     baseEvent.setChannelType(channelType);
     baseEvent.setUriComponents(uriComponents);
@@ -881,7 +896,7 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
+    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE) && !baseEvent.isCheckoutApi()) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
