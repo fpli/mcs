@@ -4,7 +4,8 @@ import scopt.OptionParser
 
 case class Parameter(appName: String = "AmsDiffReport",
                      mode: String = "yarn",
-                     outputPath: String="")
+                     outputPath: String="",
+                     backDateNum: String="")
 
 object Parameter {
 
@@ -25,6 +26,11 @@ object Parameter {
       .required
       .valueName("outputPath")
       .action((cont, param) => param.copy(outputPath = cont))
+
+    opt[String]("backDateNum")
+      .required
+      .valueName("backDateNum")
+      .action((cont, param) => param.copy(backDateNum = cont))
   }
 
   def apply(args: Array[String]): Parameter = parser.parse(args, Parameter()) match {

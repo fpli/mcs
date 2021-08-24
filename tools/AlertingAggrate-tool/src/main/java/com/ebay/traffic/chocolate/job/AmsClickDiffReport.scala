@@ -11,7 +11,6 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object AmsClickDiffReport extends App {
@@ -89,10 +88,12 @@ class AmsClickDiffReport(params: Parameter)  {
     sys.addShutdownHook(fs.close())
     fs
   }
+  //if backDateNum=x, we will get 'today-x' date to check
   def getCheckDay(): String = {
+    val backDateNum: String =params.backDateNum
     val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
     val cal: Calendar = Calendar.getInstance()
-    cal.add(Calendar.DATE, -5)
+    cal.add(Calendar.DATE, Integer.valueOf(backDateNum))
     dateFormat.format(cal.getTime)
   }
   def run(): Unit = {

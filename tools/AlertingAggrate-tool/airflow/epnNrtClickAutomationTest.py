@@ -201,6 +201,7 @@ ams_click_diff_report = SparkSubmitOperator(
         'application_args': [
             '--appName', 'ams_click_diff_report',
             '--mode', 'yarn',
+            '--backDate', '-2',
             '--outputPath', 'viewfs://apollo-rno//apps/b_marketing_tracking/chocolate/epnnrt-automation-report/click_result.txt'
         ]
     }
