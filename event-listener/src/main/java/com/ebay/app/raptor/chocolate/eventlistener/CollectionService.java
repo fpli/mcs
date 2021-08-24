@@ -308,6 +308,9 @@ public class CollectionService {
 
     String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -317,6 +320,7 @@ public class CollectionService {
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(urlRefChannel.getLeft());
     baseEvent.setReferer(urlRefChannel.getMiddle());
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.CLICK);
     baseEvent.setChannelType(urlRefChannel.getRight());
     baseEvent.setUriComponents(uriComponents);
@@ -480,11 +484,15 @@ public class CollectionService {
       metrics.meter("CheckoutAPIROI", 1);
     }
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
     baseEvent.setUrl(targetUrl);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.ROI);
     baseEvent.setChannelType(ChannelIdEnum.ROI);
     baseEvent.setUriComponents(uriComponents);
@@ -610,12 +618,15 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform));
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(uri);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(channelAction);
     baseEvent.setChannelType(channelType);
     baseEvent.setUriComponents(uriComponents);

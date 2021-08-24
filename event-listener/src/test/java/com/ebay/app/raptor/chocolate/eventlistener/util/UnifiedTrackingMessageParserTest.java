@@ -125,10 +125,10 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals("123456", message.getRlogId());
     assertNull(message.getTrackingId());
     assertEquals(Long.valueOf(0), message.getUserId());
-    assertNull( message.getPublicUserId());
-    assertNull( message.getGuid());
-    assertNull( message.getDeviceId());
-    assertNull( message.getUserAgent());
+    assertNull(message.getPublicUserId());
+    assertNull(message.getGuid());
+    assertNull(message.getDeviceId());
+    assertNull(message.getUserAgent());
     assertEquals("DISPLAY",  message.getChannelType());
     assertEquals("CLICK",  message.getActionType());
     assertEquals("",  message.getPartner());
@@ -148,7 +148,7 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals("5.19.0", message.getAppVersion());
     assertEquals("CHOCOLATE", message.getService());
     assertEquals("localhost", message.getServer());
-    assertEquals("127.0.0.1", message.getRemoteIp());
+    assertNull(message.getRemoteIp());
     assertEquals(Integer.valueOf(2547208), message.getPageId());
     assertEquals(Integer.valueOf(101), message.getGeoId());
     assertFalse(message.getIsBot());

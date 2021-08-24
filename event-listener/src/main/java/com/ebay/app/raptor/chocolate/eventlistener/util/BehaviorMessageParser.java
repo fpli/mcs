@@ -175,13 +175,13 @@ public class BehaviorMessageParser {
 
     // client data
     record.setClientData(getClientData(clientData, domainRequest, baseEvent.getEndUserContext(),
-        baseEvent.getReferer()));
+        baseEvent.getReferer(), baseEvent.getRemoteIp()));
 
     // web server
     record.setWebServer(domainRequest.getHost());
 
     // ip
-    record.setRemoteIP(baseEvent.getEndUserContext().getIPAddress());
+    record.setRemoteIP(baseEvent.getRemoteIp());
     record.setClientIP(domainRequest.getClientIp());
 
     // referer hash
@@ -206,7 +206,7 @@ public class BehaviorMessageParser {
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, String referrer) {
+                                            IEndUserContext endUserContext, String referrer, String remoteIp) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -216,7 +216,7 @@ public class BehaviorMessageParser {
     }
     clientData.put("TName", domainRequest.getCommandName());
     clientData.put(AGENT_TAG, endUserContext.getUserAgent());
-    clientData.put("RemoteIP", endUserContext.getIPAddress());
+    clientData.put("RemoteIP", remoteIp);
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String ref = referrer;
     if(StringUtils.isEmpty(ref)) {
