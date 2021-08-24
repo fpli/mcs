@@ -370,6 +370,10 @@ public class CollectionService {
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
 
+    // log all request headers for UFES debug
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
+    SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
+
     if(!isInternalRef) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
