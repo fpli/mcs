@@ -1,14 +1,11 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 
 import java.sql.Timestamp
-import java.time.Duration
 import java.util.{Base64, Properties}
 
+import com.ebay.traffic.chocolate.sparknrt.utils.RetryUtil
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.google.gson.JsonParser
-import net.jodah.failsafe.event.ExecutionCompletedEvent
-import net.jodah.failsafe.function.{CheckedConsumer, CheckedSupplier}
-import net.jodah.failsafe.{Failsafe,RetryPolicy}
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
 import spray.json._
@@ -108,24 +105,35 @@ object BullseyeUtilsV2 {
     }
   }
 
-  def retry[R](exec: => R): R = try {
-    Failsafe
-      .`with`(
-        new RetryPolicy[R]()
-          .handle(classOf[Exception])
-          .withMaxRetries(5)
-          .withDelay(Duration.ofSeconds(2))
-          .onFailure(new CheckedConsumer[ExecutionCompletedEvent[R]]() {
-            def accept(e: ExecutionCompletedEvent[R]): Unit = {
-              logger.error("Failed to execute  ", e.getFailure)
-            }
-          }))
-      .get(new CheckedSupplier[R] {
-        def get(): R = {
-          val r: R = exec
-          r
+  def getDataV4(cguid: String, guid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
+    try {
+      RetryUtil.retry {
+        logger.debug(s"Bullseye sending, cguid=$cguid, guid=$guid")
+        val response: HttpResponse[String] = Http(bullseyeUrl).method("GET")
+          .header("Authorization", s"Bearer $token")
+          .param("uuid", "cguid:" + cguid)
+          .param("uuid", "guid:" + guid)
+          .param("modelid", modelId)
+          .param("count", count)
+          .asString
+
+        if (response.isNotError) {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
+          Some(response)
+        } else {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
+          token = generateToken2
+          logger.warn(s"get new token: $token")
+          metrics.meterByGauge("BullsEyeErrorTess", 1)
+          throw new Exception(s"bullseye response for cguid $cguid, guid $guid with error: $response")
         }
-      })
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
+        None
+      }
+    }
   }
 
   // get oauth Authorization
@@ -208,7 +216,7 @@ object BullseyeUtilsV2 {
 
   def getLastViewItemV3(cguid: String, guid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = retry(getDataV3(cguid, guid, modelId, count, bullseyeUrl))
+    val result = getDataV4(cguid, guid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatencyTess", System.currentTimeMillis - start)
 
     try {
