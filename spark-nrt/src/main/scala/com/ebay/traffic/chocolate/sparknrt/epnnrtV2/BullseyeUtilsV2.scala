@@ -136,21 +136,6 @@ object BullseyeUtilsV2 {
     }
   }
 
-  // get oauth Authorization
-  def getOauthAuthorization(): String = {
-    var authorization = ""
-    try {
-      val consumerIdAndSecret: String = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
-      authorization = Base64.getEncoder.encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
-    } catch {
-      case e: Exception => {
-        logger.error("Error when encode consumerId:consumerSecret to String" + e)
-        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
-      }
-    }
-    authorization
-  }
-
   def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
     val result = getData(cguid, modelId, count, bullseyeUrl)
@@ -277,7 +262,20 @@ object BullseyeUtilsV2 {
     }
   }
 
-
+  // get oauth Authorization
+  def getOauthAuthorization(): String = {
+    var authorization = ""
+    try {
+      val consumerIdAndSecret: String = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
+      authorization = Base64.getEncoder.encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
+    } catch {
+      case e: Exception => {
+        logger.error("Error when encode consumerId:consumerSecret to String" + e)
+        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
+      }
+    }
+    authorization
+  }
   // for unit test
   def getLastViewItemByResponse(timestamp: String, result: HttpResponse[String]): (String, String) = {
     try {
