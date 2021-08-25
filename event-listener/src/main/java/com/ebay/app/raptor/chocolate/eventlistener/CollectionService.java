@@ -105,7 +105,9 @@ public class CollectionService {
   private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com");
+  private static final List<String> REFERER_WHITELIST = Arrays.asList(
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
   private static final String ROI_TRANS_TYPE = "roiTransType";
 
   @PostConstruct
@@ -831,23 +833,13 @@ public class CollectionService {
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
                                        long shortSnapshotId, String eventId) {
     try {
-      Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
-      if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
-          || ChannelActionEnum.ROI.equals(baseEvent.getActionType())
-          || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-              baseEvent.getReferer())
-          || !m.find()) {
-        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
-            shortSnapshotId);
-        if(!StringUtils.isEmpty(eventId)) {
-          utpMessage.setEventId(eventId);
-        }
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
-      } else {
-        metrics.meter("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().toString()),
-            Field.of(CHANNEL_TYPE, baseEvent.getChannelType().toString()));
+      UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
+              shortSnapshotId);
+      if(!StringUtils.isEmpty(eventId)) {
+        utpMessage.setEventId(eventId);
       }
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+              utpMessage), UnifiedTrackingKafkaSink.callback);
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
       metrics.meter("UTPMessageError");
