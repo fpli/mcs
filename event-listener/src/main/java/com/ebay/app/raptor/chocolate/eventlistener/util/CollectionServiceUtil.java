@@ -93,7 +93,9 @@ public class CollectionServiceUtil {
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
+  private static final List<String> REFERER_WHITELIST = Arrays.asList(
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
 
   /**
    * get app id from user agent info

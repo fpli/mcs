@@ -24,6 +24,9 @@ public class CollectionServiceUtilTest {
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.mtag.io/"));
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, "https://ebay.pissedconsumer.com/"));
     assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.PAID_SEARCH, "https://ebay.pissedconsumer.com/"));
+
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, "http://ebay.mtag.io/"));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, "http://ebay.pissedconsumer.com/"));
   }
 
 }
