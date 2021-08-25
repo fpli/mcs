@@ -1,10 +1,14 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 
 import java.sql.Timestamp
+import java.time.Duration
 import java.util.{Base64, Properties}
 
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.google.gson.JsonParser
+import net.jodah.failsafe.event.ExecutionCompletedEvent
+import net.jodah.failsafe.function.{CheckedConsumer, CheckedSupplier}
+import net.jodah.failsafe.{Failsafe,RetryPolicy}
 import org.slf4j.LoggerFactory
 import scalaj.http.{Http, HttpResponse}
 import spray.json._
@@ -46,7 +50,6 @@ object BullseyeUtilsV2 {
 
   var token: String = generateToken2
 
-  //may be retry here
   def getData(cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
@@ -105,37 +108,39 @@ object BullseyeUtilsV2 {
     }
   }
 
-  def getDataV4(cguid: String, guid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
-    logger.debug(s"Bullseye sending, cguid=$cguid, guid=$guid")
-    try {
-      val option: Option[HttpResponse[String]] = RetryUtil.retry(3, 3000)({
-        val response = Http(bullseyeUrl).method("GET")
-          .header("Authorization", s"Bearer $token")
-          .param("uuid", "cguid:" + cguid)
-          .param("uuid", "guid:" + guid)
-          .param("modelid", modelId)
-          .param("count", count)
-          .asString
-
-        if (response.isNotError) {
-          logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
-          Some(response)
-        } else {
-          logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
-          token = generateToken2
-          logger.warn(s"get new token: $token")
-          metrics.meterByGauge("BullsEyeErrorTess", 1)
-          throw new Exception
+  def retry[R](exec: => R): R = try {
+    Failsafe
+      .`with`(
+        new RetryPolicy[R]()
+          .handle(classOf[Exception])
+          .withMaxRetries(5)
+          .withDelay(Duration.ofSeconds(2))
+          .onFailure(new CheckedConsumer[ExecutionCompletedEvent[R]]() {
+            def accept(e: ExecutionCompletedEvent[R]): Unit = {
+              logger.error("Failed to execute  ", e.getFailure)
+            }
+          }))
+      .get(new CheckedSupplier[R] {
+        def get(): R = {
+          val r: R = exec
+          r
         }
       })
-      option
+  }
+
+  // get oauth Authorization
+  def getOauthAuthorization(): String = {
+    var authorization = ""
+    try {
+      val consumerIdAndSecret: String = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
+      authorization = Base64.getEncoder.encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
     } catch {
       case e: Exception => {
-        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + e)
-        // metrics.meterByGauge("BullsEyeError", 1)
-        None
+        logger.error("Error when encode consumerId:consumerSecret to String" + e)
+        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
       }
     }
+    authorization
   }
 
   def getLastViewItem(cguid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
@@ -203,7 +208,7 @@ object BullseyeUtilsV2 {
 
   def getLastViewItemV3(cguid: String, guid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getDataV3(cguid, guid, modelId, count, bullseyeUrl)
+    val result = retry(getDataV3(cguid, guid, modelId, count, bullseyeUrl))
     metrics.mean("BullsEyeLatencyTess", System.currentTimeMillis - start)
 
     try {
@@ -325,22 +330,6 @@ object BullseyeUtilsV2 {
 
   private def isItemIdValid(timestamp: String, item_id: String, lastViewTime: Long) = {
     !item_id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong
-  }
-
-  // get oauth Authorization
-  def getOauthAuthorization(): String = {
-    var authorization = ""
-    try {
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
-      authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
-    } catch {
-      case e: Exception => {
-        logger.error("Error when encode consumerId:consumerSecret to String" + e)
-        metrics.meterByGauge("ErrorEncodeConsumerIdAndSecretTess", 1)
-      }
-    }
-
-    authorization
   }
 
   case class TokenResponse(
