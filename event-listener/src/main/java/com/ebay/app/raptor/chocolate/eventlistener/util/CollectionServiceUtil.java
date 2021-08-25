@@ -93,10 +93,6 @@ public class CollectionServiceUtil {
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
-  private static final List<String> REFERER_WHITELIST = Arrays.asList(
-          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
-          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
-
   /**
    * get app id from user agent info
    *
@@ -385,27 +381,6 @@ public class CollectionServiceUtil {
       }
     }
     return isROIFromCheckoutAPI;
-  }
-
-  /**
-   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
-   *
-   * @param channelType channel type
-   * @param referer     referer
-   * @return in whitelist or not
-   */
-  public static boolean inRefererWhitelist(ChannelType channelType, String referer) {
-    // currently, this case only exists in display channel
-    if (ChannelType.DISPLAY != channelType) {
-      return false;
-    }
-    String lowerCase = referer.toLowerCase();
-    for (String referWhitelist : REFERER_WHITELIST) {
-      if (lowerCase.startsWith(referWhitelist)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
