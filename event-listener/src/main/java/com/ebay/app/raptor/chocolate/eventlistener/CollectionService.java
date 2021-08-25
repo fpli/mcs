@@ -833,23 +833,13 @@ public class CollectionService {
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
                                        long shortSnapshotId, String eventId) {
     try {
-      Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
-      if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
-          || ChannelActionEnum.ROI.equals(baseEvent.getActionType())
-          || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-              baseEvent.getReferer())
-          || !m.find()) {
-        UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
-            shortSnapshotId);
-        if(!StringUtils.isEmpty(eventId)) {
-          utpMessage.setEventId(eventId);
-        }
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
-      } else {
-        metrics.meter("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().toString()),
-            Field.of(CHANNEL_TYPE, baseEvent.getChannelType().toString()));
+      UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
+              shortSnapshotId);
+      if(!StringUtils.isEmpty(eventId)) {
+        utpMessage.setEventId(eventId);
       }
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+              utpMessage), UnifiedTrackingKafkaSink.callback);
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
       metrics.meter("UTPMessageError");
