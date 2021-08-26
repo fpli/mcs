@@ -130,6 +130,7 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case e: Exception => {
+        metrics.meterByGauge("BullsEyeErrorResultResponse", 1)
         logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
         None
       }

@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.sparknrt.utils
 
-import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 import net.jodah.failsafe.{Failsafe, Policy, RetryPolicy}
 import net.jodah.failsafe.function.CheckedSupplier
@@ -11,8 +11,8 @@ object RetryUtil {
       .`with`[R, Policy[R]](
         new RetryPolicy[R]()
           .handle(classOf[Exception])
-          .withMaxRetries(5)
-          .withDelay(Duration.ofSeconds(2))
+          .withMaxRetries(4)
+          .withBackoff(5, 40, ChronoUnit.MILLIS)
       )
       .get(new CheckedSupplier[R] {
         def get(): R = {
