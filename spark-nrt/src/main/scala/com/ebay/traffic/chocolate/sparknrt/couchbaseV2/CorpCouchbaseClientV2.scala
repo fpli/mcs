@@ -25,6 +25,7 @@ object CorpCouchbaseClientV2 {
 
   @transient private lazy val factory = {
 
+    /*
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
@@ -34,9 +35,7 @@ object CorpCouchbaseClientV2 {
       .poolType(properties.getProperty("chocolate.corp.couchbase.poolType"))
       .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
       .build()
-
-
-    /*
+*/
     val appConfig = new ApplicationConfiguration(
       properties.getProperty("chocolate.corp.couchbase.dbEnv"),
       properties.getProperty("chocolate.corp.couchbase.deploymentSlot"),
@@ -48,7 +47,7 @@ object CorpCouchbaseClientV2 {
     val store: CacheSpecificationsStore = FountCacheSpecificationsStoreProvider.config(appConfig, null, dataSource).getCacheSpecificationsStore
     FountCacheFactory.createFactory(store)
 
-     */
+
 
   }
 
