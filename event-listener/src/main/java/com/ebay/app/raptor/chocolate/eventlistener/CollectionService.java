@@ -313,6 +313,10 @@ public class CollectionService {
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
 
+    // checkout click flag
+    boolean isClickFromCheckoutAPI = CollectionServiceUtil.isClickFromCheckoutAPI(
+        urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
         Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
         Field.of(LANDING_PAGE_TYPE, landingPageType));
@@ -332,16 +336,11 @@ public class CollectionService {
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
     baseEvent.setUid(userId);
+    baseEvent.setCheckoutApi(isClickFromCheckoutAPI);
     baseEvent.setPayload(event.getPayload());
 
     // update startTime if the click comes from checkoutAPI
-    try {
-      baseEvent = performanceMarketingCollector.setCheckoutApiFlag(baseEvent);
-    } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      LOGGER.warn("Error click timestamp from Checkout API " + baseEvent.getTimestamp());
-      metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
-    }
+    baseEvent = performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
     // only for EPN channel
@@ -379,7 +378,6 @@ public class CollectionService {
     if(!isInternalRef) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
-
         firePMEvent(baseEvent, requestContext);
       } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
@@ -486,9 +484,6 @@ public class CollectionService {
     // write roi event tags into ubi
     // Don't write into ubi if roi is from Checkout API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
-    if(isRoiFromCheckoutAPI) {
-      metrics.meter("CheckoutAPIROI", 1);
-    }
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -680,8 +675,11 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
     // 2. track ubi
+    // Checkout ROI won't go to UBI
     if(!baseEvent.isCheckoutApi()) {
       roiCollector.trackUbi(containerRequestContext, baseEvent);
+    } else {
+      metrics.meter("CheckoutAPIROI", 1);
     }
 
     // 3. fire utp event
@@ -888,7 +886,10 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE) && !baseEvent.isCheckoutApi()) {
+    // Checkout click events won't go to UBI
+    if (baseEvent.isCheckoutApi()) {
+      metrics.meter("CheckoutAPIClick", 1);
+    } else if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 

@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,6 +367,23 @@ public class CollectionServiceUtil {
     }
 
     return clientId;
+  }
+
+  /**
+   * Determine whether the click is from Checkout API
+   * If so, don't track into ubi
+   */
+  public static Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
+    boolean isClickFromCheckoutAPI = false;
+    try {
+      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
+        isClickFromCheckoutAPI = true;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Determine whether the click from Checkout API error");
+      ESMetrics.getInstance().meter("DetermineCheckoutAPIClickError", 1);
+    }
+    return isClickFromCheckoutAPI;
   }
 
   /**

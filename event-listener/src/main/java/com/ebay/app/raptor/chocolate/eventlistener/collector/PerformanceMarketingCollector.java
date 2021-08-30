@@ -103,87 +103,63 @@ public class PerformanceMarketingCollector {
   }
 
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent, ListenerMessage message) {
-    // Tracking ubi only when refer domain is not ebay. This should be moved to filter later.
-    // Don't track ubi if the click is from Checkout API
-    if (isClickFromCheckoutAPI(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-        baseEvent.getEndUserContext())) {
-      metrics.meter("CheckoutAPIClick", 1);
-    } else {
-      IRequestScopeTracker requestTracker
-          = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+    IRequestScopeTracker requestTracker
+        = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-      // page id
-      requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
+    // page id
+    requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
 
-      // event action
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+    // event action
+    requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 
-      // target url
-      if (!StringUtils.isEmpty(baseEvent.getUrl())) {
-        requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
-      }
-
-      // referer
-      if (!StringUtils.isEmpty(baseEvent.getReferer())) {
-        requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
-      }
-
-      // utp event id
-      if (!StringUtils.isEmpty(baseEvent.getUuid())) {
-        requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
-      }
-
-      // populate device info
-      CollectionServiceUtil.populateDeviceDetectionParams(
-          (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
-
-      // event family
-      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
-
-      // rotation id
-      requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
-
-      // keyword
-      String searchKeyword = "";
-      if (baseEvent.getUrlParameters().containsKey(Constants.SEARCH_KEYWORD)
-          && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
-
-        searchKeyword = baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0);
-      }
-      requestTracker.addTag("keyword", searchKeyword, String.class);
-
-      // rvr id
-      requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
-
-      // gclid
-      String gclid = "";
-      if (baseEvent.getUrlParameters().containsKey(Constants.GCLID) &&
-          baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
-
-        gclid = baseEvent.getUrlParameters().get(Constants.GCLID).get(0);
-      }
-      requestTracker.addTag("gclid", gclid, String.class);
-
-      //producereventts
-      requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
+    // target url
+    if (!StringUtils.isEmpty(baseEvent.getUrl())) {
+      requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
     }
-  }
 
-  /**
-   * Determine whether the click is from Checkout API
-   * If so, don't track into ubi
-   */
-  Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
-    boolean isClickFromCheckoutAPI = false;
-    try {
-      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
-        isClickFromCheckoutAPI = true;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Determine whether the click from Checkout API error");
-      metrics.meter("DetermineCheckoutAPIClickError", 1);
+    // referer
+    if (!StringUtils.isEmpty(baseEvent.getReferer())) {
+      requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
     }
-    return isClickFromCheckoutAPI;
+
+    // utp event id
+    if (!StringUtils.isEmpty(baseEvent.getUuid())) {
+      requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
+    }
+
+    // populate device info
+    CollectionServiceUtil.populateDeviceDetectionParams(
+        (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
+
+    // event family
+    requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
+
+    // rotation id
+    requestTracker.addTag("rotid", String.valueOf(message.getDstRotationId()), String.class);
+
+    // keyword
+    String searchKeyword = "";
+    if (baseEvent.getUrlParameters().containsKey(Constants.SEARCH_KEYWORD)
+        && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
+
+      searchKeyword = baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0);
+    }
+    requestTracker.addTag("keyword", searchKeyword, String.class);
+
+    // rvr id
+    requestTracker.addTag("rvrid", message.getShortSnapshotId(), Long.class);
+
+    // gclid
+    String gclid = "";
+    if (baseEvent.getUrlParameters().containsKey(Constants.GCLID) &&
+        baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
+
+      gclid = baseEvent.getUrlParameters().get(Constants.GCLID).get(0);
+    }
+    requestTracker.addTag("gclid", gclid, String.class);
+
+    //producereventts
+    requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
   }
 
   public String getSearchEngineFreeListingsRotationId(UserPrefsCtx userPrefsCtx) {
@@ -195,7 +171,7 @@ public class PerformanceMarketingCollector {
    * Set flag from checkout api
    * @param baseEvent base event
    */
-  public BaseEvent setCheckoutApiFlag(BaseEvent baseEvent) {
+  public BaseEvent setCheckoutTimestamp(BaseEvent baseEvent) {
     // update startTime if the click comes from checkoutAPI
     if (baseEvent.getChannelType() == ChannelIdEnum.EPN) {
       EventPayload payload = baseEvent.getPayload();
@@ -205,7 +181,6 @@ public class PerformanceMarketingCollector {
           try {
             long checkoutAPIClickTimestamp = Long.parseLong(checkoutAPIClickTs);
             if (checkoutAPIClickTimestamp > 0) {
-              baseEvent.setCheckoutApi(true);
               baseEvent.setTimestamp(checkoutAPIClickTimestamp);
             }
           } catch (Exception e) {
