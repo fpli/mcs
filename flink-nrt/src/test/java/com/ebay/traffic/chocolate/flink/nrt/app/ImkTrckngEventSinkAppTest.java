@@ -55,12 +55,13 @@ public class ImkTrckngEventSinkAppTest {
     properties.setProperty("bootstrap.servers", "rhs-vsrvkiaa-kfk-lvs-1.rheos-streaming-qa.svc.32.tess.io:9092,rhs-vsrvkiaa-kfk-lvs-2.rheos-streaming-qa.svc.32.tess.io:9092,rhs-vsrvkiaa-kfk-lvs-3.rheos-streaming-qa.svc.32.tess.io:9092,rhs-vsrvkiaa-kfk-lvs-4.rheos-streaming-qa.svc.32.tess.io:9092,rhs-vsrvkiaa-kfk-lvs-5.rheos-streaming-qa.svc.32.tess.io:9092");
     properties.setProperty("group.id", "marketing-tracking-consumer-imk-rvr-trckng-event-sink");
     properties.setProperty("session.timeout.ms", "10000");
-    properties.setProperty("auto.offset.reset", "latest");
+    properties.setProperty("auto.offset.reset", "earliest");
     properties.setProperty("sasl.mechanism", "IAF");
     properties.setProperty("security.protocol", "SASL_SSL");
     properties.setProperty("sasl.jaas.config", "io.ebay.rheos.kafka.security.iaf.IAFLoginModule required iafConsumerId=\"urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639\" iafSecret=\"f660cc36-bf60-4528-befc-bb2fc203a960\" iafEnv=\"staging\";");
     properties.setProperty("rheos.services.urls", "https://rheos-services.qa.ebay.com");
     properties.setProperty("ssl.endpoint.identification.algorithm", "");
+    properties.setProperty("flink.partition-discovery.interval-millis","60000");
     assertEquals(properties, imkTrckngEventSinkApp.getConsumerProperties());
   }
 

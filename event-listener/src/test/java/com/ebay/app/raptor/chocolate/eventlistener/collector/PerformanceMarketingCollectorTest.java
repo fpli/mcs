@@ -57,17 +57,6 @@ public class PerformanceMarketingCollectorTest {
   }
 
   @Test
-  public void gestIsClickFromCheckoutAPI() {
-    ChannelType type = ChannelType.EPN;
-    IEndUserContext mockEndUserContext = Mockito.mock(IEndUserContext.class);
-    when(mockEndUserContext.getUserAgent()).thenReturn("checkoutApi");
-    assertTrue(performanceMarketingCollector.isClickFromCheckoutAPI(type, mockEndUserContext));
-
-    when(mockEndUserContext.getUserAgent()).thenReturn(null);
-    assertFalse(performanceMarketingCollector.isClickFromCheckoutAPI(type, mockEndUserContext));
-  }
-
-  @Test
   public void setCheckoutApiFlag() {
     BaseEvent baseEvent = new BaseEvent();
     long currentTs = System.currentTimeMillis();
@@ -78,14 +67,12 @@ public class PerformanceMarketingCollectorTest {
     baseEvent.setPayload(payload);
     // exception setting timestamp
     payload.setCheckoutAPIClickTs("abcdef");
-    performanceMarketingCollector.setCheckoutApiFlag(baseEvent);
+    performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
     assertEquals(currentTs, baseEvent.getTimestamp());
 
     // successful set timestamp
     payload.setCheckoutAPIClickTs(String.valueOf(checkoutTs));
-    performanceMarketingCollector.setCheckoutApiFlag(baseEvent);
+    performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
     assertEquals(checkoutTs, baseEvent.getTimestamp());
-    assertTrue(baseEvent.isCheckoutApi());
-
   }
 }

@@ -91,17 +91,9 @@ public class BehaviorMessageParser {
 
     // guid from tracking header
     String trackingHeader = baseEvent.getRequestHeaders().get(TRACKING_HEADER);
-    String guid = "";
-    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
-      for (String seg : trackingHeader.split(",")) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase(Constants.GUID)) {
-            guid = keyValue[1];
-            record.setGuid(guid);
-          }
-        }
-      }
+    String guid = getData(Constants.GUID, trackingHeader);
+    if (guid != null) {
+      record.setGuid(guid);
     }
 
     // adguid
@@ -113,7 +105,7 @@ public class BehaviorMessageParser {
     // source id
     record.setSid(parseTagFromParams(baseEvent.getUrlParameters(), Constants.SOURCE_ID));
 
-    String userId = Long.toString(baseEvent.getEndUserContext().getOrigUserOracleId());
+    String userId = parseTagFromParams(baseEvent.getUrlParameters(), Constants.BEST_GUESS_USER);
     record.setUserId(userId);
 
     // eventTimestamp
@@ -183,13 +175,13 @@ public class BehaviorMessageParser {
 
     // client data
     record.setClientData(getClientData(clientData, domainRequest, baseEvent.getEndUserContext(),
-        baseEvent.getReferer()));
+        baseEvent.getReferer(), baseEvent.getRemoteIp()));
 
     // web server
     record.setWebServer(domainRequest.getHost());
 
     // ip
-    record.setRemoteIP(baseEvent.getEndUserContext().getIPAddress());
+    record.setRemoteIP(baseEvent.getRemoteIp());
     record.setClientIP(domainRequest.getClientIp());
 
     // referer hash
@@ -205,7 +197,7 @@ public class BehaviorMessageParser {
 
     // channel type and action
     record.setChannelType(baseEvent.getChannelType().toString());
-    record.setChannelAction(baseEvent.getChannelType().toString());
+    record.setChannelAction(baseEvent.getActionType().toString());
 
     return record;
   }
@@ -214,7 +206,7 @@ public class BehaviorMessageParser {
    * Get client data
    */
   private Map<String, String> getClientData(Map<String, String> clientData, DomainRequestData domainRequest,
-                                            IEndUserContext endUserContext, String referrer) {
+                                            IEndUserContext endUserContext, String referrer, String remoteIp) {
     clientData.put("ForwardedFor", domainRequest.getXForwardedFor());
     clientData.put("Script", domainRequest.getServletPath());
     clientData.put("Server", domainRequest.getHost());
@@ -224,7 +216,7 @@ public class BehaviorMessageParser {
     }
     clientData.put("TName", domainRequest.getCommandName());
     clientData.put(AGENT_TAG, endUserContext.getUserAgent());
-    clientData.put("RemoteIP", endUserContext.getIPAddress());
+    clientData.put("RemoteIP", remoteIp);
     clientData.put("ContentLength", String.valueOf(domainRequest.getContentLength()));
     String ref = referrer;
     if(StringUtils.isEmpty(ref)) {

@@ -49,6 +49,7 @@ public class BaseEvent {
   // client info
   private UserPrefsCtx userPrefsCtx;
   private UserAgentInfo userAgentInfo;
+  private String remoteIp;
 
   // user info
   private IEndUserContext endUserContext;
@@ -193,5 +194,13 @@ public class BaseEvent {
 
   public void setRoiEvent(ROIEvent roiEvent) {
     this.roiEvent = roiEvent;
+  }
+
+  public String getRemoteIp() {
+    return remoteIp;
+  }
+
+  public void setRemoteIp(String ip) {
+    this.remoteIp = ip;
   }
 }
