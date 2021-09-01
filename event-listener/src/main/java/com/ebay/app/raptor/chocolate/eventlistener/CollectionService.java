@@ -482,9 +482,6 @@ public class CollectionService {
     // write roi event tags into ubi
     // Don't write into ubi if roi is from Checkout API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
-    if(isRoiFromCheckoutAPI) {
-      MonitorUtil.info("CheckoutAPIROI", 1);
-    }
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
