@@ -805,12 +805,12 @@ public class EventListenerServiceTest {
     consumerEpn.close();
     assertEquals(8, listenerMessagesEpn.size());
 
-    // mrkt email impression events
+    // mrkt email open events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
 
-    // site email impression events
+    // site email open events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=0&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());

@@ -1090,6 +1090,8 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     val publisherStatus = getPublisherStatus(publisherId)
     val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)
     val filter_yn_ind = getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action)
+
+    logger.error("campaign_sts="+campaign_sts+" progPubMapStatus="+progPubMapStatus+" publisherStatus="+publisherStatus+" res="+res+" filter_yn_ind="+filter_yn_ind)
     if (!res(1).equals("")) {
       config_flag = res(1).toInt & 1
     }
@@ -1207,6 +1209,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     prog_map = batchGetProgMapStatus(progmap_list)
     clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
     pubDomain_map = batchGetPubDomainMap(publisher_list)
+
+    logger.error("automation get map publisher {}"+publisher_map)
+    logger.error("automation get map campaign {}"+campaign_map)
+    logger.error("automation get map prog {}"+prog_map)
+    logger.error("automation get map clickFilter {}"+clickFilter_map)
+    logger.error("automation get map pubDomain_map {}"+pubDomain_map)
 
     metrics.mean("NrtCouchbaseLatencyTess", System.currentTimeMillis() - start)
 

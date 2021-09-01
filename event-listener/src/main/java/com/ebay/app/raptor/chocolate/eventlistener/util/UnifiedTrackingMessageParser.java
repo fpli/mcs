@@ -149,7 +149,7 @@ public class UnifiedTrackingMessageParser {
     if (StringUtils.isNotEmpty(userAgent)) {
       String userAgentLower = userAgent.toLowerCase();
       for (String botKeyword : BOT_LIST) {
-        if (userAgentLower.contains(botKeyword)) {
+        if (userAgentLower.contains(botKeyword.toLowerCase())) {
           return true;
         }
       }
@@ -262,7 +262,7 @@ public class UnifiedTrackingMessageParser {
     record.setServer(domainRequest.getHost());
 
     // remote ip
-    record.setRemoteIp(baseEvent.getEndUserContext().getIPAddress());
+    record.setRemoteIp(baseEvent.getRemoteIp());
 
     // page id
     int pageId = PageIdEnum.getPageIdByAction(baseEvent.getActionType().getAvro());

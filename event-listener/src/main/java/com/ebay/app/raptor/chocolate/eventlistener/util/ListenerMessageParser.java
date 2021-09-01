@@ -117,7 +117,7 @@ public class ListenerMessageParser {
       record.setCguid(record.getGuid());
     }
     // remote ip
-    record.setRemoteIp(baseEvent.getEndUserContext().getIPAddress());
+    record.setRemoteIp(baseEvent.getRemoteIp());
 
     // user agent
     record.setUserAgent(baseEvent.getEndUserContext().getUserAgent());

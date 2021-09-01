@@ -7,6 +7,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.request;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -119,6 +120,23 @@ public class CommonRequestHandler {
       userId = Long.toString(endUserContext.getOrigUserOracleId());
     }
     return userId;
+  }
+
+  /**
+   * Get remote Ip
+   */
+  public String getRemoteIp(HttpServletRequest request) {
+    String remoteIp = null;
+    String xForwardFor = request.getHeader(Constants.X_FORWARDED_FOR);
+    if (xForwardFor != null && !xForwardFor.isEmpty()) {
+      remoteIp = xForwardFor.split(",")[0];
+    }
+
+    if (remoteIp == null || remoteIp.isEmpty()) {
+      remoteIp = RequestUtil.getRemoteAddr(request);
+    }
+
+    return remoteIp == null ? "" : remoteIp;
   }
 
 

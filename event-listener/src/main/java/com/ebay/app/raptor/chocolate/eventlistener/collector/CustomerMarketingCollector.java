@@ -80,6 +80,9 @@ public abstract class CustomerMarketingCollector {
     // page id
     requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
+    // event family
+    requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+
     // event action
     requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 

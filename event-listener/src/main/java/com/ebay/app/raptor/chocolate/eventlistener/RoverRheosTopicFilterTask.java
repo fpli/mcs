@@ -58,17 +58,10 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_PAGE_ROVER = "IncomingPageRover";
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
-  private static final String INCOMING_ROVER_EMAIL_OPEN = "IncomingRoverEmailOpen";
-  private static final String INCOMING_ROVER_EMAIL_OPEN_BOT = "IncomingRoverEmailOpenBot";
-  private static final String INCOMING_ROVER_EMAIL_CLICK_BOT = "IncomingRoverEmailClickBot";
-  private static final String INCOMING_ROVER_CLICK = "IncomingRoverClick";
   private static final long ONE_HOUR = 1000 * 60 * 60;
   private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
-  public static final int ROVER_CLICK_PAGE_ID = 3084;
-  private static final String ROVER_OPEN_PAGE_NAME = "roveropen";
-  private static final String BOT_TOPIC = "behavior.pulsar.misc.bot";
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
     Pattern.CASE_INSENSITIVE);
   private static final Utf8 empty = new Utf8("");
@@ -134,16 +127,14 @@ public class RoverRheosTopicFilterTask extends Thread {
   public void run() {
     RheosConsumerWrapper rheosConsumer = RheosConsumerWrapper.getInstance();
     Producer<Long, ListenerMessage> producer;
-    Producer behaviorProducer = BehaviorKafkaSink.get();
     producer = KafkaSink.get();
-    String behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();;
     Long round = 0L;
 
     while (runFlag) {
       round++;
       if ((round % 10000) == 1) logger.warn(String.format("Round %d from rheos", round));
       try {
-        processRecords(rheosConsumer, producer, behaviorProducer, behaviorTopic);
+        processRecords(rheosConsumer, producer);
       } catch (Exception e) {
         logger.error("Something wrong:", e);
       }
@@ -224,7 +215,7 @@ public class RoverRheosTopicFilterTask extends Thread {
    * @param producer      Kafka producer
    */
   @SuppressWarnings("unchecked")
-  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer, Producer behaviorProducer, String behaviorTopic) {
+  public void processRecords(RheosConsumerWrapper rheosConsumer, Producer<Long, ListenerMessage> producer) {
 
     ConsumerRecords<byte[], RheosEvent> consumerRecords;
     consumerRecords = rheosConsumer.getConsumer().poll(Duration.ofMillis(interval));
@@ -250,8 +241,6 @@ public class RoverRheosTopicFilterTask extends Thread {
       } else {
         continue;
       }
-
-      String pageName = getField(genericRecord, "pageName", null);
 
       //EPN
       if (pageId == 3084) {
@@ -346,19 +335,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
-
-        // for non-epn channel, send to unified tracking topic
-        ChannelIdEnum channelType = parseChannelType(genericRecord);
-        if (channelType != null && ChannelIdEnum.EPN != channelType) {
-          String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
-          ESMetrics.getInstance().meter(INCOMING_ROVER_CLICK, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
-          BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_CLICK.getName(),
-                  ChannelAction.CLICK.name(), channelTypeStr, schemaVersion);
-          if (record != null) {
-            behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-          }
-        }
-      } else if(pageId == 3086) {
+      } else if (pageId == 3086) {
         ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
@@ -465,34 +442,6 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosInternalTimestamps));
         }
         producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
-
-        // send roi to unified tracking topic
-        BehaviorMessage roiRecord = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_ROI.getName(),
-                ChannelActionEnum.ROI.getAvro().name(), ChannelIdEnum.ROI.getLogicalChannel().getAvro().name(), schemaVersion);
-        if (roiRecord != null) {
-          /* set snapshot id to be the original one from ubi.
-          since for ROI events, we requested rover team to record rvr_id */
-          roiRecord.setSnapshotId(rvrIdStr);
-          // set url_mpre for ROI. As from ubi, we don't have final landing page recorded from rover.
-          Map<String, String> payload = roiRecord.getApplicationPayload();
-          payload.put("url_mpre", ROVER_HOST + roiRecord.getUrlQueryString());
-          roiRecord.setApplicationPayload(payload);
-          behaviorProducer.send(new ProducerRecord<>(behaviorTopic, roiRecord.getSnapshotId().getBytes(), roiRecord), KafkaSink.callback);
-        }
-      } else if(pageId == PageIdEnum.EMAIL_OPEN.getId()) {
-        // EMAIL OPEN tracked by Rover
-        if (ROVER_OPEN_PAGE_NAME.equals(pageName)) {
-          ChannelIdEnum channelType = parseChannelType(genericRecord);
-          if (ChannelIdEnum.SITE_EMAIL == channelType || ChannelIdEnum.MRKT_EMAIL == channelType) {
-            String channelTypeStr = channelType.getLogicalChannel().getAvro().name();
-            ESMetrics.getInstance().meter(INCOMING_ROVER_EMAIL_OPEN, 1, Field.of(Constants.CHANNEL_TYPE, channelTypeStr));
-            BehaviorMessage record = buildMessage(genericRecord, pageId, PageNameEnum.ROVER_OPEN.getName(),
-                    ChannelAction.EMAIL_OPEN.name(), channelTypeStr, schemaVersion);
-            if (record != null) {
-              behaviorProducer.send(new ProducerRecord<>(behaviorTopic, record.getSnapshotId().getBytes(), record), KafkaSink.callback);
-            }
-          }
-        }
       }
     }
   }
@@ -503,64 +452,6 @@ public class RoverRheosTopicFilterTask extends Thread {
       target.put(String.valueOf(k), String.valueOf(v));
     });
     return target;
-  }
-
-  @SuppressWarnings("unchecked")
-  protected BehaviorMessage buildMessage(GenericRecord genericRecord, Integer pageId, String pageName, String channelAction,
-                                         String channelType, String schemaVersion) {
-    try {
-      BehaviorMessage record = new BehaviorMessage();
-      Map<String, String> applicationPayload = convertMap(((Map<Utf8, Utf8>)genericRecord.get(APPLICATION_PAYLOAD)));
-      record.setGuid(String.valueOf(genericRecord.get("guid")));
-      record.setAdguid(String.valueOf(genericRecord.get("guid")));
-      record.setEventTimestamp((Long) genericRecord.get("eventTimestamp"));
-      record.setSid(getField(genericRecord, "sid", null));
-      record.setPageId(pageId);
-      record.setPageName(pageName);
-      record.setEventFamily(getField(genericRecord, "eventFamily", null));
-      record.setEventAction(getField(genericRecord, "eventAction", null));
-      record.setUserId(getField(genericRecord, "userId", null));
-      record.setSiteId(getField(genericRecord, "siteId", null));
-      record.setSessionId(getField(genericRecord, "sessionId", null));
-      record.setSnapshotId(String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId()).getRepresentation()));
-      record.setSeqNum(getField(genericRecord, "seqNum", null));
-      record.setRdt((Integer) genericRecord.get("rdt"));
-      record.setRefererHash(getField(genericRecord, "refererHash", null));
-      // directly get from urlQueryString is not correct. should get from applicationPayload; it be changed in new topic(pulsar v2), we need directly get from urlQueryString
-      String urlQueryString;
-      if ("2".equals(schemaVersion)) {
-          urlQueryString = getField(genericRecord, "urlQueryString", StringUtils.EMPTY);
-      } else {
-          urlQueryString = applicationPayload.get("urlQueryString");
-      }
-      record.setUrlQueryString(urlQueryString);
-      record.setWebServer(getField(genericRecord, "webServer", null));
-      record.setClientIP(getField(genericRecord, "clientIP", null));
-      record.setRemoteIP(getField(genericRecord, "remoteIP", null));
-      record.setAgentInfo(getField(genericRecord, "agentInfo", null));
-      record.setAppId(getField(genericRecord, "appId", null));
-      record.setAppVersion(getField(genericRecord, "appVersion", null));
-      record.setOsVersion(getField(genericRecord, "osVersion", null));
-      record.setCobrand(getField(genericRecord, "cobrand", null));
-      record.setDeviceFamily(getField(genericRecord, "deviceFamily", null));
-      record.setDeviceType(getField(genericRecord, "deviceType", null));
-      record.setBrowserVersion(getField(genericRecord, "browserVersion", null));
-      record.setBrowserFamily(getField(genericRecord, "browserFamily", null));
-      record.setOsFamily(getField(genericRecord, "osFamily", null));
-      record.setEnrichedOsVersion(getField(genericRecord, "enrichedOsVersion", null));
-      record.setApplicationPayload(applicationPayload);
-      record.setRlogid(getField(genericRecord, "rlogid", null));
-      record.setClientData(convertMap((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA)));
-      record.setChannelAction(channelAction);
-      record.setChannelType(channelType);
-      record.setDispatchId("");
-      List<Map<String, String>> data = new ArrayList<>();
-      record.setData(data);
-      return record;
-    } catch (Exception e) {
-      logger.warn("Failed to parse behavior message {} {}", genericRecord, e.getMessage());
-      return null;
-    }
   }
 
   @SuppressWarnings("unchecked")

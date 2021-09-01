@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +93,6 @@ public class CollectionServiceUtil {
 
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
-
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io/", "https://ebay.pissedconsumer.com/");
 
   /**
    * get app id from user agent info
@@ -371,6 +370,23 @@ public class CollectionServiceUtil {
   }
 
   /**
+   * Determine whether the click is from Checkout API
+   * If so, don't track into ubi
+   */
+  public static Boolean isClickFromCheckoutAPI(ChannelType channelType, IEndUserContext endUserContext) {
+    boolean isClickFromCheckoutAPI = false;
+    try {
+      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().equals(CHECKOUT_API_USER_AGENT)) {
+        isClickFromCheckoutAPI = true;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Determine whether the click from Checkout API error");
+      ESMetrics.getInstance().meter("DetermineCheckoutAPIClickError", 1);
+    }
+    return isClickFromCheckoutAPI;
+  }
+
+  /**
    * Determine whether the roi is from Checkout API
    * If so, don't track into ubi
    */
@@ -383,27 +399,6 @@ public class CollectionServiceUtil {
       }
     }
     return isROIFromCheckoutAPI;
-  }
-
-  /**
-   * The ebaysites pattern will treat ebay.abcd.com as ebay site. So add a whitelist to handle these bad cases.
-   *
-   * @param channelType channel type
-   * @param referer     referer
-   * @return in whitelist or not
-   */
-  public static boolean inRefererWhitelist(ChannelType channelType, String referer) {
-    // currently, this case only exists in display channel
-    if (ChannelType.DISPLAY != channelType) {
-      return false;
-    }
-    String lowerCase = referer.toLowerCase();
-    for (String referWhitelist : REFERER_WHITELIST) {
-      if (lowerCase.startsWith(referWhitelist)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

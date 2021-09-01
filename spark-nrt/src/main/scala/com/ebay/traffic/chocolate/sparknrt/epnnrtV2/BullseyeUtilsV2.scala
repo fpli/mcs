@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 import java.sql.Timestamp
 import java.util.{Base64, Properties}
 
+import com.ebay.traffic.chocolate.sparknrt.utils.RetryUtil
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.google.gson.JsonParser
 import org.slf4j.LoggerFactory
@@ -22,7 +23,7 @@ object BullseyeUtilsV2 {
   }
 
   @transient lazy val metrics: SherlockioMetrics = {
-    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"),properties.getProperty("sherlockio.endpoint"),properties.getProperty("sherlockio.user"))
+    SherlockioMetrics.init(properties.getProperty("sherlockio.namespace"), properties.getProperty("sherlockio.endpoint"), properties.getProperty("sherlockio.user"))
     val sherlockioMetrics = SherlockioMetrics.getInstance()
     sherlockioMetrics.setJobName("bullseyeUtil")
     sherlockioMetrics
@@ -46,7 +47,6 @@ object BullseyeUtilsV2 {
 
   var token: String = generateToken2
 
-  //may be retry here
   def getData(cguid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
     try {
       logger.debug(s"Bullseye sending, cguid=$cguid")
@@ -98,8 +98,40 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case e: Exception => {
-        logger.error("error when parse last view item : CGUID:" + cguid +  " , GUID:" + guid + " response: " + e)
+        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + e)
         // metrics.meterByGauge("BullsEyeError", 1)
+        None
+      }
+    }
+  }
+
+  def getDataV4(cguid: String, guid: String, modelId: String, count: String, bullseyeUrl: String): Option[HttpResponse[String]] = {
+    try {
+      RetryUtil.retry {
+        logger.debug(s"Bullseye sending, cguid=$cguid, guid=$guid")
+        val response: HttpResponse[String] = Http(bullseyeUrl).method("GET")
+          .header("Authorization", s"Bearer $token")
+          .param("uuid", "cguid:" + cguid)
+          .param("uuid", "guid:" + guid)
+          .param("modelid", modelId)
+          .param("count", count)
+          .asString
+
+        if (response.isNotError) {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
+          Some(response)
+        } else {
+          logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
+          token = generateToken2
+          logger.warn(s"get new token: $token")
+          metrics.meterByGauge("BullsEyeErrorTess", 1)
+          throw new Exception(s"bullseye response for cguid $cguid, guid $guid with error: $response")
+        }
+      }
+    } catch {
+      case e: Exception => {
+        metrics.meterByGauge("BullsEyeErrorResultResponse", 1)
+        logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
         None
       }
     }
@@ -170,7 +202,7 @@ object BullseyeUtilsV2 {
 
   def getLastViewItemV3(cguid: String, guid: String, timestamp: String, modelId: String, count: String, bullseyeUrl: String): (String, String) = {
     val start = System.currentTimeMillis
-    val result = getDataV3(cguid, guid, modelId, count, bullseyeUrl)
+    val result = getDataV4(cguid, guid, modelId, count, bullseyeUrl)
     metrics.mean("BullsEyeLatencyTess", System.currentTimeMillis - start)
 
     try {
@@ -226,11 +258,10 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case _: Exception =>
-        logger.error("error when parse last view item : CGUID:" + cguid +  " , GUID:" + guid + " response: " + result.toString)
+        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + result.toString)
         ("", "")
     }
   }
-
 
   // for unit test
   def getLastViewItemByResponse(timestamp: String, result: HttpResponse[String]): (String, String) = {
@@ -285,29 +316,26 @@ object BullseyeUtilsV2 {
         ("", "")
     }
   }
-
+  // get oauth Authorization
+  def getOauthAuthorization(): String = {
+    var authorization = ""
+    try {
+      val consumerIdAndSecret: String = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientIdV2()
+      authorization = Base64.getEncoder.encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
+    } catch {
+      case e: Exception => {
+        logger.error("Error when encode consumerId:consumerSecret to String" + e)
+        metrics.meter("ErrorEncodeConsumerIdAndSecret", 1)
+      }
+    }
+    authorization
+  }
   private def isItemIdValid(timestamp: String, maxLastViwTime: Long, item_Id: String, lastViewTime: Long) = {
     !item_Id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong && lastViewTime > maxLastViwTime
   }
 
   private def isItemIdValid(timestamp: String, item_id: String, lastViewTime: Long) = {
     !item_id.equalsIgnoreCase("null") && lastViewTime <= timestamp.toLong
-  }
-
-  // get oauth Authorization
-  def getOauthAuthorization(): String = {
-    var authorization = ""
-    try {
-      val consumerIdAndSecret = properties.getProperty("epnnrt.clientId") + ":" + getSecretByClientId(properties.getProperty("epnnrt.clientId"))
-      authorization = Base64.getEncoder().encodeToString(consumerIdAndSecret.getBytes("UTF-8"))
-    } catch {
-      case e: Exception => {
-        logger.error("Error when encode consumerId:consumerSecret to String" + e)
-        metrics.meterByGauge("ErrorEncodeConsumerIdAndSecretTess", 1)
-      }
-    }
-
-    authorization
   }
 
   case class TokenResponse(
@@ -332,12 +360,29 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case e: Exception =>
-        metrics.meterByGauge("getSecretByClientIdErrorTess",1)
+        metrics.meterByGauge("getSecretByClientIdErrorTess", 1)
         logger.error("get client secret failed " + e)
     }
     if (secret == null) {
       secret = ""
-      metrics.meterByGauge("getClientSecretNullTess",1)
+      metrics.meterByGauge("getClientSecretNullTess", 1)
+    }
+    secret
+  }
+
+  def getSecretByClientIdV2(): String = {
+    var secret = ""
+    val secretEndPoint: String = properties.getProperty("epnnrt.fideliusUrl")
+    try {
+      secret = Http(secretEndPoint).method("GET")
+        .asString.body
+      logger.error("successfully get secret by fidelius {} ", secret)
+    } catch {
+      case e: Exception =>
+    }
+    if (secret == null) {
+      secret = ""
+      metrics.meterByGauge("getClientSecretNullFideliusTess", 1)
     }
     secret
   }

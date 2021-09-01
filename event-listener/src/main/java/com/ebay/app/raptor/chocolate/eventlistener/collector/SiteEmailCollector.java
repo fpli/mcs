@@ -61,9 +61,6 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
       // common tags and soj tags
       super.trackUbi(requestContext, baseEvent);
 
-      // event family
-      requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
-
       // fbprefetch
       if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
         requestTracker.addTag("fbprefetch", true, Boolean.class);

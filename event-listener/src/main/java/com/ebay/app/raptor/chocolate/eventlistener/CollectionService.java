@@ -106,7 +106,9 @@ public class CollectionService {
   private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
   private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
-  private static final List<String> REFERER_WHITELIST = Arrays.asList("https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com");
+  private static final List<String> REFERER_WHITELIST = Arrays.asList(
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
   private static final String ROI_TRANS_TYPE = "roiTransType";
 
   @PostConstruct
@@ -309,6 +311,13 @@ public class CollectionService {
 
     String userId = commonRequestHandler.getUserId(raptorSecureContext, endUserContext);
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
+    // checkout click flag
+    boolean isClickFromCheckoutAPI = CollectionServiceUtil.isClickFromCheckoutAPI(
+        urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
@@ -316,6 +325,7 @@ public class CollectionService {
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(urlRefChannel.getLeft());
     baseEvent.setReferer(urlRefChannel.getMiddle());
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.CLICK);
     baseEvent.setChannelType(urlRefChannel.getRight());
     baseEvent.setUriComponents(uriComponents);
@@ -325,16 +335,11 @@ public class CollectionService {
     baseEvent.setUserPrefsCtx(userPrefsCtx);
     baseEvent.setEndUserContext(endUserContext);
     baseEvent.setUid(userId);
+    baseEvent.setCheckoutApi(isClickFromCheckoutAPI);
     baseEvent.setPayload(event.getPayload());
 
     // update startTime if the click comes from checkoutAPI
-    try {
-      baseEvent = performanceMarketingCollector.setCheckoutApiFlag(baseEvent);
-    } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      LOGGER.warn("Error click timestamp from Checkout API " + baseEvent.getTimestamp());
-      MonitorUtil.info("ErrorCheckoutAPIClickTimestamp", 1);
-    }
+    baseEvent = performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
     // only for EPN channel
@@ -365,10 +370,13 @@ public class CollectionService {
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
 
+    // log all request headers for UFES debug
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
+    SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
+
     if(!isInternalRef) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
-
         firePMEvent(baseEvent, requestContext);
       } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
@@ -478,11 +486,15 @@ public class CollectionService {
       MonitorUtil.info("CheckoutAPIROI", 1);
     }
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
+
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
     baseEvent.setUrl(targetUrl);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(ChannelActionEnum.ROI);
     baseEvent.setChannelType(ChannelIdEnum.ROI);
     baseEvent.setUriComponents(uriComponents);
@@ -607,12 +619,15 @@ public class CollectionService {
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
 
+    // remote ip
+    String remoteIp = commonRequestHandler.getRemoteIp(request);
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
     baseEvent.setTimestamp(startTime);
     baseEvent.setUrl(uri);
     baseEvent.setReferer(referer);
+    baseEvent.setRemoteIp(remoteIp);
     baseEvent.setActionType(channelAction);
     baseEvent.setChannelType(channelType);
     baseEvent.setUriComponents(uriComponents);
@@ -660,8 +675,11 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
     // 2. track ubi
+    // Checkout ROI won't go to UBI
     if(!baseEvent.isCheckoutApi()) {
       roiCollector.trackUbi(containerRequestContext, baseEvent);
+    } else {
+      metrics.meter("CheckoutAPIROI", 1);
     }
 
     // 3. fire utp event
@@ -787,7 +805,7 @@ public class CollectionService {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()));
 
-    UnifiedTrackingMessage message = UnifiedTrackingMessageParser.parse(event);
+    UnifiedTrackingMessage message = utpParser.parse(event);
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
     SpanEventHelper.writeEvent(TYPE_INFO, "producerEventId", STATUS_OK, message.getProducerEventId());
     SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
@@ -813,23 +831,13 @@ public class CollectionService {
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
                                        long shortSnapshotId, String eventId) {
     try {
-      Matcher m = ebaysites.matcher(baseEvent.getReferer().toLowerCase());
-      if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())
-          || ChannelActionEnum.ROI.equals(baseEvent.getActionType())
-          || CollectionServiceUtil.inRefererWhitelist(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-              baseEvent.getReferer())
-          || !m.find()) {
-        UnifiedTrackingMessage utpMessage = UnifiedTrackingMessageParser.parse(baseEvent, requestContext, snapshotId,
-            shortSnapshotId);
-        if(!StringUtils.isEmpty(eventId)) {
-          utpMessage.setEventId(eventId);
-        }
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-            utpMessage), UnifiedTrackingKafkaSink.callback);
-      } else {
-        MonitorUtil.info("UTPInternalDomainRef", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType().toString()),
-            Field.of(CHANNEL_TYPE, baseEvent.getChannelType().toString()));
+      UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
+              shortSnapshotId);
+      if(!StringUtils.isEmpty(eventId)) {
+        utpMessage.setEventId(eventId);
       }
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+              utpMessage), UnifiedTrackingKafkaSink.callback);
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
       MonitorUtil.info("UTPMessageError");
@@ -878,7 +886,10 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
+    // Checkout click events won't go to UBI
+    if (baseEvent.isCheckoutApi()) {
+      metrics.meter("CheckoutAPIClick", 1);
+    } else if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
@@ -896,12 +907,13 @@ public class CollectionService {
       cmCollector.trackUbi(requestContext, baseEvent);
     }
 
-    // 2. send email open/click to behavior topic
-    BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
-
-    if (message != null) {
-      behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-          KafkaSink.callback);
+    // 2. send email open to behavior topic
+    if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())) {
+      BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
+      if (message != null) {
+        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
+            KafkaSink.callback);
+      }
     }
 
     // 3. fire utp event
