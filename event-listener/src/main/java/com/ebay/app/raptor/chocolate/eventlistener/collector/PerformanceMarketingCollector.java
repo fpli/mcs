@@ -7,7 +7,6 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.constant.Constants;
@@ -21,8 +20,7 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +44,6 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 @DependsOn("EventListenerService")
 public class PerformanceMarketingCollector {
   private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceMarketingCollector.class);
-  Metrics metrics;
   ListenerMessageParser parser;
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
 
@@ -55,7 +52,6 @@ public class PerformanceMarketingCollector {
 
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
     this.parser = ListenerMessageParser.getInstance();
   }
 
@@ -186,7 +182,7 @@ public class PerformanceMarketingCollector {
           } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             LOGGER.warn("Error click timestamp from Checkout API " + checkoutAPIClickTs);
-            metrics.meter("ErrorCheckoutAPIClickTimestamp", 1);
+            MonitorUtil.info("ErrorCheckoutAPIClickTimestamp", 1);
           }
         }
       }

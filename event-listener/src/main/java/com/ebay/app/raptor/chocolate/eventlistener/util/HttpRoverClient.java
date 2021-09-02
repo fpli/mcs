@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.kernel.util.StringUtils;
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Metrics;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.http.NameValuePair;
@@ -33,7 +33,6 @@ import static org.asynchttpclient.Dsl.config;
 @DependsOn("EventListenerService")
 public class HttpRoverClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpRoverClient.class);
-  private Metrics metrics;
   private AsyncHttpClient asyncHttpClient;
   private static final int TIMEOUT=200;
   private static final int EXPIRE_COOKIE = 2;
@@ -51,7 +50,6 @@ public class HttpRoverClient {
 
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
     AsyncHttpClientConfig config = config()
         .setRequestTimeout(TIMEOUT)
         .setConnectTimeout(TIMEOUT)
@@ -66,7 +64,7 @@ public class HttpRoverClient {
   }
 
   void setMetrics(Metrics metrics) {
-    this.metrics = metrics;
+    MonitorUtil.setEsMetrics(metrics);
   }
 
   private String generateTimestampForCookie() {
@@ -181,12 +179,12 @@ public class HttpRoverClient {
         public State onStatusReceived(HttpResponseStatus responseStatus) {
           status = responseStatus.getStatusCode();
           if (status == HttpConstants.ResponseStatusCodes.MOVED_PERMANENTLY_301) {
-            metrics.meter("ForwardRoverRedirect");
+            MonitorUtil.info("ForwardRoverRedirect");
             logger.warn(buildDebugLog(roverRequest, "ForwardRoverRedirect req. URI: "));
           } else if (status == HttpConstants.ResponseStatusCodes.OK_200) {
-            metrics.meter("ForwardRoverSuccess");
+            MonitorUtil.info("ForwardRoverSuccess");
           } else {
-            metrics.meter("ForwardRoverFail");
+            MonitorUtil.info("ForwardRoverFail");
             logger.warn(buildDebugLog(roverRequest, "ForwardRoverFail req. URI: "));
           }
           return State.ABORT;
@@ -204,7 +202,7 @@ public class HttpRoverClient {
 
         @Override
         public void onThrowable(Throwable t) {
-          metrics.meter("ForwardRoverException");
+          MonitorUtil.info("ForwardRoverException");
           logger.warn(buildDebugLog(roverRequest, "ForwardRoverException req. URI: "));
         }
 
@@ -214,7 +212,7 @@ public class HttpRoverClient {
         }
       });
     } catch (Exception e) {
-      metrics.meter("ForwardRoverExceptionOther");
+      MonitorUtil.info("ForwardRoverExceptionOther");
       logger.warn(e.getMessage());
     }
     return null;
