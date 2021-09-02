@@ -4,7 +4,7 @@
   <!-- Kafka producer start -->
   <property>
     <name>chocolate.listener.kafka.cluster</name>
-    <value>rheos,kafka</value>
+    <value>rheos</value>
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
