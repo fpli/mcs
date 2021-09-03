@@ -12,6 +12,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.util.StringUtils;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
@@ -61,9 +62,11 @@ public class ListenerMessageParser {
         rotationId = Long.parseLong(rawRotationId.replaceAll("-", ""));
       } catch (Exception e) {
         LOGGER.warn(Errors.ERROR_INVALID_MKRID);
+        MonitorUtil.info("InvalidMkrid");
       }
     } else {
       LOGGER.warn(Errors.ERROR_NO_MKRID);
+      MonitorUtil.info("NoMkrid");
     }
 
     return rotationId;
@@ -76,9 +79,11 @@ public class ListenerMessageParser {
         sessionId = parameters.get(Constants.MKSID).get(0);
       } catch (Exception e) {
         LOGGER.warn(Errors.ERROR_INVALID_MKSID);
+        MonitorUtil.info("InvalidMksid");
       }
     } else {
       LOGGER.warn(Errors.ERROR_NO_MKSID);
+      MonitorUtil.info("NoMksid");
     }
 
     return sessionId;

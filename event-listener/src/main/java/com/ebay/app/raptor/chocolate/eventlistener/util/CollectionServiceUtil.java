@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.constant.RoiTransactionEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -381,7 +382,7 @@ public class CollectionServiceUtil {
       }
     } catch (Exception e) {
       LOGGER.error("Determine whether the click from Checkout API error");
-      ESMetrics.getInstance().meter("DetermineCheckoutAPIClickError", 1);
+      MonitorUtil.info("DetermineCheckoutAPIClickError");
     }
     return isClickFromCheckoutAPI;
   }
