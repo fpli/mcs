@@ -11,6 +11,7 @@ import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
@@ -156,7 +157,7 @@ public class CouchbaseClient {
     try {
       upsertSelfService(id, url);
     } catch (Exception e) {
-      metrics.meter(SELF_SERVICE_METRICS_FAILURE);
+      MonitorUtil.info(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
     }
   }
@@ -174,7 +175,7 @@ public class CouchbaseClient {
             JsonObject.create().put("url", url)));
         logger.info("Adding new self-service record. id=" + id + " url=" + url);
       }
-      metrics.meter(SELF_SERVICE_METRICS_SUCCESS);
+      MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
     } catch (Exception e) {
       throw new Exception(e);
     } finally {

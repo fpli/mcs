@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
       }
     } else {
       logger.warn(Errors.REDIRECT_NO_ADOBE_COUNTRY);
-      metrics.meter(Errors.REDIRECT_NO_ADOBE_COUNTRY);
+      MonitorUtil.info(Errors.REDIRECT_NO_ADOBE_COUNTRY);
     }
   }
 
@@ -127,7 +128,7 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
       response.close();
     } catch (Exception ex) {
       logger.error("Generate Redirect URL from Adobe exception", ex);
-      metrics.meter("AdobeServerException");
+      MonitorUtil.info("AdobeServerException");
       return redirectUrl;
     }
 
@@ -148,11 +149,11 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     int statusHeadCode = response.getStatus() / HUNDRED;
 
     if (REDIRECT_CODE == statusHeadCode) {
-      metrics.meter("AdobeServerRedirect");
+      MonitorUtil.info("AdobeServerRedirect");
       logger.info("AdobeServerRedirect req. URI: " + uriBuilder.build());
       return true;
     } else {
-      metrics.meter("AdobeServerFail");
+      MonitorUtil.info("AdobeServerFail");
       logger.error("AdobeServerFail req. URI: " + uriBuilder.build());
       return false;
     }
@@ -170,13 +171,13 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     // id is mandatory
     if (!parameters.containsKey(ADOBE_ID) || parameters.getFirst(ADOBE_ID) == null) {
       logger.warn(Errors.REDIRECT_NO_ADOBE_ID);
-      metrics.meter(Errors.REDIRECT_NO_ADOBE_ID);
+      MonitorUtil.info(Errors.REDIRECT_NO_ADOBE_ID);
     }
 
     // if the url has no adobeParams, we will construct the url with the possible list of params
     if (!parameters.containsKey(Constants.ADOBE_PARAMS) || parameters.get(Constants.ADOBE_PARAMS).get(0) == null) {
       logger.warn(Errors.REDIRECT_NO_ADOBE_PARAMS);
-      metrics.meter(Errors.REDIRECT_NO_ADOBE_PARAMS);
+      MonitorUtil.info(Errors.REDIRECT_NO_ADOBE_PARAMS);
       // construct the url with the possible list of params,  only "id" in the the params list is Mandatory
       for (String adobeParam : ADOBE_PARAMS_LIST) {
         if (parameters.containsKey(adobeParam)) {

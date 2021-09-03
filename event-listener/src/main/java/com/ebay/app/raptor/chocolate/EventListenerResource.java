@@ -10,8 +10,6 @@ import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.raptor.opentracing.Tags;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -61,14 +59,13 @@ public class EventListenerResource implements EventsApi {
   @Context
   private ContainerRequestContext requestContext;
 
-  private Metrics metrics;
 
   /**
    * Initialize function
    */
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
+
   }
 
   /**

@@ -22,6 +22,7 @@ import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
 import com.ebay.raptor.geo.utils.GeoUtils;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
@@ -114,7 +115,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
   private static final Client mktClient = GingerClientBuilder.newClient(config);
   private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-
   /**
    * Initialize function
    */
@@ -132,12 +132,13 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Override
   public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     if (null == mkcid) {
-      metrics.meter(METRIC_NO_MKCID_IN_AR);
+      MonitorUtil.info(METRIC_NO_MKCID_IN_AR);
     }
     if (null == mkrid) {
-      metrics.meter(METRIC_NO_MKRID_IN_AR);
+      MonitorUtil.info(METRIC_NO_MKRID_IN_AR);
     }
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "ar"));
+
     Response res = null;
 
     GdprConsentDomain gdprConsentDomain = gdprConsentHandler.handleGdprConsent(request);
@@ -166,7 +167,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     }
     return res;
   }
-
   /**
    * Get method to collect impression, viewimp, email open
    *
@@ -175,12 +175,12 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Override
   public Response impression(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     if (null == mkcid) {
-      metrics.meter(METRIC_NO_MKCID_IN_IMPRESSION);
+      MonitorUtil.info(METRIC_NO_MKCID_IN_IMPRESSION);
     }
     if (null == mkrid) {
-      metrics.meter(METRIC_NO_MKRID_IN_IMPRESSION);
+      MonitorUtil.info(METRIC_NO_MKRID_IN_IMPRESSION);
     }
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "impression"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "impression"));
     Response res = null;
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
@@ -282,7 +282,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
     adserviceCookie.setAdguid(request, response);
     URI redirectUri = null;
     try {
@@ -332,7 +332,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response sync(String guid, String uid) {
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "sync"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "sync"));
     String adguid = adserviceCookie.setAdguid(request, response);
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
@@ -366,13 +366,15 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     try {
       boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
       if (isAddMappingSuccess) {
-        metrics.meter(METRIC_ADD_MAPPING_SUCCESS);
+        MonitorUtil.info(METRIC_ADD_MAPPING_SUCCESS);
       } else {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+
       }
     } catch (Exception e) {
       try {
-        metrics.meter(METRIC_ADD_MAPPING_FAIL);
+        MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
       }
@@ -387,7 +389,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response guid() {
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(guid).build();
@@ -400,7 +402,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response userid() {
-    metrics.meter(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "userid"));
     String adguid = adserviceCookie.readAdguid(request);
     String encryptedUserid = idMapping.getUidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(encryptedUserid).build();
@@ -493,7 +495,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       public void failed(Throwable throwable) {
         // If the session is failed, log a flag in metrics and throw a exception.
         // The exception will be logged by logger
-        metrics.meter(METRIC_ERROR_IN_ASYNC_MODEL);
+        MonitorUtil.info(METRIC_ERROR_IN_ASYNC_MODEL);
         cf.completeExceptionally(throwable);
       }
     });
@@ -526,7 +528,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private long startTimerAndLogData(Field<String, Object>... additionalFields) {
     long startTime = System.currentTimeMillis();
     logger.debug(String.format("StartTime: %d", startTime));
-    metrics.meter("ImpressionInput", 1, startTime, additionalFields);
+    MonitorUtil.info("ImpressionInput", 1, additionalFields);
     return startTime;
   }
 
@@ -539,7 +541,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private void stopTimerAndLogData(long startTime, Field<String, Object>... additionalFields) {
     long endTime = System.currentTimeMillis();
     logger.debug(String.format("EndTime: %d", endTime));
-    metrics.meter("ImpressionSuccess", 1, endTime, additionalFields);
-    metrics.mean("ImpressionLatency", endTime - startTime);
+    MonitorUtil.info("ImpressionSuccess", 1,additionalFields);
+    MonitorUtil.latency("ImpressionLatency", endTime - startTime);
   }
 }

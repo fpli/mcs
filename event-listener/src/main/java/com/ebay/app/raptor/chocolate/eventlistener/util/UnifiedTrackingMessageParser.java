@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -28,8 +29,6 @@ import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
 import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
 import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -49,7 +48,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
  */
 public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
-  private static Metrics metrics = ESMetrics.getInstance();
   private static CobrandParser cobrandParser = new CobrandParser();
   private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
@@ -295,7 +293,7 @@ public class UnifiedTrackingMessageParser {
     // data governance
     long startTs = System.currentTimeMillis();
     TrackingGovernanceTagCache.getInstance().govern(record);
-    metrics.mean("DataGovernanceLatency", System.currentTimeMillis() - startTs);
+    MonitorUtil.latency("DataGovernanceLatency", System.currentTimeMillis() - startTs);
 
     return record;
   }
@@ -561,10 +559,14 @@ public class UnifiedTrackingMessageParser {
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
-    // parse itm from url and put itm to payload
-      parseItmTag(payload, baseEvent.getUrl());
 
-      return encodeTags(payload);
+    // parse itm from url and put itm to payload
+    parseItmTag(payload, baseEvent.getUrl());
+
+    // session sequence number
+    payload.put("seqNum", "1");
+
+    return encodeTags(payload);
   }
 
   private static void parseItmTag(Map<String, String> payload, String url) {
@@ -579,7 +581,7 @@ public class UnifiedTrackingMessageParser {
           }
         }
       } catch (Exception e) {
-        metrics.meter("putItmToPldError");
+        MonitorUtil.info("putItmToPldError");
         logger.warn("put itm tag to payload error, url is {}", url);
       }
     }
@@ -613,7 +615,7 @@ public class UnifiedTrackingMessageParser {
         sojTags = URLDecoder.decode(sojTags, "UTF-8");
       } catch (UnsupportedEncodingException e) {
         logger.warn("Param sojTags is wrongly encoded", e);
-        metrics.meter("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
+        MonitorUtil.info("ErrorEncodedSojTags", 1, Field.of(Constants.CHANNEL_ACTION, channelAction.toString()),
             Field.of(Constants.CHANNEL_TYPE, channelType.toString()));
       }
       if (!StringUtils.isEmpty(sojTags)) {
