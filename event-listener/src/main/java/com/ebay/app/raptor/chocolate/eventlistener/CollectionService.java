@@ -405,6 +405,8 @@ public class CollectionService {
   protected boolean isInternalRef(ChannelType channelType, String referer) {
     if (inRefererWhitelist(channelType, referer)) {
       return false;
+    } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType) {
+      return false;
     }
     // filter click whose referer is internal
     Matcher m = ebaysites.matcher(referer.toLowerCase());
