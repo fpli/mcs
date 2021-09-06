@@ -122,6 +122,9 @@ public class Constants {
   public static final String UDID = "udid";
   public static final String SITE = "site";
 
+  // UFES redirect flag for the Rover clicks onboarded to UFES
+  public static final String UFES_REDIRECT = "ufes_redirect";
+
   /**
    * Performance marketing channels
    */
