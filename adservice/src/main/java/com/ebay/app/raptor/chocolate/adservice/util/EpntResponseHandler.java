@@ -127,7 +127,7 @@ public class EpntResponseHandler {
         URIBuilder uriBuilder = new URIBuilder(epntPlacementEndpoint);
 
         for (Map.Entry<String, String[]> paramMap: parameters.entrySet()) {
-            uriBuilder.addParameter(paramMap.getKey(), parameters.get(paramMap.getKey())[0]);
+            uriBuilder.addParameter(paramMap.getKey(), paramMap.getValue()[0]);
         }
 
         // append userId and guid to epnt URI for personalization
