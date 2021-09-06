@@ -406,7 +406,7 @@ public class CollectionService {
     }
   }
   protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
-    if (inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
+    if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
       return false;
     }
 
@@ -839,27 +839,6 @@ public class CollectionService {
       LOGGER.warn("UTP message process error.", e);
       MonitorUtil.info("UTPMessageError");
     }
-  }
-
-  /**
-   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site.
-   * So add a whitelist to handle these bad cases.
-   * @param channelType channel type
-   * @param referer referer
-   * @return in whitelist or not
-   */
-  protected boolean inRefererWhitelist(ChannelType channelType, String referer) {
-    // currently, this case only exists in display channel
-    if (ChannelType.DISPLAY != channelType) {
-      return false;
-    }
-    String lowerCase = referer.toLowerCase();
-    for (String referWhitelist : REFERER_WHITELIST) {
-      if (lowerCase.startsWith(referWhitelist)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

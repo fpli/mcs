@@ -272,4 +272,29 @@ public class CollectionServiceUtilTest {
     targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
     assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
   }
+
+  @Test
+  public void testInRefererWhitelist() {
+    String referer = "https://ebay.mtag.io?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.EPN, referer));
+
+    referer = "https://ebay.pissedconsumer.com?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+
+    referer = "http://ebay.pissedconsumer.com?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+
+    referer = "https://secureir.ebaystatic.com?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+
+    referer = "http://secureir.ebaystatic.com?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+
+    referer = "http://ebay.mtag.io?abc=true";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+
+    referer = "https://ebay.com/";
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+  }
 }
