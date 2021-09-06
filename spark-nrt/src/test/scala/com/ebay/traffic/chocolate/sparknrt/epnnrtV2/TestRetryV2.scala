@@ -3,31 +3,31 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 
 import com.ebay.traffic.chocolate.spark.BaseFunSuite
 import com.ebay.traffic.chocolate.sparknrt.utils.RetryUtil
-class TestRetryV2 extends BaseFunSuite{
 
-  def getData(): Option[String] = {
-    var now: Long =System.currentTimeMillis()
+class TestRetryV2 extends BaseFunSuite {
+  def getData(num: Int): Option[Int] = {
+    var count = 0
     try {
       RetryUtil.retry {
         val d: Double = Math.random()
-        val current: Long =System.currentTimeMillis()
-        println("duration="+(current-now))
-        now=current
-        if (d < 0.01) {
-          Some("success")
-        } else {
-          println(d)
+        if (d < num) {
+          count=count+1
           throw new Exception
+        } else {
+          Some(count)
         }
       }
     } catch {
       case e: Exception => {
-        Some("fail")
+        Some(count)
       }
     }
   }
 
-  test("test retry util") {
-    assert(getData().get=="success")
+  test("test retry util fail") {
+    assert(getData(2).get == 5)
+  }
+  test("test retry util success") {
+    assert(getData(-1).get == 0)
   }
 }

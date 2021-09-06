@@ -115,11 +115,11 @@ class TestDedupeAndSinkListenerV2 extends BaseFunSuite {
 
     val df1 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL1).get)
     df1.show()
-    assert (df1.count() == 2)
+    assert (df1.count() == 3)
 
     val df2 = job.readFilesAsDFEx(dom(0)._2.get(DATE_COL2).get)
     df2.show()
-    assert (df2.count() == 1)
+    assert (df2.count() == 2)
 
     metadata.deleteDedupeOutputMeta(dom(0)._1)
 
@@ -139,11 +139,11 @@ class TestDedupeAndSinkListenerV2 extends BaseFunSuite {
 
     val df11 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL1).get)
     df11.show()
-    assert (df11.count() == 1)
+    assert (df11.count() == 3)
 
     val df22 = job.readFilesAsDFEx(dom1(0)._2.get(DATE_COL2).get)
     df22.show()
-    assert (df22.count() == 1)
+    assert (df22.count() == 2)
 
     metadata.deleteDedupeOutputMeta(dom1(0)._1)
 

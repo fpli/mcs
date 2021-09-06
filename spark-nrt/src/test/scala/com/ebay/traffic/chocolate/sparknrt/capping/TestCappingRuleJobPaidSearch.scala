@@ -185,8 +185,8 @@ class TestCappingRuleJobPaidSearch extends BaseFunSuite {
 
     // validate .imketl meta file exists
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule.properties"))
-    assert(properties.getProperty("meta.output.suffix").equals(".detection,.epnnrt,.monitoring,.imketl"))
+    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule_v2.properties"))
+    assert(properties.getProperty("meta.output.suffix").equals(".imketl,.detection,.epnnrt,.monitoring,.epnnrtimp,.epnnrt_v2,.epnnrtimp_v2"))
     val cappingOutputMeta = Metadata(workDir, channel, MetadataEnum.capping)
     val source = cappingOutputMeta.readDedupeOutputMeta()
     val target = cappingOutputMeta.readDedupeOutputMeta(".imketl")
