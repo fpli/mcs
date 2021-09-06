@@ -126,8 +126,8 @@ public class EpntResponseHandler {
                                         String userId, String guid) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(epntPlacementEndpoint);
 
-        for (String param: parameters.keySet()) {
-            uriBuilder.addParameter(param, parameters.get(param)[0]);
+        for (Map.Entry<String, String[]> paramMap: parameters.entrySet()) {
+            uriBuilder.addParameter(paramMap.getKey(), paramMap.getValue()[0]);
         }
 
         // append userId and guid to epnt URI for personalization
