@@ -465,10 +465,6 @@ public class RoverRheosTopicFilterTask extends Thread {
           return ChannelIdEnum.SITE_EMAIL;
         case "8":
           return ChannelIdEnum.MRKT_EMAIL;
-        case "26":
-          return ChannelIdEnum.SITE_MESSAGE_CENTER;
-        case "27":
-          return ChannelIdEnum.MRKT_MESSAGE_CENTER;
         default:
           return null;
       }
