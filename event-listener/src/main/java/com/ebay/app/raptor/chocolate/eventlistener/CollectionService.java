@@ -248,8 +248,7 @@ public class CollectionService {
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
 
     // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
-    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
-    if (roverSitesMatcher.find()) {
+    if (CollectionServiceUtil.isLegacyRoverDeeplinkCase(event.getTargetUrl(), referer)) {
       roverClient.forwardRequestToRover(referer, ROVER_INTERNAL_VIP, request);
       return true;
     }
@@ -359,7 +358,7 @@ public class CollectionService {
 
     // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-        baseEvent.getReferer());
+        baseEvent.getReferer(), baseEvent.getUrl());
     if(isInternalRef) {
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
@@ -406,10 +405,11 @@ public class CollectionService {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
   }
-  protected boolean isInternalRef(ChannelType channelType, String referer) {
-    if (inRefererWhitelist(channelType, referer)) {
+  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
+    if (inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
       return false;
     }
+
     // filter click whose referer is internal
     Matcher m = ebaysites.matcher(referer.toLowerCase());
     return m.find();

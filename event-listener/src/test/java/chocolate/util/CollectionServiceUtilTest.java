@@ -228,4 +228,48 @@ public class CollectionServiceUtilTest {
     when(mockEndUserContext.getUserAgent()).thenReturn("");
     assertFalse(CollectionServiceUtil.isROIFromCheckoutAPI(roiPayloadMap, mockEndUserContext));
   }
+
+  @Test
+  public void testInPageWhitelist() {
+    String targetUrl = "https://m.ebay.co.uk/?_mwBanner=1&mkevt=1&mkcid=7&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://www.ebay.co.uk/cnt/ReplyToMessages?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://m.ebay.co.uk/seller?sid=amyonline2010&_mwBanner=1&mkevt=1&mkcid=7&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://pay.ebay.com/rxo?action=create&item=203553663494&transactionid=0&quantity=1&level=1&editAddress=0&newpurchaseok=0&refererpage=6&mkevt=1&mkcid=7&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://offer.ebay.com/ws/eBayISAPI.dll?ManageBestOffers&&boolp=1&mkevt=1&mkcid=7&ul_noapp=true&itemId=255067424578";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://www.ebay.com/bo/seller/showOffers?ManageBestOffers&&boolp=1&mkevt=1&mkcid=7&ul_noapp=true&itemId=255067424578";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://cart.ebay.co.uk/cart?mkevt=1&mkcid=7&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://m.ebay.de/?_mwBanner=1&ul_alt=store&ul_noapp=true";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
+    targetUrl = "https://www.ebay.com/itm/12345678";
+    assertFalse(CollectionServiceUtil.inPageWhitelist(targetUrl));
+  }
+
+  @Test
+  public void testIsLegacyRoverDeeplinkCase() {
+    String targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=true";
+    String referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/1?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec";
+    referer = "https://rover.ebay.com/";
+    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
+    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+  }
 }
