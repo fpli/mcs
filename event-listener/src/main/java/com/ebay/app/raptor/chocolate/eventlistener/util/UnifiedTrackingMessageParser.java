@@ -559,10 +559,14 @@ public class UnifiedTrackingMessageParser {
     if (!StringUtils.isEmpty(statusCode)) {
       payload.put(Constants.TAG_STATUS_CODE, statusCode);
     }
-    // parse itm from url and put itm to payload
-      parseItmTag(payload, baseEvent.getUrl());
 
-      return encodeTags(payload);
+    // parse itm from url and put itm to payload
+    parseItmTag(payload, baseEvent.getUrl());
+
+    // session sequence number
+    payload.put("seqNum", "1");
+
+    return encodeTags(payload);
   }
 
   private static void parseItmTag(Map<String, String> payload, String url) {
