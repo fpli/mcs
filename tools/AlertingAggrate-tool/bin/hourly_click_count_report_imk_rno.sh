@@ -8,7 +8,7 @@ EXECUTOR_NUMBER=40
 EXECUTOR_MEMORY=8g
 EXECUTOR_CORES=5
 SPARK_HOME=/datashare/mkttracking/tools/apollo_rno/spark_apollo_rno
-FILES=/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/df_imk_v2_apollo.json,/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v2/conf/IMKClickReport.properties
+FILES=/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/conf/df_imk_v2_apollo.json,/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/conf/IMKClickReport.properties
 inputdir=viewfs://apollo-rno/apps/b_marketing_tracking/imk_tracking/imk_rvr_trckng_event_v2/
 echo "inputdir: ${inputdir}"
 outputdir=viewfs://apollo-rno/apps/b_marketing_tracking/alert/imk_v2/temp/hourlyClickCount
@@ -32,7 +32,7 @@ ${SPARK_HOME}/bin/spark-submit  \
     --num-executors ${EXECUTOR_NUMBER} \
     --executor-memory ${EXECUTOR_MEMORY} \
     --executor-cores ${EXECUTOR_CORES} \
-    --queue hdlq-commrce-default \
+    --queue hdlq-commrce-mkt-tracking-high-mem \
     --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
     --conf spark.hadoop.yarn.timeline-service.enabled=false \
     --conf spark.sql.autoBroadcastJoinThreshold=33554432 \

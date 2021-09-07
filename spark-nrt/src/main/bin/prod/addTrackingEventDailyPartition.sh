@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-DT=$(date +%Y-%m-%d -d "`date` - 1 day")
+DT=$(date -d "1 day ago" +%Y-%m-%d )
+
 echo "DT=${DT}"
 
 export HADOOP_USER_NAME=chocolate
