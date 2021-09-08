@@ -1,8 +1,8 @@
 package com.ebay.traffic.chocolate.sparknrt.mergeSmallFiles
 
-import com.ebay.traffic.chocolate.spark.BaseSparkJob
+import com.ebay.traffic.chocolate.spark.{BaseSparkJob, BaseSparkJobV2}
 import org.apache.commons.lang3.StringUtils
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FSDataOutputStream, Path}
 import org.apache.spark.sql.DataFrame
 
 /**
@@ -26,19 +26,29 @@ object MergeSmallFilesJob extends App {
 }
 
 class MergeSmallFilesJob(params: Parameter, override val enableHiveSupport: Boolean = true)
-  extends BaseSparkJob(params.appName, params.mode, true) {
+  extends BaseSparkJobV2(params.appName, params.mode, true) {
 
   lazy val table: String = params.table
   lazy val partitionName: String = params.partitionName
   lazy val partition: String = params.partition
   lazy val partitionNum: Int = params.partitionNum
   lazy val outputDir: String = params.outputDir
-  lazy val mergedDir: String = outputDir + "/" + partitionName + "=" + partition
+  lazy val mergedDir: String = outputDir + "/data/" + partitionName + "=" + partition
+  lazy val resultFile: String = outputDir + "/result/" + partition
+  var recordCountBeforeMerge: Long = 0
+  var recordCountAfterMerge: Long = 0
 
   def mergeFile(): Unit = {
     logger.info("Begin merge data:" + partition)
     val dataDf = readTable().repartition(partitionNum)
+    recordCountBeforeMerge = dataDf.count()
+    logger.info("Before merge record count:" + recordCountBeforeMerge)
     saveDFToFiles(dataDf, mergedDir)
+    val mergeDataDf = readFilesAsDF(mergedDir)
+    recordCountAfterMerge = mergeDataDf.count()
+    logger.info("After merge record count:" + recordCountBeforeMerge)
+    saveContentToFile(recordCountBeforeMerge + "#" + recordCountAfterMerge,resultFile)
+    logger.info("Finish merge data:" + partition)
   }
 
   def readTable(): DataFrame = {
@@ -46,6 +56,19 @@ class MergeSmallFilesJob(params: Parameter, override val enableHiveSupport: Bool
     logger.info("select sql: " + sql)
     val sourceDf = sqlsc.sql(sql)
     sourceDf
+  }
+
+  def saveContentToFile(content:String,path:String): Unit ={
+    var outputStream: FSDataOutputStream = null
+    try {
+      outputStream = fs.create(new Path(path))
+      outputStream.writeChars(content)
+      outputStream.flush()
+    } finally {
+      if (outputStream != null) {
+        outputStream.close()
+      }
+    }
   }
 
   def checkParamValid(): Boolean = {
@@ -61,6 +84,10 @@ class MergeSmallFilesJob(params: Parameter, override val enableHiveSupport: Bool
     if (fs.exists(mergedPath)) {
       fs.delete(mergedPath, true)
     }
+    val result = new Path(resultFile)
+    if (fs.exists(result)) {
+      fs.delete(result, true)
+    }
     fs.mkdirs(mergedPath)
   }
 
@@ -68,10 +95,10 @@ class MergeSmallFilesJob(params: Parameter, override val enableHiveSupport: Bool
    * Entry of this spark job
    */
   override def run(): Unit = {
-    if (checkParamValid()) {
-    } else {
+    if (!checkParamValid()) {
       throw new RuntimeException("Params error")
     }
     beforeRun(mergedDir)
+    mergeFile()
   }
 }

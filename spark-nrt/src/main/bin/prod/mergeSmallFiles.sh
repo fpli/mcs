@@ -5,10 +5,10 @@ CLUSTER=${1}
 TABLE=${2}
 PARTITION_NAME=${3}
 PARTITION=${4}
-PARTITIO_NNUM=${5}
+PARTITION_NUM=${5}
 OUTPUT_DIR=${6}
 
-if [[ -z $table ||  -z $END_DATE || $END_DATE < $BEGIN_DATE ]]
+if [[ -z $CLUSTER ||  -z $TABLE || -z $PARTITION_NAME || -z $PARTITION || $PARTITIO_NUM  || -z $OUTPUT_DIR ]]
 then
     echo $usage;
     exit 1;
@@ -39,7 +39,6 @@ bin=$(
 
 
 ${SPARK_PATH} \
---files ${FILES} \
 --class com.ebay.traffic.chocolate.sparknrt.mergeSmallFiles.MergeSmallFilesJob \
 --master yarn \
 --deploy-mode cluster \
@@ -47,8 +46,8 @@ ${SPARK_PATH} \
 --num-executors 120 \
 --executor-memory 16G \
 --executor-cores 8 \
-${bin}/../../lib/chocolate-spark-nrt-*.jar \
---table ${table} \
+${bin}/../lib/chocolate-spark-nrt-*.jar \
+--table ${TABLE} \
 --partitionName ${PARTITION_NAME} \
 --partition ${PARTITION} \
 --partitionNum ${PARTITION_NUM} \
