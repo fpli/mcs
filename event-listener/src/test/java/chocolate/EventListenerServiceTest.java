@@ -419,6 +419,18 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
+    // UFES redirection, don't forward to rover
+    event.setReferrer("https://rover.ebay.com/rover/");
+    event.setTargetUrl("https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=2&ufes_redirect=true");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // referer is ebay site, but page is in whitelist, don't reject
+    event.setReferrer("https://www.ebay.com/");
+    event.setTargetUrl("https://www.ebay.co.uk/cnt/ReplyToMessages?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=2&ul_noapp=true");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // no query parameter
     event.setReferrer("https://www.google.com");
     event.setTargetUrl("https://www.ebay.com");
@@ -465,10 +477,10 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
       LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 9, 30 * 1000);
+      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 10, 30 * 1000);
     consumerPaidSearch.close();
 
-    assertEquals(8, listenerMessagesPaidSearch.size());
+    assertEquals(10, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");

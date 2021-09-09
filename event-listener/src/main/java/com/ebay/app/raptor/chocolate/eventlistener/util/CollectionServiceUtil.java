@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -26,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
 
 /**
  * @author xiangli4
@@ -94,6 +97,12 @@ public class CollectionServiceUtil {
 
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
+
+  private static final List<String> PAGE_WHITELIST = Arrays.asList("cnt", "seller", "rxo", "ws", "bo", "cart");
+
+  private static final List<String> REFERER_WHITELIST = Arrays.asList(
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
 
   /**
    * get app id from user agent info
@@ -319,9 +328,10 @@ public class CollectionServiceUtil {
         String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
         deeplinkURIBuilder.setPath(deeplinkURIPath);
 
-        for (String key : deeplinkParamMap.keySet()) {
+        for (Map.Entry<String, List<String>> entry : deeplinkParamMap.entrySet()) {
+          String key = entry.getKey();
           if (!key.equals(NAV) && !key.equals(ID) && !key.equals(REFERRER)) {
-            deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
+            deeplinkURIBuilder.addParameter(key, entry.getValue().get(0));
           }
         }
         // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters
@@ -471,5 +481,62 @@ public class CollectionServiceUtil {
   public static boolean isFacebookPrefetchEnabled(Map<String, String> requestHeaders) {
     String facebookprefetch = requestHeaders.get("X-Purpose");
     return facebookprefetch != null && "preview".equals(facebookprefetch.trim());
+  }
+
+  /**
+   * Is legacy rover deeplink case
+   * @param targetUrl
+   * @param referer
+   * @return forward to rover or not
+   */
+  public static boolean isLegacyRoverDeeplinkCase(String targetUrl, String referer) {
+    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
+
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
+    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+
+    if (parameters.containsKey(Constants.UFES_REDIRECT) && ("true".equals(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+      return false;
+    }
+
+    return roverSitesMatcher.find();
+  }
+
+  /**
+   * The referer belongs to ebay site if user clicks some ulk links and redirects to the pages which UFES supports on iOS
+   * So add a page whitelist to avoid rejecting these clicks
+   * @param finalUrl finalUrl
+   * @return in whitelist or not
+   */
+  public static boolean inPageWhitelist(String finalUrl) {
+    UriComponents uriComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
+    List<String> pathSegments = uriComponents.getPathSegments();
+
+    if (pathSegments.isEmpty() || PAGE_WHITELIST.contains(pathSegments.get(0))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site.
+   * So add a whitelist to handle these bad cases.
+   * @param channelType channel type
+   * @param referer referer
+   * @return in whitelist or not
+   */
+  public static boolean inRefererWhitelist(ChannelType channelType, String referer) {
+    // currently, this case only exists in display channel
+    if (ChannelType.DISPLAY != channelType) {
+      return false;
+    }
+    String lowerCase = referer.toLowerCase();
+    for (String referWhitelist : REFERER_WHITELIST) {
+      if (lowerCase.startsWith(referWhitelist)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
