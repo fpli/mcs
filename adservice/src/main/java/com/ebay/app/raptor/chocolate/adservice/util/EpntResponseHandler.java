@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Headers;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -77,16 +78,16 @@ public class EpntResponseHandler {
         } catch (Exception e) {
             res = Response.status(Response.Status.BAD_REQUEST).build();
             LOGGER.error("Failed to call Epnt Placement {}", status);
-            ESMetrics.getInstance().meter("EpntPlacementException");
+            MonitorUtil.info("EpntPlacementException");
             return res;
         }
 
-        ESMetrics.getInstance().meter("EpntPlacementStatus", 1, Field.of("status", status));
+        MonitorUtil.info("EpntPlacementStatus", 1, Field.of("status", status));
 
         if (status != Response.Status.OK.getStatusCode()) {
             res = Response.status(Response.Status.BAD_REQUEST).build();
             LOGGER.error("Failed to call Epnt Placement {}", status);
-            ESMetrics.getInstance().meter("EpntPlacementException");
+            MonitorUtil.info("EpntPlacementException");
             return res;
         }
 
@@ -106,7 +107,7 @@ public class EpntResponseHandler {
         } catch (Exception e) {
             res = Response.status(Response.Status.BAD_REQUEST).build();
             LOGGER.error("Failed to send response {}", e.getMessage());
-            ESMetrics.getInstance().meter("EpntPlacementException");
+            MonitorUtil.info("EpntPlacementException");
         }
 
         ESMetrics.getInstance().mean("EpntPlacementLatency", System.currentTimeMillis() - startTime);

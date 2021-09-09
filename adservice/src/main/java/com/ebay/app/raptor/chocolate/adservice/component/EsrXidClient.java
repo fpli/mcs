@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -46,7 +47,7 @@ public class EsrXidClient {
             return userId;
         }
 
-        ESMetrics.getInstance().meter("totalRequestEsrxidCount");
+        MonitorUtil.info("totalRequestEsrxidCount");
 
         //pguid equals guid here
         URI uri = null;
@@ -54,7 +55,7 @@ public class EsrXidClient {
             uri = new URI(esrXidEndpointUrl + "pguid/" + guid);
         } catch (URISyntaxException e) {
             logger.error("call esrXid error, " + e);
-            ESMetrics.getInstance().meter("FailedGetUidFromEsrxid");
+            MonitorUtil.info("FailedGetUidFromEsrxid");
         }
         if (uri == null) {
             return userId;
@@ -74,13 +75,13 @@ public class EsrXidClient {
                     JSONObject accountObj = accounts.getJSONObject(0);
                     if (accountObj != null) {
                         userId = accountObj.getString("id");
-                        ESMetrics.getInstance().meter("succeedGetUidFromEsrxid");
+                        MonitorUtil.info("succeedGetUidFromEsrxid");
                     }
                 }
             }
         } catch (IOException e) {
             logger.error("call esrXid error, " + e);
-            ESMetrics.getInstance().meter("FailedGetUidFromEsrxid");
+            MonitorUtil.info("FailedGetUidFromEsrxid");
         }
         return userId;
     }
