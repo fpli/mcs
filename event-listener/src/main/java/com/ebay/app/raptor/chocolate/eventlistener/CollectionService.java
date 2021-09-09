@@ -315,7 +315,7 @@ public class CollectionService {
     boolean isClickFromCheckoutAPI = CollectionServiceUtil.isClickFromCheckoutAPI(
         urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
             Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
@@ -386,7 +386,7 @@ public class CollectionService {
       }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-    Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+     Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -453,7 +453,7 @@ public class CollectionService {
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
-        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()),Field.of(PARTNER, "NULL"), Field.of(PLATFORM, platform),
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform),
             Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
@@ -515,7 +515,7 @@ public class CollectionService {
 
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-            ChannelType.ROI.toString()),Field.of(PARTNER, "NULL"), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
+            ChannelType.ROI.toString()), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -616,7 +616,7 @@ public class CollectionService {
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type)
-            ,Field.of(PARTNER, partner), Field.of(PLATFORM, platform),
+            , Field.of(PLATFORM, platform),
             Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     // remote ip
@@ -650,7 +650,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type),Field.of(PARTNER, partner), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
+        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -803,7 +803,7 @@ public class CollectionService {
    */
   public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PARTNER, "NULL"), Field.of(PLATFORM, "NULL"),
+        Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PLATFORM, "NULL"),
             Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     UnifiedTrackingMessage message = utpParser.parse(event);
@@ -817,7 +817,7 @@ public class CollectionService {
           UnifiedTrackingKafkaSink.callback);
 
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-          Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PARTNER, "NULL"), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
+          Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
       }
   }
 

@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.util;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import io.micrometer.core.instrument.Metrics;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * @author yuhxiao
@@ -61,7 +62,7 @@ public final class MonitorUtil {
         String[] additional=new String[2*length];
         for(int i=0;i<length;i++){
             additional[2*i]=fields[i].getKey();
-            additional[2*i+1]=fields[i].getValue()==null?"NULL":fields[i].getValue().toString();
+            additional[2*i+1]= Strings.isEmpty((String)fields[i].getValue())?"NULL":fields[i].getValue().toString();
         }
         return additional;
     }
