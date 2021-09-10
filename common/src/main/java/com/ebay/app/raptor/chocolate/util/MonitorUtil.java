@@ -63,7 +63,7 @@ public final class MonitorUtil {
         for(int i=0;i<length;i++){
             additional[2*i]=fields[i].getKey();
             //additional[2*i+1]=fields[i].getValue()==null?"NULL":fields[i].getValue().toString();
-            additional[2*i+1]= (fields[i].getValue()!=null&& Strings.isEmpty(fields[i].getValue().toString()))?"NULL":fields[i].getValue().toString();
+            additional[2*i+1]= (fields[i].getValue()==null||Strings.isEmpty(fields[i].getValue().toString()))?"NULL":fields[i].getValue().toString();
         }
         return additional;
     }
