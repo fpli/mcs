@@ -10,6 +10,7 @@ import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -97,7 +98,7 @@ public class DAPResponseHandler {
 
   public void sendDAPResponse(HttpServletRequest request, HttpServletResponse response,
                               GdprConsentDomain consentDomain) throws URISyntaxException {
-    ESMetrics.getInstance().meter("sendDAPResponse");
+    MonitorUtil.info("sendDAPResponse");
 
     LOGGER.debug("query string {}", request.getQueryString());
 
@@ -106,7 +107,7 @@ public class DAPResponseHandler {
 
     String[] adtypes = params.get(Constants.ADTYPE);
     String adtype = ArrayUtils.isNotEmpty(adtypes) ? adtypes[0] : StringUtils.EMPTY;
-    ESMetrics.getInstance().meter("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
+    MonitorUtil.info("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
 
     String guid = adserviceCookie.getGuid(request);
     String adguid = adserviceCookie.readAdguid(request, response);
@@ -343,10 +344,10 @@ public class DAPResponseHandler {
       headers = dapResponse.getHeaders();
     } catch (Exception e) {
       LOGGER.error("Failed to call DAP {}", e.getMessage());
-      ESMetrics.getInstance().meter("DAPException");
+      MonitorUtil.info("DAPException");
     }
 
-    ESMetrics.getInstance().meter("DAPStatus", 1, Field.of("status", status));
+    MonitorUtil.info("DAPStatus", 1, Field.of("status", status));
 
     if (status != Response.Status.OK.getStatusCode()) {
       LOGGER.error("Failed to call DAP {}", status);
@@ -355,7 +356,7 @@ public class DAPResponseHandler {
 
     String redirectUrl = headers == null ? null : (String) headers.getFirst(Headers.REDIRECT_URL);
     if (redirectUrl != null && redirectUrl.trim().length() > 0) {
-      ESMetrics.getInstance().meter("DAPRedirect");
+      MonitorUtil.info("DAPRedirect");
       response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       String reqContextType = request.getHeader(Headers.ACCEPT);
       if (reqContextType != null && reqContextType.contains("image/")) {
@@ -423,7 +424,7 @@ public class DAPResponseHandler {
   @SuppressWarnings("unchecked")
   private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String adguid,
                          MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
-    ESMetrics.getInstance().meter("StartSendToMCS");
+    MonitorUtil.info("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
     String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
@@ -477,7 +478,7 @@ public class DAPResponseHandler {
           targetUrlBuilder.setParameter(Constants.MKRID, mplxPlacementId);
           String[] adtypes = request.getParameterMap().get(Constants.ADTYPE);
           String adtype = ArrayUtils.isNotEmpty(adtypes) ? adtypes[0] : StringUtils.EMPTY;
-          ESMetrics.getInstance().meter("ReplaceMkrid", 1, Field.of(Constants.ADTYPE, adtype));
+          MonitorUtil.info("ReplaceMkrid", 1, Field.of(Constants.ADTYPE, adtype));
         }
       }
     }
@@ -488,22 +489,22 @@ public class DAPResponseHandler {
 
     LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
 
-    ESMetrics.getInstance().meter("SendToMCSAsync");
+    MonitorUtil.info("SendToMCSAsync");
     // async call mcs to record ubi
     builder.async().post(Entity.json(mktEvent), new InvocationCallback<Response>() {
       public void completed(Response response) {
         if (response.getStatus() == Response.Status.CREATED.getStatusCode()
                 || response.getStatus() == Response.Status.OK.getStatusCode()) {
-          ESMetrics.getInstance().meter("AsyncCallMCSSuccess", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          MonitorUtil.info("AsyncCallMCSSuccess", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
           LOGGER.debug("AsyncCallMCSSuccess {}", targetUrl);
         } else {
-          ESMetrics.getInstance().meter("AsyncCallMCSFailed", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+          MonitorUtil.info("AsyncCallMCSFailed", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
           LOGGER.info("AsyncCallMCSFailed {}", targetUrl);
         }
       }
 
       public void failed(Throwable throwable) {
-        ESMetrics.getInstance().meter("AsyncCallMCSException", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
+        MonitorUtil.info("AsyncCallMCSException", 1, Field.of("mkevt", MKEVT.AD_REQUEST.name()));
         LOGGER.error("AsyncCallMCSFailed {}", targetUrl);
       }
     });

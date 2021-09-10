@@ -4,6 +4,7 @@ import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
@@ -55,18 +56,18 @@ public class AdserviceCookie {
    * @return adguid in String
    */
   public String readAdguid(HttpServletRequest request) {
-    ESMetrics.getInstance().meter(METRIC_READ_ADGUID);
+    MonitorUtil.info(METRIC_READ_ADGUID);
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
       for (Cookie cookie :
           cookies) {
         if(cookie.getName().equalsIgnoreCase(ADGUID)) {
-          ESMetrics.getInstance().meter(METRIC_HAS_ADGUID_IN_COOKIE);
+          MonitorUtil.info(METRIC_HAS_ADGUID_IN_COOKIE);
           return cookie.getValue();
         }
       }
     }
-    ESMetrics.getInstance().meter(METRIC_NO_ADGUID_IN_COOKIE);
+    MonitorUtil.info(METRIC_NO_ADGUID_IN_COOKIE);
     return null;
   }
 
@@ -96,12 +97,12 @@ public class AdserviceCookie {
   public String setAdguid(HttpServletRequest request, HttpServletResponse response) {
     String adguid = readAdguid(request);
     if(adguid == null) {
-      ESMetrics.getInstance().meter(METRIC_SET_NEW_ADGUID);
+      MonitorUtil.info(METRIC_SET_NEW_ADGUID);
       try {
         // same format as current guid, 32 digits
         adguid = UUID.randomUUID().toString().replaceAll("-","");
       } catch(Exception e) {
-        ESMetrics.getInstance().meter(METRIC_ERROR_CREATE_ADGUID);
+        MonitorUtil.info(METRIC_ERROR_CREATE_ADGUID);
         logger.warn(e.toString());
         adguid = DEFAULT_ADGUID;
       }
