@@ -38,7 +38,6 @@ import java.util.Map;
 @DependsOn("AdserviceService")
 public class CollectionService {
   private static final Logger logger = LoggerFactory.getLogger(CollectionService.class);
-  private Metrics metrics;
   private static final String CLICK = "1";
 
   @Autowired
@@ -52,7 +51,6 @@ public class CollectionService {
 
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**

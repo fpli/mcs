@@ -54,7 +54,6 @@ public class GdprConsentHandler {
      * @return
      */
     public GdprConsentDomain handleGdprConsent(String targetUrl, ChannelIdEnum channel) {
-        Metrics metrics = ESMetrics.getInstance();
 
         GdprConsentDomain gdprConsentDomain = new GdprConsentDomain();
         gdprConsentDomain.setAllowedStoredContextualData(true);

@@ -59,7 +59,6 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final long ONE_HOUR = 1000 * 60 * 60;
-  private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",

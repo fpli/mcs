@@ -45,7 +45,6 @@ public class FilterWorker extends Thread {
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
 
-  private final Metrics metrics;
   private final FilterContainer filters;
   private final ChannelType channelType;
   private final String inputTopic;
@@ -67,7 +66,6 @@ public class FilterWorker extends Thread {
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
-    this.metrics = ESMetrics.getInstance();
     this.filters = filters;
     this.channelType = channelType;
     this.inputTopic = inputTopic;

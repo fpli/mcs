@@ -30,7 +30,6 @@ import java.util.UUID;
 @Component
 public class AdserviceCookie {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceCookie.class);
-  private Metrics metrics;
   private static final String ADGUID = "adguid";
   // expires in 90 days
   private static final int COOKIE_EXPIRY = 90 * 24 * 60 * 60;
@@ -47,7 +46,6 @@ public class AdserviceCookie {
 
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**

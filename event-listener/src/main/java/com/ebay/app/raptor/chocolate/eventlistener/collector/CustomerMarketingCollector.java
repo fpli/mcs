@@ -43,10 +43,8 @@ public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
-  Metrics metrics;
 
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**
