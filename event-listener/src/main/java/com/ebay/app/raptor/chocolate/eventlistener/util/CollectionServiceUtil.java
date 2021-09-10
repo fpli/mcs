@@ -328,9 +328,10 @@ public class CollectionServiceUtil {
         String deeplinkURIPath = ITEM_TAG + "/" + deeplinkParamMap.get(ID).get(0);
         deeplinkURIBuilder.setPath(deeplinkURIPath);
 
-        for (String key : deeplinkParamMap.keySet()) {
+        for (Map.Entry<String, List<String>> entry : deeplinkParamMap.entrySet()) {
+          String key = entry.getKey();
           if (!key.equals(NAV) && !key.equals(ID) && !key.equals(REFERRER)) {
-            deeplinkURIBuilder.addParameter(key, deeplinkParamMap.get(key).get(0));
+            deeplinkURIBuilder.addParameter(key, entry.getValue().get(0));
           }
         }
         // this parameter is used to mark the click whose original url is custom uri with Chocolate parameters

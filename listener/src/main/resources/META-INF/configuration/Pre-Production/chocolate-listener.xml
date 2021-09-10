@@ -4,27 +4,27 @@
   <!-- Kafka producer start -->
   <property>
     <name>chocolate.listener.kafka.cluster</name>
-    <value>rheos,kafka</value>
+    <value>rheos</value>
     <description>The kafka cluster, can be "rheos", "kafka", "rheos,kafka", "kafka,rheos".</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic_filtered</name>
-    <value>marketing.tracking.ssl.listened-filtered-preprod,preprod_listener_filtered</value>
+    <value>marketing.tracking.ssl.listened-filtered-preprod</value>
     <description>Kafka topic for messages filtered in listener.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.EPN</name>
-    <value>marketing.tracking.ssl.listened-epn-preprod,preprod_listener</value>
+    <value>marketing.tracking.ssl.listened-epn-preprod</value>
     <description>Kafka topic for epn channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.DISPLAY</name>
-    <value>marketing.tracking.ssl.listened-display-preprod,listened-display-preprod</value>
+    <value>marketing.tracking.ssl.listened-display-preprod</value>
     <description>Kafka topic for display channel to publish.</description>
   </property>
   <property>
     <name>chocolate.listener.kafka.topic.SOCIAL_MEDIA</name>
-    <value>marketing.tracking.ssl.listened-social-media-preprod,preprod_listened-social-media</value>
+    <value>marketing.tracking.ssl.listened-social-media-preprod</value>
     <description>Kafka topic for social media channel to publish.</description>
   </property>
   <!-- Kafka producer end -->

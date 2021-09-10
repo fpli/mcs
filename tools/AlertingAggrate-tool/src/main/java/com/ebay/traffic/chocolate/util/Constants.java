@@ -17,7 +17,7 @@ public class Constants {
     public static String METRIC_HOURLY_XML = PREFIX_CONF_DIR + "metric-hourly.xml";
     public static String AIRFLOW_HOURLY_XML = PREFIX_CONF_DIR + "airflow-hourly.xml";
 
-    public static String TRACKING_EVENT_DIR = "/home/_choco_admin/trackingEvent";
+    public static String TRACKING_EVENT_DIR = "/datashare/mkttracking/tools/data_check/trackingEvent";
     public static String ROTATION_DIR = "/home/_choco_admin/rotation/";
 
     public static String AIRFLOW_GET_DAG_RUNS_API_URL = "http://airflowprod-web.mrkttech-tracking-ns.svc.27.tess.io:8080/admin/airflow/dag_stats";
