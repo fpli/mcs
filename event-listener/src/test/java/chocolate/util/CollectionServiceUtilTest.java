@@ -275,23 +275,23 @@ public class CollectionServiceUtilTest {
 
   @Test
   public void testInRefererWhitelist() {
-    String referer = "https://ebay.mtag.io?abc=true";
+    String referer = "https://ebay.mtag.io/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
     assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.EPN, referer));
 
-    referer = "https://ebay.pissedconsumer.com?abc=true";
+    referer = "https://ebay.pissedconsumer.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://ebay.pissedconsumer.com?abc=true";
+    referer = "http://ebay.pissedconsumer.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "https://secureir.ebaystatic.com?abc=true";
+    referer = "https://secureir.ebaystatic.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://secureir.ebaystatic.com?abc=true";
+    referer = "http://secureir.ebaystatic.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://ebay.mtag.io?abc=true";
+    referer = "http://ebay.mtag.io/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
     referer = "https://ebay.com/";
