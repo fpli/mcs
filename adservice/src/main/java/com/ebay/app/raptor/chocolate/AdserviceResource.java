@@ -92,7 +92,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Autowired
   private GdprConsentHandler gdprConsentHandler;
 
-  private Metrics metrics;
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
   private static final String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
@@ -120,7 +119,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @PostConstruct
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
     System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
   }
 

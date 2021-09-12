@@ -19,12 +19,10 @@ import javax.ws.rs.core.Response;
 public class LBSClient {
   private static final Logger logger = LoggerFactory.getLogger(LBSClient.class);
   private static LBSClient instance;
-  private final Metrics metrics;
   private static Client client;
   private static final String targetPattern = "%s?queryId=chocolate_geotargeting_ip_1&ipAddress=%s";
 
   private LBSClient() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**

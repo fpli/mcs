@@ -110,7 +110,7 @@ public class EpntResponseHandler {
             MonitorUtil.info("EpntPlacementException");
         }
 
-        ESMetrics.getInstance().mean("EpntPlacementLatency", System.currentTimeMillis() - startTime);
+        MonitorUtil.latency("EpntPlacementLatency", System.currentTimeMillis() - startTime);
         return res;
     }
 

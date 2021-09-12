@@ -46,8 +46,6 @@ public class CouchbaseClient {
    */
   private String datasourceName;
 
-  private final Metrics metrics = ESMetrics.getInstance();
-
   private static final String KAFKA_GLOBAL_CONFIG = "KafkaGlobalConfig";
 
   private static final String SELF_SERVICE_PREFIX = "SelfService_";

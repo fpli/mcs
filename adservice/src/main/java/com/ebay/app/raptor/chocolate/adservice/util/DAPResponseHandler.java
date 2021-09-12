@@ -397,7 +397,7 @@ public class DAPResponseHandler {
       LOGGER.error("Failed to send response {}", e.getMessage());
     }
 
-    ESMetrics.getInstance().mean("DAPLatency", System.currentTimeMillis() - startTime);
+    MonitorUtil.latency("DAPLatency", System.currentTimeMillis() - startTime);
     return headers;
   }
 

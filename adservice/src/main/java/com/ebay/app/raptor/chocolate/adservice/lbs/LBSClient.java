@@ -26,7 +26,6 @@ import javax.ws.rs.core.Response;
  */
 public class LBSClient {
   private static final Logger LOGGER = Logger.getLogger(LBSClient.class);
-  private final Metrics metrics;
   private Client client;
 
   public static LBSClient getInstance() {
@@ -36,7 +35,6 @@ public class LBSClient {
   private LBSClient() {
     Configuration config = ConfigurationBuilder.newConfig("lbservice.adservice");
     client = GingerClientBuilder.newClient(config);
-    metrics = ESMetrics.getInstance();
   }
 
   private static class SingletonHolder {
