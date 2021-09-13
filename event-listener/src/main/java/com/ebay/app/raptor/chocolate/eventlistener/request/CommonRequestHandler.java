@@ -7,6 +7,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.request;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.auth.RaptorSecureContext;
@@ -88,7 +89,7 @@ public class CommonRequestHandler {
     // return 201 for now for the no referer case. Need investigation further.
     if (StringUtils.isEmpty(referer) || referer.equalsIgnoreCase(STR_NULL) ) {
       LOGGER.warn(Errors.ERROR_NO_REFERER);
-      ESMetrics.getInstance().meter(Errors.ERROR_NO_REFERER);
+      MonitorUtil.info(Errors.ERROR_NO_REFERER);
       referer = "";
     }
 

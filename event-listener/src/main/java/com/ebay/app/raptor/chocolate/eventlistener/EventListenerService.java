@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.app.raptor.chocolate.jdbc.repo.DriverIdServiceImpl;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -51,12 +52,12 @@ public class EventListenerService {
     ApplicationOptions options = ApplicationOptions.getInstance();
     int driverId = driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), Long.valueOf(SnapshotId.MAX_DRIVER_ID).intValue(), ApplicationOptions.getInstance().getByNameInteger(DRIVERID_RETRIES));
     if (driverId != -1) {
-      ESMetrics.getInstance().meter("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+      MonitorUtil.info("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
       options.setDriverId(driverId);
     } else {
       driverId = ApplicationOptionsParser.getDriverIdFromIp();
       logger.error("get driver id from db failed, try to generate random driver id");
-      ESMetrics.getInstance().meter("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+      MonitorUtil.info("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
       options.setDriverId(driverId);
     }
 

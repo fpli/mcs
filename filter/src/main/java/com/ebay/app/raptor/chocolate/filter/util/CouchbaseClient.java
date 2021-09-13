@@ -39,7 +39,6 @@ public class CouchbaseClient {
   private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
-  private final Metrics metrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {

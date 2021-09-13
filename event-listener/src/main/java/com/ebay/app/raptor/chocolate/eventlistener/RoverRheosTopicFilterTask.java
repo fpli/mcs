@@ -59,7 +59,6 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final long ONE_HOUR = 1000 * 60 * 60;
-  private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -232,7 +231,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       }
       logger.info("schemaVersion is {}", schemaVersion);
 
-      ESMetrics.getInstance().meter(INCOMING);
+      MonitorUtil.info(INCOMING);
       GenericRecord genericRecord = rheosConsumer.getDecoder().decode(consumerRecord.value());
       HashMap<Utf8, Utf8> data = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
       int pageId;
@@ -244,7 +243,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       //EPN
       if (pageId == 3084) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
+        MonitorUtil.info(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
 
@@ -256,13 +255,13 @@ public class RoverRheosTopicFilterTask extends Thread {
             HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
             urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
             if (!(StringUtils.isEmpty(urlQueryString))) {
-              ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+              MonitorUtil.info("UrlQueryStringFromClientData");
             }
           } else {
-            ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+            MonitorUtil.info("UrlQueryStringFromRheosTag");
           }
         } else {
-          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+          MonitorUtil.info("UrlQueryStringFromApplicationPayload");
         }
 
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
@@ -270,9 +269,9 @@ public class RoverRheosTopicFilterTask extends Thread {
         if (roverSitesMatcher.find()) {
           if(urlQueryString.contains("5338380161")) {
             logger.info("Incoming5338380161: " + urlQueryString);
-            ESMetrics.getInstance().meter("Incoming5338380161");
+            MonitorUtil.info("Incoming5338380161");
           }
-          ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
+          MonitorUtil.info(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
@@ -313,7 +312,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             campaignId = Long.parseLong(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
-              ESMetrics.getInstance().meter("Success5338380161");
+              MonitorUtil.info("Success5338380161");
             }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
@@ -328,7 +327,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
             }
           } catch (Exception ex) {
-            ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
+            MonitorUtil.info("DecodeEpnMobileClicksLandingPageUrlError");
             logger.warn("Decode EPN Mobile clicks landing page url error");
           }
           record.setLandingPageUrl(landingPageUrl);
@@ -336,7 +335,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       } else if (pageId == 3086) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
+        MonitorUtil.info(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString;
@@ -348,7 +347,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         try {
           urlQueryString = URLDecoder.decode(urlQueryString, "UTF-8");
         } catch (Exception ex) {
-          ESMetrics.getInstance().meter("DecodeROIUrlError");
+          MonitorUtil.info("DecodeROIUrlError");
           logger.warn("Decode ROI url error");
         }
 

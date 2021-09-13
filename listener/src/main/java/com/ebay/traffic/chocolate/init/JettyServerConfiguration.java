@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.init;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.app.raptor.chocolate.common.Hostname;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
 import com.ebay.traffic.monitoring.ESMetrics;
@@ -54,12 +55,12 @@ public class JettyServerConfiguration {
 
       int driverId = driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), Long.valueOf(SnapshotId.MAX_DRIVER_ID).intValue(), DRIVERID_RETRIES);
       if (driverId != -1) {
-        ESMetrics.getInstance().meter("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+        MonitorUtil.info("DriverIdFromDB", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
         options.setDriverId(driverId);
       } else {
         driverId = ApplicationOptionsParser.getDriverIdFromIp();
         logger.error("get driver id from db failed, try to generate random driver id");
-        ESMetrics.getInstance().meter("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
+        MonitorUtil.info("RandomDriverId", 1, Field.of("ip", Hostname.IP), Field.of("driver_id", driverId));
         options.setDriverId(driverId);
       }
 

@@ -45,7 +45,6 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
  */
 public class BehaviorMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(BehaviorMessageParser.class);
-  private Metrics metrics = ESMetrics.getInstance();
   private CobrandParser cobrandParser = new CobrandParser();
 
   private static BehaviorMessageParser INSTANCE;
