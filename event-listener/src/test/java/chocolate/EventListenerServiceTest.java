@@ -25,7 +25,6 @@ import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -128,7 +127,6 @@ public class EventListenerServiceTest {
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
 
-    ESMetrics.init("test", "http://10.148.181.34:9200");
     CouchbaseClientMock.createClient();
     CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
     BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
