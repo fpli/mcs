@@ -164,7 +164,7 @@ public class PerformanceMarketingCollector {
   }
 
   /**
-   * Set flag from checkout api
+   * Set timestamp for checkout api click
    * @param baseEvent base event
    */
   public BaseEvent setCheckoutTimestamp(BaseEvent baseEvent) {
@@ -183,6 +183,33 @@ public class PerformanceMarketingCollector {
             LOGGER.warn(e.getMessage());
             LOGGER.warn("Error click timestamp from Checkout API " + checkoutAPIClickTs);
             MonitorUtil.info("ErrorCheckoutAPIClickTimestamp", 1);
+          }
+        }
+      }
+    }
+    return baseEvent;
+  }
+
+  /**
+   * Set timestamp for placeoffer api click
+   * @param baseEvent base event
+   */
+  public BaseEvent setPlaceOfferTimestamp(BaseEvent baseEvent) {
+    // update startTime if the click comes from placeOfferAPI
+    if (baseEvent.getChannelType() == ChannelIdEnum.EPN) {
+      EventPayload payload = baseEvent.getPayload();
+      if (payload != null) {
+        String placeOfferAPIClickTs = payload.getPlaceOfferAPIClickTs();
+        if (!StringUtils.isEmpty(placeOfferAPIClickTs)) {
+          try {
+            long placeOfferAPIClickTimestamp = Long.parseLong(placeOfferAPIClickTs);
+            if (placeOfferAPIClickTimestamp > 0) {
+              baseEvent.setTimestamp(placeOfferAPIClickTimestamp);
+            }
+          } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+            LOGGER.warn("Error click timestamp from PlaceOffer API " + placeOfferAPIClickTs);
+            MonitorUtil.info("ErrorPlaceOfferAPIClickTimestamp", 1);
           }
         }
       }

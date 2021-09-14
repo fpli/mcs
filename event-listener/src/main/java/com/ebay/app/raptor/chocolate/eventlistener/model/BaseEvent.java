@@ -54,8 +54,11 @@ public class BaseEvent {
   // user info
   private IEndUserContext endUserContext;
 
-  // flag of setting timestamp from caller
+  // flag of checkout api
   private boolean isCheckoutApi;
+
+  // flag of placeoffer api
+  private boolean isPlaceOfferApi;
 
   // roi event
   private ROIEvent roiEvent;
@@ -146,6 +149,14 @@ public class BaseEvent {
 
   public void setCheckoutApi(boolean checkoutApi) {
     isCheckoutApi = checkoutApi;
+  }
+
+  public boolean isPlaceOfferApi() {
+    return isPlaceOfferApi;
+  }
+
+  public void setPlaceOfferApi(boolean placeOfferApi) {
+    isPlaceOfferApi = placeOfferApi;
   }
 
   public EventPayload getPayload() {
