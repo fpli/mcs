@@ -291,7 +291,7 @@ public class EventListenerServiceTest {
       "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
 
     roversites = Pattern.compile(
-            "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)",
+            "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+($|\\/.*)",
             Pattern.CASE_INSENSITIVE);
   }
 
