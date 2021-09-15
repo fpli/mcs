@@ -53,13 +53,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -114,6 +115,7 @@ public class EventListenerServiceTest {
   private static String endUserCtxPlaceOfferAPI;
 
   private static String tracking;
+  private static Pattern roversites;
 
   @Autowired
   private CollectionService collectionService;
@@ -287,6 +289,10 @@ public class EventListenerServiceTest {
 
     tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
       "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+
+    roversites = Pattern.compile(
+            "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)",
+            Pattern.CASE_INSENSITIVE);
   }
 
   @AfterClass
@@ -826,7 +832,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
       consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
     consumerEpn.close();
-    assertEquals(8, listenerMessagesEpn.size());
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(8, listenerMessagesEpnExcludeRover.size());
 
     // mrkt email open events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
@@ -1051,7 +1059,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
             consumerEpn, Arrays.asList("dev_listened-epn"), 3, 30 * 1000);
     consumerEpn.close();
-    assertEquals(6, listenerMessagesEpn.size());
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(6, listenerMessagesEpnExcludeRover.size());
 
 
     // validate kafka message
@@ -1186,7 +1196,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
             consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
     consumerROI.close();
-    assertEquals(1, listenerMessagesROI.size());
+
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
   @Test
@@ -1253,6 +1265,28 @@ public class EventListenerServiceTest {
     event.setReferrer("https://www.ebay.com/itm/1234567");
     response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
     assertEquals(201, response.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+            consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
+    consumerEpn.close();
+    // only the no referer one and the valid one with correct plrfr can pass
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(3, listenerMessagesEpnExcludeRover.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
+            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
+    consumerPaidSearch.close();
+    assertEquals(0, listenerMessagesPaidSearch.size());
   }
 
   @Test
@@ -1298,7 +1332,8 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
             consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
     consumerROI.close();
-    assertEquals(1, listenerMessagesROI.size());
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
   @Test
@@ -1336,6 +1371,17 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(roiEvent));
     assertEquals(201, response1.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
+            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
+    consumerROI.close();
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
   /**
@@ -1358,5 +1404,20 @@ public class EventListenerServiceTest {
     roiEvent.setUniqueTransactionId("1225203159023");
     roiEvent.setTransactionTimestamp("1620385327000");
     return roiEvent;
+  }
+
+  public Map<Long, ListenerMessage> listenerMessageExcludeRover(Map<Long, ListenerMessage> listenerMessageMap) {
+    Map<Long, ListenerMessage> listenerMessageMapExcludeRover = new HashMap<>();
+
+    for (Map.Entry<Long, ListenerMessage> entry : listenerMessageMap.entrySet()) {
+      ListenerMessage listenerMessage = entry.getValue();
+
+      Matcher roverSitesMatcher = roversites.matcher(listenerMessage.getUri().toLowerCase());
+      if (!roverSitesMatcher.find()) {
+        listenerMessageMapExcludeRover.put(entry.getKey(), entry.getValue());
+      }
+    }
+
+    return listenerMessageMapExcludeRover;
   }
 }
