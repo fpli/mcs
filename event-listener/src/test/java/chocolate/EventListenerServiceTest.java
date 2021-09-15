@@ -1392,12 +1392,8 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
             consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
     consumerROI.close();
+
     Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
-
-    for (Map.Entry<Long, ListenerMessage> entry : listenerMessagesROIExcludeRover.entrySet()) {
-      System.out.println(entry.getValue().getUri());
-    }
-
     assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
