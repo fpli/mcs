@@ -1375,6 +1375,18 @@ public class EventListenerServiceTest {
     // validate kafka message
     Thread.sleep(3000);
     KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+            consumerEpn, Arrays.asList("dev_listened-epn"), 2, 30 * 1000);
+    consumerEpn.close();
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(1, listenerMessagesEpnExcludeRover.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
     Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
             LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
@@ -1382,6 +1394,10 @@ public class EventListenerServiceTest {
     consumerROI.close();
     Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
     assertEquals(1, listenerMessagesROIExcludeRover.size());
+
+    for (Map.Entry<Long, ListenerMessage> entry : listenerMessagesROIExcludeRover.entrySet()) {
+      System.out.println(entry.getValue().getUri());
+    }
   }
 
   /**
