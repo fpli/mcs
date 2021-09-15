@@ -60,7 +60,8 @@ public class CustomizedSchemeRequestHandler {
         return null;
       }
 
-      if (deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
+      // this case is only for ePN facebook publisher
+      if (channelType == ChannelIdEnum.EPN & deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
 
         String pageType = deeplinkParameters.get(NAV).get(0);
         String itemId = deeplinkParameters.get(ID).get(0);
@@ -68,7 +69,7 @@ public class CustomizedSchemeRequestHandler {
         if (pageType.equals(VIEWITEM) && !StringUtils.isEmpty(itemId)) {
           String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
           if (!StringUtils.isEmpty(viewItemChocolateURL)) {
-            MonitorUtil.info("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+            MonitorUtil.info("IncomingEPNViewItemAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
             Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
             return event;
           } else {
@@ -77,6 +78,10 @@ public class CustomizedSchemeRequestHandler {
             return null;
           }
         }
+      } else {
+        MonitorUtil.info("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+        Event event = constructDeeplinkEvent(targetUrl, referer);
+        return event;
       }
     } else if (deeplinkParameters.containsKey(REFERRER)) {
       MonitorUtil.info("IncomingAppDeepLinkWithReferrerParams", 1);

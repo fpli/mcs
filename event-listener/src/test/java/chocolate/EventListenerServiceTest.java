@@ -53,13 +53,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -111,8 +112,10 @@ public class EventListenerServiceTest {
   private static String endUserCtxiPad;
   private static String endUserCtxMobileTabletWeb;
   private static String endUserCtxBot;
+  private static String endUserCtxPlaceOfferAPI;
 
   private static String tracking;
+  private static Pattern roversites;
 
   @Autowired
   private CollectionService collectionService;
@@ -272,10 +275,24 @@ public class EventListenerServiceTest {
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxPlaceOfferAPI = "ip=10.148.184.210," +
+      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
+      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+      "userAgent=Mozilla%2F5.0%20%28compatible%3B%20Ebay%2FPlaceOfferAPI%29," +
+      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
+      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,uri=%2Fsampleappweb%2Fsctest," +
+      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
 
 
     tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
       "tguid=8101a7ad1670ac3c41a87509fffc40b4,cobrandId=2";
+
+    roversites = Pattern.compile(
+            "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+($|\\/.*)",
+            Pattern.CASE_INSENSITIVE);
   }
 
   @AfterClass
@@ -815,7 +832,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
       consumerEpn, Arrays.asList("dev_listened-epn"), 4, 30 * 1000);
     consumerEpn.close();
-    assertEquals(8, listenerMessagesEpn.size());
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(8, listenerMessagesEpnExcludeRover.size());
 
     // mrkt email open events
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
@@ -879,7 +898,7 @@ public class EventListenerServiceTest {
   }
 
   @Test
-  public void testDeeplinkResource() throws InterruptedException {
+  public void testDeeplinkResource() throws Exception {
     Event event = new Event();
     event.setReferrer("www.google.com");
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
@@ -960,12 +979,6 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
-    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1");
-    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4012, errorMessage.getErrorCode());
-
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=2&mkcid=1");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
@@ -978,29 +991,65 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
-    event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
+    //deeplink can be tracked successfully
+    event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=1234567");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // no valid item id
+    event.setTargetUrl("ebay://link?nav=item.view&id=&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
-    event.setTargetUrl("ebay://link?nav=item.view&id=mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
-    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
-    assertEquals(200, response.getStatus());
-    errorMessage = response.readEntity(ErrorType.class);
-    assertEquals(4012, errorMessage.getErrorCode());
-
+    // not valid item link
     event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    // invalid rotation
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=999-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
+
+    // for ulk deep link
+    event.setTargetUrl("ebay://link?nav=item.view&id=&mkevt=1&mkcid=4&mkrid=710-53481-19255-0&keyword=search&gclid=123");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-20");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-20");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
+    event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
 
     // validate kafka message
     Thread.sleep(3000);
@@ -1010,7 +1059,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
             consumerEpn, Arrays.asList("dev_listened-epn"), 3, 30 * 1000);
     consumerEpn.close();
-    assertEquals(3, listenerMessagesEpn.size());
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(6, listenerMessagesEpnExcludeRover.size());
 
 
     // validate kafka message
@@ -1022,6 +1073,16 @@ public class EventListenerServiceTest {
             consumerSocialMedia, Arrays.asList("dev_listened-social-media"), 2, 30 * 1000);
     consumerSocialMedia.close();
     assertEquals(1, listenerMessagesSocialMedia.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerDisplay = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesDisplay = pollFromKafkaTopic(
+            consumerDisplay, Arrays.asList("dev_listened-display"), 2, 30 * 1000);
+    consumerDisplay.close();
+    assertEquals(3, listenerMessagesDisplay.size());
   }
 
   @Test
@@ -1135,7 +1196,9 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
             consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
     consumerROI.close();
-    assertEquals(1, listenerMessagesROI.size());
+
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
   @Test
@@ -1212,7 +1275,8 @@ public class EventListenerServiceTest {
             consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
     consumerEpn.close();
     // only the no referer one and the valid one with correct plrfr can pass
-    assertEquals(3, listenerMessagesEpn.size());
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(3, listenerMessagesEpnExcludeRover.size());
 
     // validate kafka message
     Thread.sleep(3000);
@@ -1268,7 +1332,69 @@ public class EventListenerServiceTest {
     Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
             consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
     consumerROI.close();
-    assertEquals(1, listenerMessagesROI.size());
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
+  }
+
+  @Test
+  public void testPlaceOfferAPIClickAndRoiEventsResource() throws InterruptedException {
+    // Test Checkout api click
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setPlaceOfferAPIClickTs("1604566345000");
+    event.setPayload(eventPayload);
+
+    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    // Test Checkout api ROI
+    ROIEvent roiEvent = new ROIEvent();
+    roiEvent.setItemId("192658398245");
+    roiEvent.setTransType("BIN-FP");
+    roiEvent.setUniqueTransactionId("1677235978009");
+    roiEvent.setTransactionTimestamp("1504566344000");
+
+    Map<String, String> payload = new HashMap<String, String>();
+    payload.put("roisrc", "6");
+    payload.put("api", "1");
+    payload.put("BIN-FP", "1");
+    payload.put("siteId", "0");
+    roiEvent.setPayload(payload);
+
+    Response response1 = client.target(svcEndPoint).path(roiPath)
+            .request()
+            .header("X-EBAY-C-ENDUSERCTX", endUserCtxPlaceOfferAPI)
+            .header("X-EBAY-C-TRACKING", tracking)
+            .header("Authorization", token)
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .post(Entity.json(roiEvent));
+    assertEquals(201, response1.getStatus());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
+            consumerEpn, Arrays.asList("dev_listened-epn"), 2, 30 * 1000);
+    consumerEpn.close();
+
+    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
+    assertEquals(1, listenerMessagesEpnExcludeRover.size());
+
+    // validate kafka message
+    Thread.sleep(3000);
+    KafkaSink.get().flush();
+    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
+            LongDeserializer.class, ListenerMessageDeserializer.class);
+    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
+            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
+    consumerROI.close();
+
+    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
+    assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
   /**
@@ -1291,5 +1417,20 @@ public class EventListenerServiceTest {
     roiEvent.setUniqueTransactionId("1225203159023");
     roiEvent.setTransactionTimestamp("1620385327000");
     return roiEvent;
+  }
+
+  public Map<Long, ListenerMessage> listenerMessageExcludeRover(Map<Long, ListenerMessage> listenerMessageMap) {
+    Map<Long, ListenerMessage> listenerMessageMapExcludeRover = new HashMap<>();
+
+    for (Map.Entry<Long, ListenerMessage> entry : listenerMessageMap.entrySet()) {
+      ListenerMessage listenerMessage = entry.getValue();
+
+      Matcher roverSitesMatcher = roversites.matcher(listenerMessage.getUri().toLowerCase());
+      if (!roverSitesMatcher.find()) {
+        listenerMessageMapExcludeRover.put(entry.getKey(), entry.getValue());
+      }
+    }
+
+    return listenerMessageMapExcludeRover;
   }
 }

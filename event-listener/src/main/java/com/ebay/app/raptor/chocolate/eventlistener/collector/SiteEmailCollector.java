@@ -18,7 +18,7 @@ import org.springframework.util.MultiValueMap;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
 
-import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.ebaysites;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
  * @author xiangli4
@@ -50,7 +50,7 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
     // send click event to ubi
     // Third party clicks should not be tracked into ubi
     if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())
-        && ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find()) {
+        && (ebaysites.matcher(baseEvent.getUrl().toLowerCase()).find() || deeplinksites.matcher(baseEvent.getUrl().toLowerCase()).find())) {
 
       MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
 
