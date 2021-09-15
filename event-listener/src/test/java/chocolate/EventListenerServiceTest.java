@@ -1253,27 +1253,6 @@ public class EventListenerServiceTest {
     event.setReferrer("https://www.ebay.com/itm/1234567");
     response = postMcsResponseWithStatusCode(eventsPath, endUserCtxMweb, tracking, event, marketingStatusCode);
     assertEquals(201, response.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 8, 30 * 1000);
-    consumerEpn.close();
-    // only the no referer one and the valid one with correct plrfr can pass
-    assertEquals(3, listenerMessagesEpn.size());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
-    consumerPaidSearch.close();
-    assertEquals(0, listenerMessagesPaidSearch.size());
   }
 
   @Test
@@ -1357,26 +1336,6 @@ public class EventListenerServiceTest {
             .accept(MediaType.APPLICATION_JSON_TYPE)
             .post(Entity.json(roiEvent));
     assertEquals(201, response1.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 1, 30 * 1000);
-    consumerEpn.close();
-    assertEquals(1, listenerMessagesEpn.size());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
-            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
-    consumerROI.close();
-    assertEquals(1, listenerMessagesROI.size());
   }
 
   /**
