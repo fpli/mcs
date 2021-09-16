@@ -221,6 +221,13 @@ public class CollectionService {
       finalUrl = finalUrl + "&" + Constants.MKRID + "=" + rotationId;
     }
 
+    // overwrite referer if the url is transformed from Rover to Chocolate by UFES
+    Matcher roverSitesMatcher = roversites.matcher(finalRef.toLowerCase());
+    if (roverSitesMatcher.find() &&
+            parameters.containsKey(Constants.UFES_REDIRECT) && ("true".equals(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+      finalRef = "";
+    }
+
     return new ImmutableTriple<>(finalUrl, finalRef, channelType);
   }
 
