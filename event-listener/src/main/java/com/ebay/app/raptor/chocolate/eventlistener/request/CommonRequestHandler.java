@@ -11,7 +11,6 @@ import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.auth.RaptorSecureContext;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;

@@ -7,7 +7,6 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.min
@@ -49,14 +48,6 @@ class CalCrabTransformWatermark(params: Parameter)
     fs
   }
 
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init("watermark-metrics-", params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else {
-      null
-    }
-  }
 
   @transient lazy val schema_apollo = TableSchema("df_imk_apollo.json")
 
@@ -82,8 +73,6 @@ class CalCrabTransformWatermark(params: Parameter)
     kafkaWatermark.foreach(channelWatermarkTuple => {
       write(outputDir + "/dedupAndSinkWatermark" + "_" + channelWatermarkTuple._1, channelWatermarkTuple._2.toInstant.toEpochMilli.toString)
     })
-    metrics.flush()
-    metrics.close()
   }
 
   def write(path: String, outputValue: String) {

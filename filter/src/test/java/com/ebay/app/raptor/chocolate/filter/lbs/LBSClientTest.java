@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.filter.lbs;
 
 import com.ebay.jaxrs.client.EndpointUri;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -22,7 +21,6 @@ public class LBSClientTest {
 
     @Before
     public void setUp(){
-        ESMetrics.init("test", "localhost");
         Client client = Mockito.mock(Client.class);
         Configuration conf = Mockito.mock(Configuration.class);
         Response response = prepareResponse();

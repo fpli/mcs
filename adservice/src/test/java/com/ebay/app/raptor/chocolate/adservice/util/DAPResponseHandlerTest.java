@@ -12,7 +12,6 @@ import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.kernel.constants.KernelConstants;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.util.FastURLEncoder;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
@@ -57,7 +56,6 @@ public class DAPResponseHandlerTest {
   @BeforeClass
   public static void beforeClass() {
     RuntimeContext.setConfigRoot(AdserviceResourceTest.class.getClassLoader().getResource("META-INF/configuration/Dev/"));
-    ESMetrics.init("test", "localhost");
   }
 
   @Before
