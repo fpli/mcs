@@ -586,7 +586,7 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
       var path = ""
       try {
         path = new URL(uri).getPath
-        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/")|| path.startsWith("/p/"))) {
+        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
           val itemId = path.substring(path.lastIndexOf("/") + 1)
           if (StringUtils.isNumeric(itemId)) {
             return itemId
