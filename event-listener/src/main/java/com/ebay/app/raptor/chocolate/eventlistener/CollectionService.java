@@ -223,9 +223,10 @@ public class CollectionService {
 
     // overwrite referer if the url is transformed from Rover to Chocolate by UFES
     Matcher roverSitesMatcher = roversites.matcher(finalRef.toLowerCase());
-    if (roverSitesMatcher.find() &&
-            parameters.containsKey(Constants.UFES_REDIRECT) && ("true".equals(parameters.getFirst(Constants.UFES_REDIRECT)))) {
-      finalRef = "";
+    if (roverSitesMatcher.find()
+            && parameters.containsKey(Constants.UFES_REDIRECT)
+            && (Boolean.TRUE.toString().equals(parameters.getFirst(Constants.UFES_REDIRECT).toLowerCase()))) {
+      finalRef = org.apache.commons.lang3.StringUtils.EMPTY;
     }
 
     return new ImmutableTriple<>(finalUrl, finalRef, channelType);
