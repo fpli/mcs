@@ -66,10 +66,12 @@ public class UepPayloadHelper {
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_AXO = "11403";
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SS = "11021";
+  private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SIO = "11304";
   private static final String MESSAGE_PA = "PA";
   private static final String MESSAGE_ESPRESSO = "ESPRESSO";
   private static final String MESSAGE_AXO = "AXO";
   private static final String MESSAGE_SS = "SAVEDSEARCH";
+  private static final String MESSAGE_SIO = "SellerInitiatedOffer";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UepPayloadHelper.class);
 
@@ -103,29 +105,19 @@ public class UepPayloadHelper {
       payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
     }
 
-    // for ORS short-term migration
-//    // channel.name
-//    if(channelTypeEnum.getValue().contains(EMAIL)) {
-//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), EMAIL);
-//    } else if(channelTypeEnum.getValue().contains(MESSAGE_CENTER)) {
-//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), MESSAGE_CENTER);
-//    } else {
-//      payload.put(MessageConstantsEnum.CHANNEL_NAME.getValue(), channelTypeEnum.getValue());
-//    }
     // annotation.message.name
     String segmentCode = parseFromTwoParams(parameters, Constants.SEGMENT_NAME, Constants.SEGMENT_NAME_S);
     if (segmentCode != null) {
       if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_PA)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_PA);
-      }
-      else if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO)) {
+      } else if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_ESPRESSO);
-      }
-      else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_AXO)) {
+      } else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_AXO)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_AXO);
-      }
-      else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SS)) {
+      } else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SS)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SS);
+      } else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SIO)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SIO);
       }
     }
     // rundate

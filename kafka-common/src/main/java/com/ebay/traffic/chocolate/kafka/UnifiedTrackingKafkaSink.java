@@ -1,6 +1,6 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
@@ -82,7 +82,7 @@ public class UnifiedTrackingKafkaSink {
      */
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if (metadata == null) {
-        ESMetrics.getInstance().meter("UTPKafkaFailure");
+        MonitorUtil.info("UTPKafkaFailure");
         logger.error("UTP Kafka send failure.", exception);
       } else {
         logger.debug("Succeeded in sending kafka record=" + metadata);

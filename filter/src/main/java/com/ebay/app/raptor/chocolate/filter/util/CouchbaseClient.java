@@ -10,8 +10,6 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +37,6 @@ public class CouchbaseClient {
   private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
-  private final Metrics metrics = ESMetrics.getInstance();
 
     /**Singleton */
     private CouchbaseClient() {

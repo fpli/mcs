@@ -7,9 +7,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.MCSCallback;
 import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +32,6 @@ import java.util.regex.Pattern;
  */
 abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  public Metrics metrics;
   public RedirectionEvent redirectionEvent;
 
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
@@ -44,7 +41,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
   public BaseRedirectStrategy() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   @Override

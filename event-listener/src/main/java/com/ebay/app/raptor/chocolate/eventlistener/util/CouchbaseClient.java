@@ -12,8 +12,6 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
@@ -45,8 +43,6 @@ public class CouchbaseClient {
    * Corp couchbase data source
    */
   private String datasourceName;
-
-  private final Metrics metrics = ESMetrics.getInstance();
 
   private static final String KAFKA_GLOBAL_CONFIG = "KafkaGlobalConfig";
 

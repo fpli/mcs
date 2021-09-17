@@ -9,9 +9,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -59,7 +57,6 @@ public class RoverRheosTopicFilterTask extends Thread {
   private static final String INCOMING_MISSING_CLICKS = "IncomingMissingClicks";
   private static final String INCOMING_PAGE_ROI = "IncomingPageRoi";
   private static final long ONE_HOUR = 1000 * 60 * 60;
-  private static final Metrics metrics = ESMetrics.getInstance();
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RoverRheosTopicFilterTask.class);
   private static Pattern missingRoverClicksPattern = Pattern.compile("^\\/rover\\/.*\\/.*\\/1\\?.*rvrhostname=.*",
@@ -232,7 +229,7 @@ public class RoverRheosTopicFilterTask extends Thread {
       }
       logger.info("schemaVersion is {}", schemaVersion);
 
-      ESMetrics.getInstance().meter(INCOMING);
+      MonitorUtil.info(INCOMING);
       GenericRecord genericRecord = rheosConsumer.getDecoder().decode(consumerRecord.value());
       HashMap<Utf8, Utf8> data = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
       int pageId;
@@ -244,7 +241,7 @@ public class RoverRheosTopicFilterTask extends Thread {
 
       //EPN
       if (pageId == 3084) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROVER);
+        MonitorUtil.info(INCOMING_PAGE_ROVER);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.EPN);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
 
@@ -256,13 +253,13 @@ public class RoverRheosTopicFilterTask extends Thread {
             HashMap<Utf8, Utf8> clientData = ((HashMap<Utf8, Utf8>) genericRecord.get(CLIENT_DATA));
             urlQueryString = coalesce(clientData.get(new Utf8("urlQueryString")), empty).toString();
             if (!(StringUtils.isEmpty(urlQueryString))) {
-              ESMetrics.getInstance().meter("UrlQueryStringFromClientData");
+              MonitorUtil.info("UrlQueryStringFromClientData");
             }
           } else {
-            ESMetrics.getInstance().meter("UrlQueryStringFromRheosTag");
+            MonitorUtil.info("UrlQueryStringFromRheosTag");
           }
         } else {
-          ESMetrics.getInstance().meter("UrlQueryStringFromApplicationPayload");
+          MonitorUtil.info("UrlQueryStringFromApplicationPayload");
         }
 
         Matcher roverSitesMatcher = missingRoverClicksPattern.matcher(urlQueryString.toLowerCase());
@@ -270,9 +267,9 @@ public class RoverRheosTopicFilterTask extends Thread {
         if (roverSitesMatcher.find()) {
           if(urlQueryString.contains("5338380161")) {
             logger.info("Incoming5338380161: " + urlQueryString);
-            ESMetrics.getInstance().meter("Incoming5338380161");
+            MonitorUtil.info("Incoming5338380161");
           }
-          ESMetrics.getInstance().meter(INCOMING_MISSING_CLICKS);
+          MonitorUtil.info(INCOMING_MISSING_CLICKS);
           ListenerMessage record = new ListenerMessage(0L, 0L, 0L, 0L, "", "", "", "", "", 0L, "", "", -1L, -1L, 0L, "",
             0L, 0L, "", "", "", ChannelAction.CLICK, ChannelType.DEFAULT, HttpMethod.GET, "", false);
 
@@ -313,7 +310,7 @@ public class RoverRheosTopicFilterTask extends Thread {
             campaignId = Long.parseLong(first);
             if(campaignId == 5338380161l) {
               logger.info("Success5338380161: " + uri);
-              ESMetrics.getInstance().meter("Success5338380161");
+              MonitorUtil.info("Success5338380161");
             }
           } catch (Exception e) {
             logger.error("Parse campaign id error");
@@ -328,7 +325,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               landingPageUrl = URLDecoder.decode(landingPageUrl, "UTF-8");
             }
           } catch (Exception ex) {
-            ESMetrics.getInstance().meter("DecodeEpnMobileClicksLandingPageUrlError");
+            MonitorUtil.info("DecodeEpnMobileClicksLandingPageUrlError");
             logger.warn("Decode EPN Mobile clicks landing page url error");
           }
           record.setLandingPageUrl(landingPageUrl);
@@ -336,7 +333,7 @@ public class RoverRheosTopicFilterTask extends Thread {
           producer.send(new ProducerRecord<>(kafkaTopic, record.getSnapshotId(), record), KafkaSink.callback);
         }
       } else if (pageId == 3086) {
-        ESMetrics.getInstance().meter(INCOMING_PAGE_ROI);
+        MonitorUtil.info(INCOMING_PAGE_ROI);
         String kafkaTopic = ApplicationOptions.getInstance().getSinkKafkaConfigs().get(ChannelType.ROI);
         HashMap<Utf8, Utf8> applicationPayload = ((HashMap<Utf8, Utf8>) genericRecord.get(APPLICATION_PAYLOAD));
         String urlQueryString;
@@ -348,7 +345,7 @@ public class RoverRheosTopicFilterTask extends Thread {
         try {
           urlQueryString = URLDecoder.decode(urlQueryString, "UTF-8");
         } catch (Exception ex) {
-          ESMetrics.getInstance().meter("DecodeROIUrlError");
+          MonitorUtil.info("DecodeROIUrlError");
           logger.warn("Decode ROI url error");
         }
 
@@ -397,16 +394,16 @@ public class RoverRheosTopicFilterTask extends Thread {
         long latencyOfRheosSentTimestamp = currentTimestamp - rheosSentTimestamp;
         // rheos internal timestamps
         String rheosInternalTimestamps = coalesce(applicationPayload.get(new Utf8("rheosTimestamps")), empty).toString();
-        MonitorUtil.info(metricMessageLatency, latencyOfMessage, Field.of("channelType",
+        MonitorUtil.latency(metricMessageLatency, latencyOfMessage, Field.of("channelType",
             record.getChannelType().toString()));
-        MonitorUtil.info(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
+        MonitorUtil.latency(metricRheosCreateLatency, latencyOfRheosCreateTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
-        MonitorUtil.info(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
+        MonitorUtil.latency(metricRheosSentLatency, latencyOfRheosSentTimestamp, Field.of("channelType",
             record.getChannelType().toString()));
         // if latency is larger than 1 hour log specifically to another metric
         String delayLogFormat = "snapshort_id=%d, short_snapshort_id=%d, current_ts=%d, event_ts=%d, rheos_create_ts=%d, rheos_sent_ts=%d, rheos_internal_ts=%s";
         if(latencyOfMessage > ONE_HOUR) {
-          MonitorUtil.info(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
+          MonitorUtil.latency(metricMessageLatencyCritical, latencyOfMessage, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricMessageLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
@@ -418,7 +415,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosInternalTimestamps));
         }
         if(latencyOfRheosCreateTimestamp > ONE_HOUR) {
-          MonitorUtil.info(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
+          MonitorUtil.latency(metricRheosCreateLatencyCritical, latencyOfRheosCreateTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosCreateLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),
@@ -430,7 +427,7 @@ public class RoverRheosTopicFilterTask extends Thread {
               rheosInternalTimestamps));
         }
         if(latencyOfRheosSentTimestamp > ONE_HOUR) {
-          MonitorUtil.info(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
+          MonitorUtil.latency(metricRheosSentLatencyCritical, latencyOfRheosSentTimestamp, Field.of("channelType",
               record.getChannelType().toString()));
           logger.warn(String.format(metricRheosSentLatencyCritical + ": " + delayLogFormat,
               record.getSnapshotId(),

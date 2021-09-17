@@ -275,26 +275,59 @@ public class CollectionServiceUtilTest {
 
   @Test
   public void testInRefererWhitelist() {
-    String referer = "https://ebay.mtag.io?abc=true";
+    String referer = "https://ebay.mtag.io/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
     assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.EPN, referer));
 
-    referer = "https://ebay.pissedconsumer.com?abc=true";
+    referer = "https://ebay.pissedconsumer.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://ebay.pissedconsumer.com?abc=true";
+    referer = "http://ebay.pissedconsumer.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "https://secureir.ebaystatic.com?abc=true";
+    referer = "https://secureir.ebaystatic.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://secureir.ebaystatic.com?abc=true";
+    referer = "http://secureir.ebaystatic.com/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
-    referer = "http://ebay.mtag.io?abc=true";
+    referer = "http://ebay.mtag.io/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
 
     referer = "https://ebay.com/";
     assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+  }
+
+  @Test
+  public void testIsClickFromPlaceOfferAPI() {
+    ChannelType type = ChannelType.EPN;
+    IEndUserContext mockEndUserContext = Mockito.mock(IEndUserContext.class);
+    when(mockEndUserContext.getUserAgent()).thenReturn("PlaceOfferAPI");
+    assertTrue(CollectionServiceUtil.isClickFromPlaceOfferAPI(type, mockEndUserContext));
+
+    assertFalse(CollectionServiceUtil.isClickFromPlaceOfferAPI(ChannelType.DISPLAY, mockEndUserContext));
+
+    when(mockEndUserContext.getUserAgent()).thenReturn(null);
+    assertFalse(CollectionServiceUtil.isClickFromPlaceOfferAPI(type, mockEndUserContext));
+  }
+
+  @Test
+  public void testIsROIFromPlaceOfferAPI() {
+    Map<String, String> roiPayloadMap = new HashMap<>();
+    roiPayloadMap.put("roisrc", "6");
+    IEndUserContext mockEndUserContext = Mockito.mock(IEndUserContext.class);
+    when(mockEndUserContext.getUserAgent()).thenReturn("PlaceOfferAPI");
+    assertTrue(CollectionServiceUtil.isROIFromPlaceOfferAPI(roiPayloadMap, mockEndUserContext));
+
+    roiPayloadMap.clear();
+    assertFalse(CollectionServiceUtil.isROIFromPlaceOfferAPI(roiPayloadMap, mockEndUserContext));
+
+    roiPayloadMap.put("roisrc", "1");
+    assertFalse(CollectionServiceUtil.isROIFromPlaceOfferAPI(roiPayloadMap, mockEndUserContext));
+
+    roiPayloadMap.clear();
+    roiPayloadMap.put("roisrc", "6");
+    when(mockEndUserContext.getUserAgent()).thenReturn("");
+    assertFalse(CollectionServiceUtil.isROIFromPlaceOfferAPI(roiPayloadMap, mockEndUserContext));
   }
 }

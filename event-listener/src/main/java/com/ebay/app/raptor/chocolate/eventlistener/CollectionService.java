@@ -28,9 +28,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -68,7 +66,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 @DependsOn("EventListenerService")
 public class CollectionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionService.class);
-  private Metrics metrics;
   private ListenerMessageParser listenerMessageParser;
   private BehaviorMessageParser behaviorMessageParser;
   private Producer behaviorProducer;
@@ -113,7 +110,6 @@ public class CollectionService {
 
   @PostConstruct
   public void postInit() throws Exception {
-    this.metrics = ESMetrics.getInstance();
     this.listenerMessageParser = ListenerMessageParser.getInstance();
     this.behaviorMessageParser = BehaviorMessageParser.getInstance();
     this.behaviorProducer = BehaviorKafkaSink.get();
@@ -317,7 +313,12 @@ public class CollectionService {
     boolean isClickFromCheckoutAPI = CollectionServiceUtil.isClickFromCheckoutAPI(
         urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    // placeoffer click flag
+    boolean isClickFromPlaceOfferAPI = CollectionServiceUtil.isClickFromPlaceOfferAPI(
+            urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
+
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
+            Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
@@ -336,9 +337,11 @@ public class CollectionService {
     baseEvent.setUid(userId);
     baseEvent.setCheckoutApi(isClickFromCheckoutAPI);
     baseEvent.setPayload(event.getPayload());
+    baseEvent.setPlaceOfferApi(isClickFromPlaceOfferAPI);
 
-    // update startTime if the click comes from checkoutAPI
+    // update startTime if the click comes from checkoutAPI or placeOfferAPI
     baseEvent = performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
+    baseEvent = performanceMarketingCollector.setPlaceOfferTimestamp(baseEvent);
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
     // only for EPN channel
@@ -386,8 +389,8 @@ public class CollectionService {
         fireCmEvent(baseEvent, requestContext, smsCollector);
       }
     }
-    stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type));
+    stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
+     Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
 
     return true;
   }
@@ -454,7 +457,8 @@ public class CollectionService {
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
-        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()));
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform),
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
@@ -480,8 +484,9 @@ public class CollectionService {
     }
 
     // write roi event tags into ubi
-    // Don't write into ubi if roi is from Checkout API
+    // Don't write into ubi if roi is from Checkout API or PlaceOffer API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
+    boolean isRoiFromPlaceOfferAPI = CollectionServiceUtil.isROIFromPlaceOfferAPI(payloadMap, endUserContext);
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -503,6 +508,7 @@ public class CollectionService {
     baseEvent.setUid(userId);
     baseEvent.setCheckoutApi(isRoiFromCheckoutAPI);
     baseEvent.setRoiEvent(roiEvent);
+    baseEvent.setPlaceOfferApi(isRoiFromPlaceOfferAPI);
 
     // fire roi events
     fireROIEvent(baseEvent, requestContext);
@@ -512,9 +518,10 @@ public class CollectionService {
     // Log the roi lag between transation time and receive time
     MonitorUtil.latency("RoiTransationLag", startTime - Longs.tryParse(roiEvent.getTransactionTimestamp()),
         Field.of(CHANNEL_ACTION, "ROI"), Field.of(CHANNEL_TYPE, "ROI"));
+
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-            ChannelType.ROI.toString()));
+            ChannelType.ROI.toString()), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -614,7 +621,9 @@ public class CollectionService {
 
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type)
+            , Field.of(PLATFORM, platform),
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -647,7 +656,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type));
+        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -672,11 +681,13 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
     // 2. track ubi
-    // Checkout ROI won't go to UBI
-    if(!baseEvent.isCheckoutApi()) {
-      roiCollector.trackUbi(containerRequestContext, baseEvent);
+    // Checkout ROI and PlaceOffer ROI won't go to UBI
+    if (baseEvent.isCheckoutApi()) {
+      MonitorUtil.info("CheckoutAPIROI", 1);
+    } else if (baseEvent.isPlaceOfferApi()) {
+      MonitorUtil.info("PlaceOfferAPIROI", 1);
     } else {
-      metrics.meter("CheckoutAPIROI", 1);
+      roiCollector.trackUbi(containerRequestContext, baseEvent);
     }
 
     // 3. fire utp event
@@ -800,7 +811,8 @@ public class CollectionService {
    */
   public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()));
+        Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PLATFORM, "NULL"),
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     UnifiedTrackingMessage message = utpParser.parse(event);
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
@@ -813,7 +825,7 @@ public class CollectionService {
           UnifiedTrackingKafkaSink.callback);
 
       stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-          Field.of(CHANNEL_TYPE, event.getChannelType()));
+          Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
       }
   }
 
@@ -862,9 +874,11 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    // Checkout click events won't go to UBI
+    // Checkout click and placeoffer click events won't go to UBI
     if (baseEvent.isCheckoutApi()) {
-      metrics.meter("CheckoutAPIClick", 1);
+      MonitorUtil.info("CheckoutAPIClick", 1);
+    } else if (baseEvent.isPlaceOfferApi()) {
+      MonitorUtil.info("PlaceOfferAPIClick", 1);
     } else if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
@@ -943,6 +957,8 @@ public class CollectionService {
     MonitorUtil.info("CollectionServiceSuccess", 1,  additionalFields);
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.latency("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
+    } else if (baseEvent.isPlaceOfferApi()) {
+      MonitorUtil.latency("CollectionServicePlaceOfferAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
     } else {
       MonitorUtil.latency("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
     }
