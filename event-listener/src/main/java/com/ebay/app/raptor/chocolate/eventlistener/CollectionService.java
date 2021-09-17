@@ -225,7 +225,7 @@ public class CollectionService {
     Matcher roverSitesMatcher = roversites.matcher(finalRef.toLowerCase());
     if (roverSitesMatcher.find()
             && parameters.containsKey(Constants.UFES_REDIRECT)
-            && (Boolean.TRUE.toString().equals(parameters.getFirst(Constants.UFES_REDIRECT).toLowerCase()))) {
+            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT)))) {
       finalRef = org.apache.commons.lang3.StringUtils.EMPTY;
     }
 
