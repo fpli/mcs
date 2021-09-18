@@ -7,6 +7,7 @@ import scopt.OptionParser
 case class ParameterV2(appName: String = "CappingRule_v2",
                         mode: String = "yarn",
                         channel: String = "",
+                        propertiesFile: String = "",
                         workDir: String = "",
                         outputDir: String = "",
                         archiveDir: String = "",
@@ -30,6 +31,11 @@ object ParameterV2 {
     opt[String]("channel")
       .required
       .valueName("channel")
+      .action((cont, param) => param.copy(channel = cont))
+
+    opt[String]("propertiesFile")
+      .required
+      .valueName("propertiesFile")
       .action((cont, param) => param.copy(channel = cont))
 
     opt[String]("workDir")
