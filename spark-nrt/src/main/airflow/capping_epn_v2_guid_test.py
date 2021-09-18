@@ -2,13 +2,13 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 from airflow import DAG
 from datetime import timedelta
 
-dag_name = 'capping_epn_v2'
-dag_id = 'capping_epn_v2'
+dag_name = 'capping_epn_v2_guid_test'
+dag_id = 'capping_epn_v2_guid_test'
 
 default_args = {
-    'owner': 'yuhxiao',
-    'start_date': '2021-03-01',
-    'email': ['Marketing-Tracking-oncall@ebay.com','DL-eBay-Chocolate-GC@ebay.com'],
+    'owner': 'wele',
+    'start_date': '2021-08-01',
+    'email': ['wele@ebay.com','zhofan@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
@@ -28,7 +28,7 @@ dag = DAG(
 __config = {
     'name': dag_name,
     'java_class': 'com.ebay.traffic.chocolate.sparknrt.cappingV2.CappingRuleJobV2',
-    'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
+    'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-3.8.1-BETA-fat.jar',
     'executor_cores': '2',
     'driver_memory': '6G',
     'executor_memory': '25G',
@@ -36,18 +36,18 @@ __config = {
 
 
     'application_args': [
-        '--appName', 'capping_epn_v2',
+        '--appName', 'capping_epn_v2_guid_test',
         '--channel', 'EPN',
-        '--propertiesFile', 'capping_rule_v2.properties',
-        '--workDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
-        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events',
-        '--archiveDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-archiveDir',
+        '--propertiesFile', 'capping_rule_v2_guid_test.properties',
+        '--workDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-guid-test',
+        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-guid-test',
+        '--archiveDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-archiveDir-guid-test',
         '--partitions', '3'
     ]
 }
 
 spark_submit_operator = SparkSubmitOperator(
-    task_id='capping_epn_v2',
+    task_id='capping_epn_v2_guid_test',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
     files='file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/capping_rule_v2.properties,'

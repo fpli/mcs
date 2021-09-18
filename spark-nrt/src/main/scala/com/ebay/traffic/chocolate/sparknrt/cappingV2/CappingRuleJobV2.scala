@@ -43,14 +43,15 @@ class CappingRuleJobV2(params: ParameterV2)
   override def run(): Unit = {
 
     val properties = new Properties()
-    properties.load(getClass.getClassLoader.getResourceAsStream("capping_rule_v2.properties"))
+    properties.load(getClass.getClassLoader.getResourceAsStream(params.propertiesFile))
+    val inputSuffix = properties.getProperty("meta.input.suffix")
     val suffix = properties.getProperty("meta.output.suffix")
     var suffixArray: Array[String] = Array()
     if (StringUtils.isNotEmpty(suffix)) {
       suffixArray = suffix.split(",")
     }
 
-    val dedupeOutputMeta = inputMetadata.readDedupeOutputMeta()
+    val dedupeOutputMeta = inputMetadata.readDedupeOutputMeta(inputSuffix)
 
     if(dedupeOutputMeta.length > 0) {
       val file = dedupeOutputMeta(0)._1
