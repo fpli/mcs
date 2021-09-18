@@ -55,20 +55,33 @@ public class CustomizedSchemeRequestHandlerTest {
         targetURL = "ebay://link?nav=item.view&id=154347659933&mkevt=1";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
         assertEquals(null, event);
+
+
         targetURL = "ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
-        assertEquals(null, event);
+        assertEquals("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1", event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
+
         targetURL = "ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
-        assertEquals(null, event);
-        targetURL = "ebay://link?nav=item.view&id=mkevt=1&mkcid=1&mkrid=710-53481-19255-0";
+        assertEquals("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0", event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
+
+        targetURL = "ebay://link?nav=item.view&id=&mkevt=1&mkcid=1&mkrid=710-53481-19255-0";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
         assertEquals(null, event);
+
         targetURL = "ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
         assertEquals(null, event);
+
         targetURL = "ebay://link?nav=item.view&id=154347659933mkevt=1&mkcid=1&mkrid=12345-53481-19255-0";
         event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
         assertEquals(null, event);
+
+        targetURL = "ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0";
+        event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
+        assertEquals("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0", event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
     }
 }

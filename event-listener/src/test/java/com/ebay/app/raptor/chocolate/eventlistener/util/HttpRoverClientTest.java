@@ -40,20 +40,20 @@ public class HttpRoverClientTest {
     httpRoverClient.setMetrics(metrics);
   }
 
-  @Test
-  public void forwardRequestToRover() throws Exception {
-    when(request.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=9aaf8c861727af0ab481a8d001ba0ae9, cguid=9aaf8c861727af0ab481a8d001ba0ae9");
-    Vector<String> headers = new Vector<>();
-    headers.add("user-agent");
-    when(request.getHeaderNames()).thenReturn(headers.elements());
-    Vector<String> userAgent = new Vector<>();
-    userAgent.add("eBayAndroid/6.4.4");
-    when(request.getHeaders("user-agent")).thenReturn(userAgent.elements());
-    // success
-    ListenableFuture<Integer> listenableFuture
-        = httpRoverClient.forwardRequestToRover(roverUrl1, "rover.vip.qa.ebay.com", request);
-    assertEquals(200, (int) listenableFuture.toCompletableFuture().get());
-    listenableFuture = httpRoverClient.forwardRequestToRover(roverUrl2, "rover.vip.qa.ebay.com", request);
-    assertEquals(200, (int) listenableFuture.toCompletableFuture().get());
-  }
+//  @Test
+//  public void forwardRequestToRover() throws Exception {
+//    when(request.getHeader("X-EBAY-C-TRACKING")).thenReturn("guid=9aaf8c861727af0ab481a8d001ba0ae9, cguid=9aaf8c861727af0ab481a8d001ba0ae9");
+//    Vector<String> headers = new Vector<>();
+//    headers.add("user-agent");
+//    when(request.getHeaderNames()).thenReturn(headers.elements());
+//    Vector<String> userAgent = new Vector<>();
+//    userAgent.add("eBayAndroid/6.4.4");
+//    when(request.getHeaders("user-agent")).thenReturn(userAgent.elements());
+//    // success
+//    ListenableFuture<Integer> listenableFuture
+//        = httpRoverClient.forwardRequestToRover(roverUrl1, "rover.vip.qa.ebay.com", request);
+//    assertEquals(200, (int) listenableFuture.toCompletableFuture().get());
+//    listenableFuture = httpRoverClient.forwardRequestToRover(roverUrl2, "rover.vip.qa.ebay.com", request);
+//    assertEquals(200, (int) listenableFuture.toCompletableFuture().get());
+//  }
 }

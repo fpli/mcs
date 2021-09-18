@@ -4,8 +4,6 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.util.DomainIpChecker;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +17,10 @@ import javax.ws.rs.core.Response;
 public class LBSClient {
   private static final Logger logger = LoggerFactory.getLogger(LBSClient.class);
   private static LBSClient instance;
-  private final Metrics metrics;
   private static Client client;
   private static final String targetPattern = "%s?queryId=chocolate_geotargeting_ip_1&ipAddress=%s";
 
   private LBSClient() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**

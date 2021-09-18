@@ -11,9 +11,7 @@ import com.ebay.app.raptor.chocolate.filter.util.CampaignPublisherMappingCache;
 import com.ebay.traffic.chocolate.kafka.KafkaConsumerFactory;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -45,7 +43,6 @@ public class FilterWorker extends Thread {
   private static final String CHANNEL_ACTION = "channelAction";
   private static final String CHANNEL_TYPE = "channelType";
 
-  private final Metrics metrics;
   private final FilterContainer filters;
   private final ChannelType channelType;
   private final String inputTopic;
@@ -67,7 +64,6 @@ public class FilterWorker extends Thread {
   public FilterWorker(ChannelType channelType, String inputTopic,
                       Properties properties, String outputTopic,
                       FilterContainer filters) {
-    this.metrics = ESMetrics.getInstance();
     this.filters = filters;
     this.channelType = channelType;
     this.inputTopic = inputTopic;

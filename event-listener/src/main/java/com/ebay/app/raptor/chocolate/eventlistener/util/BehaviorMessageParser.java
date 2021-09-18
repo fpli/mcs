@@ -19,15 +19,11 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.tracking.common.util.UrlProcessHelper;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -45,7 +41,6 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
  */
 public class BehaviorMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(BehaviorMessageParser.class);
-  private Metrics metrics = ESMetrics.getInstance();
   private CobrandParser cobrandParser = new CobrandParser();
 
   private static BehaviorMessageParser INSTANCE;
@@ -314,7 +309,8 @@ public class BehaviorMessageParser {
     applicationPayload.put("url_mpre", uri);
 
     // sid for DSS, just in tracking_event
-    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
     }
 

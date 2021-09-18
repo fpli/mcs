@@ -6,8 +6,6 @@ import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.kernel.util.Base64;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import com.iabtcf.decoder.TCString;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +50,6 @@ public class GdprConsentHandler {
      * @return GdprConsentDomain
      */
     public GdprConsentDomain handleGdprConsent(HttpServletRequest request) {
-        Metrics metrics = ESMetrics.getInstance();
         GdprConsentDomain gdprConsentDomain = new GdprConsentDomain();
         String gdprParam = request.getParameter(gdprParameter);
         String enableTcfComplianceModeString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_TCF_COMPLIANCE_MODE);

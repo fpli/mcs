@@ -16,9 +16,7 @@ import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -43,10 +41,8 @@ public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
-  Metrics metrics;
 
   public void postInit() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   /**
@@ -165,7 +161,8 @@ public abstract class CustomerMarketingCollector {
   public String getEmailPartner(MultiValueMap<String, String> parameters, ChannelIdEnum channelType) {
     // check partner for email click
     String partner = null;
-    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType)) {
+    if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType) ||
+            ChannelIdEnum.SITE_MESSAGE_CENTER.equals(channelType) || ChannelIdEnum.MRKT_MESSAGE_CENTER.equals(channelType)) {
       // no mkpid, accepted
       if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
         LOGGER.warn(Errors.ERROR_NO_MKPID);

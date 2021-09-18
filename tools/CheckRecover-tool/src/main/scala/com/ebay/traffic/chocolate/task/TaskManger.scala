@@ -20,9 +20,9 @@ object TaskManger {
     *
     * @param tasks
     */
-  def runTasks(tasks: List[CheckTask], esMetrics: Metrics, spark: SparkSession) = {
+  def runTasks(tasks: List[CheckTask], spark: SparkSession) = {
     for (task <- tasks) {
-      runTask(task, esMetrics, spark)
+      runTask(task,spark)
     }
   }
 
@@ -31,7 +31,7 @@ object TaskManger {
     *
     * @param checkTask
     */
-  def runTask(checkTask: CheckTask, esMetrics: Metrics, spark: SparkSession) = {
+  def runTask(checkTask: CheckTask,spark: SparkSession) = {
     if (isRunnableTask(checkTask) && checkTask.period != 0) {
       //for many time one day
       //step 1.read last count from hdfs (c1);
@@ -45,18 +45,11 @@ object TaskManger {
       //step 3. save to hdfs;
       FileSystemWriter.write(checkTask.dataCountDir, checkTask.dataCountURI, new CountData(checkTask.jobName, checkTask.ts, currentCount), spark)
 
-      //step 4.send the current files count to ES ( = c2- c1);
-      esMetrics.trace(checkTask.jobName, getCount(currentCount, lastCount, checkTask.ts), checkTask.ts)
-      logger.info("name: " + checkTask.jobName + "-----esMetrics send successfully")
     }else if (isRunnableTask(checkTask) && checkTask.period == 0){
       //for once one day
       //step 1.count the current file (c2);
       val currentCount = FileSystemReader.getFileNum(checkTask.inputDir, checkTask.inputURI)
       logger.info("name: " + checkTask.jobName + "-----currentCount: " + currentCount)
-
-      //step 2.send the current files count to ES ( = c2);
-      esMetrics.trace(checkTask.jobName, currentCount, checkTask.ts)
-      logger.info("name: " + checkTask.jobName + "-----esMetrics send successfully")
     }
   }
 
