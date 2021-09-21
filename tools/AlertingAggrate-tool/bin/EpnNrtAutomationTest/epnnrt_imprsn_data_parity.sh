@@ -9,7 +9,7 @@ bin=$(
 )
 
 JOB_NAME="EpnnrtImpressionAutomationParity"
-imprsn_dt=`date -d '5 days ago' +%Y-%m-%d`
+imprsn_dt=`date -d '2 days ago' +%Y-%m-%d`
 sql_file="/datashare/mkttracking/jobs/tracking/epnnrt_new_test/sql/tmp/count_diff_ams_imprsn_by_imprsn_dt_${imprsn_dt}.sql";
 touch "$sql_file"
 chmod 777 "$sql_file"
