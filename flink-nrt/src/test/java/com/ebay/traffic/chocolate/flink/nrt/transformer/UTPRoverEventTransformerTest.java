@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 public class UTPRoverEventTransformerTest {
   private static final String MRKT_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/8?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313&trkId=456";
   private static final String SITE_EMAIL_URL_QUERY_STRING = "/roveropen/4/0/7?osub=b104444a19d75f58b856404c3b16d970%7ETE75001_T_AGM_CT1&crd=20201205091000&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cosub%3Dosub&ch=osgood&segname=TE75001_T_AGM_CT1&bu=43212588313&trkId=123";
+  private static final String SIO_EMAIL_URL_QUERY_STRING = "/rover/0/e11304.m3112.l46401/7?euid=207eb379d6c740b1a7d824cccb82d34b&bu=43820519874&segname=11304&crd=20210921122855&osub=-1%7E1&ch=osgood&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fulk%2Fsio%2F255106015421%2F162732301017%2F17829090119&sojTags=bu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub";
 
   private static Schema schema;
   private GenericRecord genericRecord;
@@ -71,9 +72,12 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void transform() {
+    genericRecord.put("urlQueryString", new Utf8(SIO_EMAIL_URL_QUERY_STRING));
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
     UnifiedTrackingRheosMessage message = new UnifiedTrackingRheosMessage();
     transformer.transform(message);
     assertNotNull(message.getEventId());
+    assertEquals("SellerInitiatedOffer", transformer.getPayload().get("annotation.message.name"));
   }
 
   @Test
@@ -366,7 +370,7 @@ public class UTPRoverEventTransformerTest {
   @Test
   public void getIsBot() {
     assertFalse(transformer.getIsBot());
-    transformer = new UTPRoverEventTransformer("behavior.pulsar.misc.bot", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+    transformer = new UTPRoverEventTransformer("behavior.pulsar.customized.marketing-tracking.bot", 0, 0L, genericRecord, rheosEvent, schemaVersion);
     assertTrue(transformer.getIsBot());
   }
 
