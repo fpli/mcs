@@ -36,7 +36,7 @@ object ParameterV2 {
     opt[String]("propertiesFile")
       .required
       .valueName("propertiesFile")
-      .action((cont, param) => param.copy(channel = cont))
+      .action((cont, param) => param.copy(propertiesFile = cont))
 
     opt[String]("workDir")
       .required
