@@ -15,9 +15,9 @@ class CGUIDPubCappingRule(params: ParameterV2, bit: Long, dateFiles: DateFiles, 
   import cappingRuleJobObj.spark.implicits._
 
   //workdir
-  override lazy val fileName = "/cguidPub_" + window + "/"
+  override lazy val fileName = "/guidPub_" + window + "/"
   //specific columns for CGUIDPub Capping Rule
-  override val cols = Array(col("CGUID"), col("publisher_id"))
+  override val cols = Array(col("GUID"), col("publisher_id"))
 
   //filter condition for counting df
   def filterCondition(): Column = {
@@ -26,7 +26,7 @@ class CGUIDPubCappingRule(params: ParameterV2, bit: Long, dateFiles: DateFiles, 
 
   // get CGUID
   def cguid(): Column = {
-    $"cguid".alias("CGUID")
+    $"guid".alias("GUID")
   }
 
   //counting columns

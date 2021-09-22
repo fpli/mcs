@@ -38,6 +38,7 @@ __config = {
     'application_args': [
         '--appName', 'capping_epn_v2',
         '--channel', 'EPN',
+        '--propertiesFile', 'capping_rule_v2.properties',
         '--workDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir',
         '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events',
         '--archiveDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-archiveDir',

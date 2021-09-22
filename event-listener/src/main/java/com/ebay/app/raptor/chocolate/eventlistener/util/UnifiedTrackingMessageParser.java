@@ -316,6 +316,10 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.SITE_EMAIL;
       case EPN:
         return ChannelTypeEnum.EPN;
+      case MRKT_MESSAGE_CENTER:
+        return ChannelTypeEnum.MRKT_MESSAGE_CENTER;
+      case SITE_MESSAGE_CENTER:
+        return ChannelTypeEnum.SITE_MESSAGE_CENTER;
       default:
         return ChannelTypeEnum.GENERIC;
     }
@@ -375,7 +379,7 @@ public class UnifiedTrackingMessageParser {
    * Get producer event id
    */
   private static String getProducerEventId(MultiValueMap<String, String> parameters, ChannelType channelType) {
-    if (ChannelType.SITE_EMAIL.equals(channelType)) {
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
       return HttpRequestUtil.parseTagFromParams(parameters, Constants.EMAIL_UNIQUE_ID);
     }
 
@@ -404,7 +408,8 @@ public class UnifiedTrackingMessageParser {
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       // partner definition unknown
-    } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+    } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       partner = EmailPartnerIdEnum.parse(parameters.getFirst(Constants.MKPID));
     }
 
@@ -422,9 +427,9 @@ public class UnifiedTrackingMessageParser {
       }
     } else if (ChannelType.PAID_SEARCH.equals(channelType)) {
       campaignId = parameters.getFirst(Constants.CAMPAIGN_ID);
-    } else if (ChannelType.SITE_EMAIL.equals(channelType)) {
+    } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
       campaignId = CollectionServiceUtil.substring(parameters.getFirst(Constants.SOURCE_ID), "e", ".mle");
-    } else if (ChannelType.MRKT_EMAIL.equals(channelType)) {
+    } else if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
           Constants.SEGMENT_NAME_S))) {
         campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
@@ -476,7 +481,8 @@ public class UnifiedTrackingMessageParser {
    */
   private static long getUserId(IEndUserContext endUserContext,
                                 String bu, ChannelType channelType) {
-    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       if (!StringUtils.isEmpty(bu)) {
         return EncryptUtil.decryptUserId(Long.parseLong(bu));
       }
