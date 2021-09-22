@@ -1,6 +1,6 @@
 package com.ebay.app.raptor.chocolate.avro;
 
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
 import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV4;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import org.apache.avro.Schema;
@@ -13,7 +13,7 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class FilterMessage extends FilterMessageV5 {
+public class FilterMessage extends FilterMessageV6 {
   public static Schema getClassSchema() {
     return SCHEMA$;
   }

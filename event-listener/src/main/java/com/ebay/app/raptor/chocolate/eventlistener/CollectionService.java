@@ -219,6 +219,14 @@ public class CollectionService {
       finalUrl = finalUrl + "&" + Constants.MKRID + "=" + rotationId;
     }
 
+    // overwrite referer if the url is transformed from Rover to Chocolate by UFES
+    Matcher roverSitesMatcher = roversites.matcher(finalRef.toLowerCase());
+    if (roverSitesMatcher.find()
+            && parameters.containsKey(Constants.UFES_REDIRECT)
+            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+      finalRef = org.apache.commons.lang3.StringUtils.EMPTY;
+    }
+
     return new ImmutableTriple<>(finalUrl, finalRef, channelType);
   }
 
@@ -380,9 +388,11 @@ public class CollectionService {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.SITE_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
       } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
           || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
@@ -410,6 +420,8 @@ public class CollectionService {
   }
   protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
     if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
+      return false;
+    } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType) {
       return false;
     }
 
@@ -647,9 +659,9 @@ public class CollectionService {
 
 
     // add channel specific tags, and produce message for EPN and IMK
-    if (channelType == ChannelIdEnum.SITE_EMAIL) {
+    if (channelType == ChannelIdEnum.SITE_EMAIL || channelType == ChannelIdEnum.SITE_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-    } else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+    } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
     } else {
       firePMEvent(baseEvent, requestContext);

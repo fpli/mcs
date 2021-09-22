@@ -64,6 +64,16 @@ public enum ChannelIdEnum {
   SITE_SMS("25", LogicalChannelEnum.SITE_SMS, false),
 
   /**
+   * Channel 26 -- SITE MC
+   */
+  SITE_MESSAGE_CENTER("26", LogicalChannelEnum.SITE_MESSAGE_CENTER, false),
+
+  /**
+   * Channel 27 -- MARKETING MC
+   */
+  MRKT_MESSAGE_CENTER("27", LogicalChannelEnum.MRKT_MESSAGE_CENTER, false),
+
+  /**
    * Channel 28 -- production SEARCH ENGINE FREE LISTINGS
    */
   SEARCH_ENGINE_FREE_LISTINGS("28", LogicalChannelEnum.SEARCH_ENGINE_FREE_LISTINGS, false),
