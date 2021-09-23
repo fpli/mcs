@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.spark.kafka
 
 import java.text.SimpleDateFormat
-import java.util.{Date, Properties}
+import java.util.Date
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage
 import com.ebay.traffic.chocolate.common.{KafkaTestHelper, MiniKafkaCluster, TestHelper}
@@ -14,7 +14,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * Created by yliu29 on 3/12/18.
   */
-class TestKafkaRDDV2 extends BaseFunSuite {
+class TestKafkaRDD extends BaseFunSuite {
   var kafkaCluster: MiniKafkaCluster = null
 
   lazy val conf = {
@@ -96,10 +96,9 @@ class TestKafkaRDDV2 extends BaseFunSuite {
   }
 
   def assertKafkaRDD(topic: String, commit: Boolean, expected: Map[java.lang.Long, FilterMessage]) = {
-    val properties: Properties = kafkaCluster.getConsumerProperties(classOf[LongDeserializer], classOf[FilterMessageDeserializer])
-    properties.load(getClass.getClassLoader.getResourceAsStream("sherlockio.properties"))
-    val kafkaRDD = new KafkaRDDV2[java.lang.Long, FilterMessage](
-      sc, topic, properties,"test")
+    val kafkaRDD = new KafkaRDD[java.lang.Long, FilterMessage](
+      sc, topic, kafkaCluster.getConsumerProperties(classOf[LongDeserializer], classOf[FilterMessageDeserializer]))
+
     val result = kafkaRDD.map(record => (record.key(), record.value().writeToJSON())).collect()
     if (commit) {
       kafkaRDD.commitOffsets()

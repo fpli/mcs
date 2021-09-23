@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.kafka.*;
+import com.ebay.traffic.monitoring.ESMetrics;
 import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
@@ -44,7 +45,7 @@ public class RoverRheosTopicFilterTaskTest {
 
     @BeforeClass
     public static void initBeforeTest() {
-
+        ESMetrics.init("chocolate-metrics-", "http://10.148.181.34:9200");
     }
 
     @Before
