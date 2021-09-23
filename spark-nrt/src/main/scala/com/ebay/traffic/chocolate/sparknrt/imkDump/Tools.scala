@@ -5,6 +5,7 @@ import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util.Date
 import java.util.regex.Pattern
 
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -19,6 +20,12 @@ import scala.io.Source
 class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializable{
   @transient lazy val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
+  @transient lazy val metrics: Metrics = {
+    if (StringUtils.isNotEmpty(metricsPrefix) && StringUtils.isNotEmpty(elasticsearchUrl)) {
+      ESMetrics.init(metricsPrefix, elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   lazy val METRIC_IMK_DUMP_MALFORMED = "imk.dump.malformed"
 
@@ -88,6 +95,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         }
       }catch {
         case e: Exception => {
+          if(metrics != null) {
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
+          }
           logger.warn("MalformedUrl", e)
         }
       }
@@ -113,6 +123,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getPerfTrackNameValue", 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }
@@ -148,6 +161,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getParamValueFromQuery", 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }
@@ -175,6 +191,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     }catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.parsemtid.error", 1)
+        }
         logger.warn("ParseMtidError", e)
         logger.warn("ParseMtidError query: ", query)
       }
@@ -219,6 +238,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if (metrics != null) {
+          metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }
@@ -262,6 +284,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     }catch {
       case e: Exception => {
+        if (metrics != null) {
+          metrics.meter("imk.dump.error.getParamFromQuery", 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }
@@ -331,6 +356,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
         result = new URL(link).getHost
       } catch {
         case e: Exception => {
+          if(metrics != null) {
+            metrics.meter(METRIC_IMK_DUMP_MALFORMED, 1)
+          }
           logger.warn("MalformedUrl", e)
         }
       }
@@ -359,6 +387,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.errorGetQuery", 1)
+        }
         logger.warn("ErrorGetQuery", e)
       }
     }
@@ -376,6 +407,8 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
     }
     val matcher = ebaySites.matcher(referrer)
     if (matcher.find()) {
+      if(metrics != null)
+        metrics.meter("imk.dump.internalReferer")
       false
     } else {
       true
@@ -432,6 +465,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if (metrics != null) {
+          metrics.meter("imk.dump.errorGetQueryMap", 1)
+        }
         logger.warn("ErrorGetQueryMap", e)
       }
     }
@@ -497,6 +533,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getDecodeParamUrlValueFromQuery", 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }
@@ -521,6 +560,9 @@ class Tools(metricsPrefix: String, elasticsearchUrl: String) extends Serializabl
       }
     } catch {
       case e: Exception => {
+        if(metrics != null) {
+          metrics.meter("imk.dump.error.getDecodePerfTrackNameValue", 1)
+        }
         logger.warn("MalformedUrl", e)
       }
     }

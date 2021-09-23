@@ -11,6 +11,7 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.TableSchema
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions._
@@ -68,18 +69,26 @@ class CrabDedupeJob(params: Parameter)
   }
 
   @transient lazy val schema_tfs = TableSchema("df_imk.json")
+  @transient lazy val metrics: Metrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
   @transient lazy val outputMetadata: Metadata = {
     Metadata(params.workDir, params.appName, MetadataEnum.dedupe)
   }
   @transient lazy val inputFiles: Array[String] = {
     val files = getInputFiles(params.inputDir)
     if (files.length > params.maxDataFiles) {
+      metrics.meter("crab.dedupe.TooManyFiles")
       files.slice(0, params.maxDataFiles)
     } else {
       files
     }
   }
   @transient lazy val couchbase: CorpCouchbaseClient.type = {
+    metrics.meter("crab.dedupe.InitCB")
     CorpCouchbaseClient.dataSource = params.couchbaseDatasource
     CorpCouchbaseClient
   }
@@ -114,6 +123,7 @@ class CrabDedupeJob(params: Parameter)
     val dates = df.select("event_dt").distinct().collect().map(row => {
       val eventDt = row.get(0)
       if (eventDt == null) {
+        metrics.meter("crab.dedupe.NullEventDt")
         null
       } else {
         row.get(0).toString
@@ -135,6 +145,11 @@ class CrabDedupeJob(params: Parameter)
       logger.info("delete %s".format(file))
       lvsFs.delete(new Path(file), true)
     })
+    metrics.meter("crab.dedupe.processedFiles", inputFiles.length)
+    if(metrics != null) {
+      metrics.flush()
+      metrics.close()
+    }
   }
 
   /**
@@ -145,6 +160,7 @@ class CrabDedupeJob(params: Parameter)
   def toDateTime(dateTimeStr: String): Option[ZonedDateTime] = {
     if (StringUtils.isEmpty(dateTimeStr)) {
       logger.warn("event_ts is empty")
+      metrics.meter("crab.dedupe.InvalidEventTs")
       return None
     }
     try{
@@ -152,6 +168,7 @@ class CrabDedupeJob(params: Parameter)
     } catch {
       case _: DateTimeParseException => {
         logger.warn("invalid event_ts {}", dateTimeStr)
+        metrics.meter("crab.dedupe.InvalidEventTs")
         None
       }
     }
@@ -179,6 +196,7 @@ class CrabDedupeJob(params: Parameter)
       } catch {
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+          metrics.meter("crab.dedupe.CBError")
 //          couchbaseDedupe = false
       }
     }

@@ -8,6 +8,7 @@ import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

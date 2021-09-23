@@ -6,6 +6,7 @@
 package com.ebay.app.raptor.chocolate.adservice.util;
 
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

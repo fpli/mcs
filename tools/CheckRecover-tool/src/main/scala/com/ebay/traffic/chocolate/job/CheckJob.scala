@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.job
 
 import com.ebay.traffic.chocolate.conf.CheckTask
+import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.ebay.traffic.chocolate.spark.BaseSparkJob
 import com.ebay.traffic.chocolate.task.TaskManger
 import com.ebay.traffic.chocolate.util.{Constant, Parameter, XMLUtil}
@@ -15,11 +16,19 @@ object CheckJob extends App {
     val job = new CheckJob(params)
 
     job.run()
+    job.metrics.close()
     job.stop()
   }
 }
 
 class CheckJob(params: Parameter) extends BaseSparkJob(params.appName, params.mode) {
+
+  @transient lazy val metrics: Metrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(Constant.ES_METRIC_PRE, params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   @transient lazy val listTask: List[CheckTask] = {
     if (params.mode.indexOf("local") == 0) {
@@ -41,7 +50,7 @@ class CheckJob(params: Parameter) extends BaseSparkJob(params.appName, params.mo
     // step 3: save the data to hdfs,
     // step 4: send data to grafana
     logger.info("check job start.")
-    TaskManger.runTasks(listTask,spark)
+    TaskManger.runTasks(listTask, metrics, spark)
     logger.info("check job end.")
   }
 

@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ public class DisplayTransformerTest {
   public void setUp() throws Exception {
     filterMessage = new FilterMessage();
     transformer = new DisplayTransformer(filterMessage);
+    ESMetrics.init("test", "localhost");
   }
 
   @After

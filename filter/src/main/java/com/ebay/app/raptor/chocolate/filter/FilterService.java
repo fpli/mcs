@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.log4j.BasicConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class FilterService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
+    ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions.getInstance().getByNameString(ELASTICSEARCH_URL));
     LBSClient.init();
     ApplicationOptions options = ApplicationOptions.getInstance();
     //currently we need not use zookeeper watch to adding new campaign publisher pair into couchbase, so disable zookeeper here

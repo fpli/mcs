@@ -7,6 +7,7 @@ import java.util.{Date, Properties}
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.meta.{Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, TableSchema, XIDResponse}
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.GzipCodec
@@ -57,6 +58,19 @@ class CrabTransformJob(params: Parameter)
     properties.load(getClass.getClassLoader.getResourceAsStream("crab_transform.properties"))
     properties
   }
+
+  @transient lazy val metrics: Metrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      if (params.metaFile == "imkDump") {
+        ESMetrics.init("imk-metrics-", params.elasticsearchUrl)
+        ESMetrics.getInstance()
+      } else {
+        ESMetrics.init("crab-metrics-", params.elasticsearchUrl)
+        ESMetrics.getInstance()
+      }
+    } else null
+  }
+
   @transient lazy val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
   lazy val imkTempDir: String = params.outputDir + "/" + params.channel + "/imkTemp/"
@@ -98,6 +112,7 @@ class CrabTransformJob(params: Parameter)
     var crabTransformMeta = metadata.readDedupeOutputMeta()
     // at most meta files
     if (crabTransformMeta.length > params.maxMetaFiles) {
+      metrics.meter("imk.transform.TooManyMetas", crabTransformMeta.length, Field.of[String, AnyRef]("channelType", params.channel))
       crabTransformMeta = crabTransformMeta.slice(0, params.maxMetaFiles)
     }
 
@@ -149,6 +164,9 @@ class CrabTransformJob(params: Parameter)
       import org.apache.spark.sql.catalyst.encoders.RowEncoder
       implicit val encoder: ExpressionEncoder[Row] = RowEncoder(commonDf.schema)
       commonDf = commonDf.mapPartitions((iter: Iterator[Row]) => {
+        if (metrics != null) {
+          metrics.flush()
+        }
         iter
       })
 
@@ -209,6 +227,11 @@ class CrabTransformJob(params: Parameter)
       val file = metaFiles._1
       metadata.deleteDedupeOutputMeta(file)
     })
+    metrics.meter("imk.transform.processedMete", crabTransformMeta.length, Field.of[String, AnyRef]("channelType", params.channel))
+    if (metrics != null) {
+      metrics.flush()
+      metrics.close()
+    }
   }
 
   // join keyword table
@@ -276,6 +299,7 @@ class CrabTransformJob(params: Parameter)
       try{
         val messageDt = dateFormat.parse(eventTs)
         val nowDt = new Date()
+        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", params.channel))
       } catch {
         case e:Exception => {
           logger.warn("parse event ts error", e)
@@ -300,8 +324,10 @@ class CrabTransformJob(params: Parameter)
     if (StringUtils.isEmpty(userId) || userId.equals("0")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
+          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
+            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", params.channel))
             result = xid.accounts.head
           }
         } catch {
