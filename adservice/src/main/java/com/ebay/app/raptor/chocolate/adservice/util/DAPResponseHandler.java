@@ -19,6 +19,7 @@ import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;

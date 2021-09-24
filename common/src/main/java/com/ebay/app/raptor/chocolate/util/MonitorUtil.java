@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.util;
 
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import io.micrometer.core.instrument.Metrics;
 import org.apache.logging.log4j.util.Strings;
@@ -15,10 +16,18 @@ public final class MonitorUtil {
         esMetrics=metrics;
     }
     public static void info(String key) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.meter(key);
         Metrics.counter(key).increment();
     }
     @SafeVarargs
     public static void info(String key, long value,Field<String, Object>... fields) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.meter(key, value,fields);
         Metrics.counter(key,fieldsToTags(fields)).increment(value);
     }
 
@@ -27,13 +36,25 @@ public final class MonitorUtil {
     }
 
     public static void warn(String key) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.meter(key);
         Metrics.counter(key).increment();
     }
     @SafeVarargs
     public static void latency(String key, long value,Field<String, Object>... fields) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.mean(key, value,fields);
         Metrics.summary(key,fieldsToTags(fields)).record(value);
     }
     public static void latency(String key) {
+        if(esMetrics==null){
+            esMetrics= ESMetrics.getInstance();
+        }
+        esMetrics.mean(key);
         Metrics.summary(key).record(1);
     }
     @SafeVarargs

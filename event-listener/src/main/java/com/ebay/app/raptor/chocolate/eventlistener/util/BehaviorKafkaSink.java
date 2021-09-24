@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaWithFallbackProducer;
 import com.ebay.traffic.chocolate.kafka.RheosKafkaProducer;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;

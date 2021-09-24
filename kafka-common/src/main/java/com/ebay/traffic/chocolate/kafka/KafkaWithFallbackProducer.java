@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Metrics;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -45,6 +46,8 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
   private int globalConfig = 0; // default is auto
 
+  private final Metrics metrics;
+
   private Timer timer;
 
   public KafkaWithFallbackProducer(Producer<K, V> producer1, Producer<K, V> producer2) {
@@ -57,6 +60,8 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
     this.producer1 = producer1;
     this.producer2 = producer2;
     this.current = producer1;
+    this.metrics = ESMetrics.getInstance();
+
     if (config != null) {
       timer = new Timer(true);
       timer.scheduleAtFixedRate(new TimerTask() {
@@ -120,7 +125,8 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
         current = producer2; // switch to fallback producer
         time = System.currentTimeMillis(); // mark the time we start to use fallback producer
         LOG.info("Switch to fallback producer.");
-        MonitorUtil.info("KafkaFallback");
+        if (metrics != null)
+          metrics.meter("KafkaFallback");
       } else {
         current = producer1; // switch to primary producer
         LOG.info("Switch to primary producer.");
@@ -149,7 +155,8 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
     Callback cb = (recordMetadata, e) -> {
       if (e != null) {
         LOG.warn(e.getMessage(), e);
-        MonitorUtil.info("KafkaSendingFailed");
+        if (metrics != null)
+          metrics.meter("KafkaSendingFailed");
       }
 
       if (e != null && (globalConfig == 0) && (e instanceof TimeoutException || e instanceof TopicAuthorizationException)) {

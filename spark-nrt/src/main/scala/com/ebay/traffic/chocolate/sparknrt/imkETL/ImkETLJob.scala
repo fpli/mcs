@@ -12,6 +12,7 @@ import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.imkDump.Tools
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.{Cguid, MyID, TableSchema, XIDResponse}
+import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -91,6 +92,12 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
 
   @transient lazy val schema_imk_table: TableSchema = TableSchema("df_imk.json")
 
+  @transient lazy val metrics: Metrics = {
+    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
+      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
+      ESMetrics.getInstance()
+    } else null
+  }
 
   // by default, no suffix
   @transient lazy val CHANNEL_META_POSTFIX_MAP = Map(
@@ -184,7 +191,15 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         // metaFile is located in workDir
         workDirFs.delete(new Path(metaFile), true)
       })
+      metrics.meter("imk.transform.processedMete", kv._2.length, Field.of[String, AnyRef]("channelType", channel))
     })
+
+    if (metrics != null) {
+      metrics.flush()
+    }
+    if (tools.metrics != null) {
+      tools.metrics.flush()
+    }
   }
 
   /**
@@ -229,6 +244,12 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           import org.apache.spark.sql.catalyst.encoders.RowEncoder
           implicit val encoder: ExpressionEncoder[Row] = RowEncoder(imkDumpDf.schema)
           val imkDumpRepartitionDf = imkDumpDf.mapPartitions((iter: Iterator[Row]) => {
+            if (metrics != null) {
+              metrics.flush()
+            }
+            if (tools.metrics != null) {
+              tools.metrics.flush()
+            }
             iter
           }).cache()
 
@@ -315,6 +336,9 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       return tools.judgeNotEbaySites(referer)
     }
     if(referer.startsWith("https://ebay.mtag.io") || referer.startsWith("https://ebay.pissedconsumer.com")) {
+      if (metrics != null) {
+        metrics.meter("imk.dump.judgeNotEbaySitesWhitelist", 1)
+      }
       true
     } else {
       tools.judgeNotEbaySites(referer)
@@ -488,6 +512,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
    */
   def judgeCGuidNotNull(channelType:String, cguid: String): Boolean = {
     if (StringUtils.isEmpty(cguid)) {
+      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", channelType))
       false
     } else {
       true
@@ -511,6 +536,9 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           .replace("mktype", "adtype")
       } catch {
         case e: Exception => {
+          if (metrics != null) {
+            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", channelType))
+          }
           logger.warn("MalformedUrl", e)
         }
       }
@@ -536,6 +564,9 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
           newUri = URLDecoder.decode(landingPageUrl,"UTF-8")
         } catch {
           case e: Exception => {
+            if(metrics != null) {
+              metrics.meter("imk.dump.error.parseMpreFromRoverError", 1)
+            }
             logger.warn("MalformedUrl", e)
           }
         }
@@ -557,9 +588,11 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (StringUtils.isNotEmpty(cguid)) {
       cguid
     } else {
+      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", channelType))
       if (guidCguidMap != null) {
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
+          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", channelType))
           result
         } else {
           guid
@@ -599,12 +632,14 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting cguid by guid list" + e)
+        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", channel))
         // should we throw the exception and make the job fail?
         throw new Exception(e)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     val endTime = System.currentTimeMillis
+    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", channel))
     res
   }
 
@@ -688,6 +723,9 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
         import org.apache.spark.sql.catalyst.encoders.RowEncoder
         implicit val encoder: ExpressionEncoder[Row] = RowEncoder(imkTransformDf.schema)
         imkTransformDf = imkTransformDf.mapPartitions((iter: Iterator[Row]) => {
+          if (metrics != null) {
+            metrics.flush()
+          }
           iter
         })
 
@@ -797,6 +835,7 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
       try{
         val messageDt = dateFormat.parse(eventTs)
         val nowDt = new Date()
+        metrics.mean("imk.transform.messageLag", nowDt.getTime - messageDt.getTime, Field.of[String, AnyRef]("channelType", channelType))
       } catch {
         case e:Exception => {
           logger.warn("parse event ts error", e)
@@ -823,8 +862,10 @@ class ImkETLJob(params: Parameter) extends BaseSparkNrtJob(params.appName, param
     if (StringUtils.isEmpty(userId) || userId.equals("0")) {
       if (StringUtils.isNotEmpty(cguid)) {
         try{
+          metrics.meter("imk.transform.XidTryGetUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
           val xid = xidRequest("cguid", cguid)
           if (xid.accounts.nonEmpty) {
+            metrics.meter("imk.transform.XidGotUserId", 1, Field.of[String, AnyRef]("channelType", channelType))
             result = xid.accounts.head
           }
         } catch {

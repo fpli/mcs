@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleContent;
 import com.ebay.app.raptor.chocolate.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 
 import java.util.HashMap;
