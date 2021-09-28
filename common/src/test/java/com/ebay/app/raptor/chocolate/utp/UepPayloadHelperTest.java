@@ -69,4 +69,44 @@ public class UepPayloadHelperTest {
     assertTrue(result.get("annotation.mesg.list").contains("\"reco.id\":\"262844489390\""));
     assertTrue(result.get("annotation.mesg.list").contains("\"reco.pos\":\"1\""));
   }
+
+  @Test
+  public void testORSFields() {
+    UepPayloadHelper helper = new UepPayloadHelper();
+
+    // PA
+    String openUrl = "	https://www.ebay.co.uk/itm/184447812891?mkevt=1&mkpid=2&emsid=e112358.m43.l1120&mkcid=8&bu=44979336032&osub=-1%7E1&segname=16TE179832_T_PREPURCHASE_CT1&crd=20210912090000&ch=osgood&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    Map<String, String> result = helper.getUepPayload(openUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.MRKT_EMAIL);
+    assertEquals("PA", result.get("annotation.message.name"));
+    assertEquals("2021-09-12 09:00:00", result.get("annotation.canvas.uniq.id"));
+    assertEquals("2021-09-12 09:00:00", result.get("rundate"));
+
+    // ESPRESSO
+    openUrl = "https://www.ebay.co.uk/itm/284441400639?campaign-id=90001&run-date=20210911070500&templateId=200fb594-80a8-4101-afb1-a7ad982fde56&templateVersion=135&co=15103&placement-type=mfe.rt2&user-id=45270717340&instance=1631369100&site-id=3&trackingCode=TE75002_T_ALL&placement-type-name=mfe.rt2&mfe-Id=101270&mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=45270717340&osub=250dec3d3f6a06262a10ceb0301c3341%257ETE75002_T_ALL&segname=TE75002_T_ALL&crd=20210911070500&ch=osgood&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    result = helper.getUepPayload(openUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.MRKT_EMAIL);
+    assertEquals("ESPRESSO", result.get("annotation.message.name"));
+    assertEquals("2021-09-11 07:05:00", result.get("annotation.canvas.uniq.id"));
+    assertEquals("2021-09-11 07:05:00", result.get("rundate"));
+
+    // AXO
+    openUrl = "https://www.ebay.co.uk/itm/174934236344?mkevt=1&mkpid=0&emsid=e11403.m43.l1465&mkcid=7&ch=osgood&euid=8510415afc9d420290a940897a12b550&bu=44908191432&osub=-1%7E1&crd=20210912164330&segname=11403&sojTags=ch%3Dch%2Cbu%3Dbu%2Cosub%3Dosub%2Ccrd%3Dcrd%2Csegname%3Dsegname%2Cchnl%3Dmkcid";
+    result = helper.getUepPayload(openUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.SITE_EMAIL);
+    assertEquals("AXO", result.get("annotation.message.name"));
+    assertEquals("8510415afc9d420290a940897a12b550", result.get("annotation.canvas.uniq.id"));
+    assertEquals("2021-09-12 16:43:30", result.get("rundate"));
+
+    // SAVEDSEARCH
+    openUrl = "https://www.ebay.de/itm/185028122260?mkevt=1&mkpid=0&emsid=e11021.m43.l1120&mkcid=7&ch=osgood&euid=9170b20d52e449c08245016ad772693f&bu=44218042742&ut=RU&exe=99066&ext=233698&osub=-1%7E1&crd=20210902055245&segname=11021&sojTags=ch%3Dch%2Cbu%3Dbu%2Cut%3Dut%2Cnqt%3Dnqt%2Cnqc%3Dnqc%2Cmdbreftime%3Dmdbreftime%2Ces%3Des%2Cec%3Dec%2Cexe%3Dexe%2Cext%3Dext%2Cexe%3Dexe%2Cext%3Dext%2Cosub%3Dosub%2Ccrd%3Dcrd%2Csegname%3Dsegname%2Cchnl%3Dmkcid";
+    result = helper.getUepPayload(openUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.SITE_EMAIL);
+    assertEquals("SAVEDSEARCH", result.get("annotation.message.name"));
+    assertEquals("9170b20d52e449c08245016ad772693f", result.get("annotation.canvas.uniq.id"));
+    assertEquals("2021-09-02 05:52:45", result.get("rundate"));
+
+    // SellerInitiatedOffer
+    openUrl = "https://www.ebay.com/itm/284444582808?mkevt=1&mkpid=0&emsid=e11304.m43.l44813&mkcid=7&ch=osgood&euid=818921348af341b1adafaf25c3036795&bu=44239650422&osub=-1%7E1&crd=20210912111355&segname=11304&sojTags=ch%3Dch%2Cbu%3Dbu%2Cosub%3Dosub%2Ccrd%3Dcrd%2Csegname%3Dsegname%2Cchnl%3Dmkcid";
+    result = helper.getUepPayload(openUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.SITE_EMAIL);
+    assertEquals("SellerInitiatedOffer", result.get("annotation.message.name"));
+    assertEquals("818921348af341b1adafaf25c3036795", result.get("annotation.canvas.uniq.id"));
+    assertEquals("2021-09-12 11:13:55", result.get("rundate"));
+  }
 }

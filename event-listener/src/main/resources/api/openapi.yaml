@@ -327,6 +327,10 @@ components:
               type: string
               description: checkoutAPIClickTs, mandotary for click from checkoutAPI
               example: "1576108800000"
+            placeOfferAPIClickTs:
+              type: string
+              description: placeOfferAPIClickTs, mandotary for click from placeofferAPI
+              example: "1576108800000"
 
 
     ROIEvent:

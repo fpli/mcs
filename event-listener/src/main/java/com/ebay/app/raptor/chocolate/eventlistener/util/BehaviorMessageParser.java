@@ -45,7 +45,6 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
  */
 public class BehaviorMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(BehaviorMessageParser.class);
-  private Metrics metrics = ESMetrics.getInstance();
   private CobrandParser cobrandParser = new CobrandParser();
 
   private static BehaviorMessageParser INSTANCE;
@@ -314,7 +313,8 @@ public class BehaviorMessageParser {
     applicationPayload.put("url_mpre", uri);
 
     // sid for DSS, just in tracking_event
-    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType)) {
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
     }
 

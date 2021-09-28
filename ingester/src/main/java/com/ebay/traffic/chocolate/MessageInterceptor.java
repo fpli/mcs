@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate;
 
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -26,7 +27,7 @@ public class MessageInterceptor implements Interceptor {
     String timestamp = getTimestamp(event.getBody());
     Map<String, String> headers = event.getHeaders();
     headers.put(TIMESTAMP, timestamp);
-    ESMetrics.getInstance().meter(FLUME_FILTERED_RECORD_COUNT);
+    MonitorUtil.info(FLUME_FILTERED_RECORD_COUNT);
     return event;
   }
 

@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
  */
 abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  public Metrics metrics;
   public RedirectionEvent redirectionEvent;
 
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
@@ -44,7 +43,6 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
   public BaseRedirectStrategy() {
-    this.metrics = ESMetrics.getInstance();
   }
 
   @Override

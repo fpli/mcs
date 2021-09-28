@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class StaticPageRequestHandler {
       targetUrl = HttpRequestUtil.removeParam(targetUrl, Constants.EPAGE_REFERER);
     } else {
       LOGGER.warn(Errors.ERROR_NO_REFERER);
-      ESMetrics.getInstance().meter(Errors.ERROR_NO_REFERER);
+      MonitorUtil.info(Errors.ERROR_NO_REFERER);
       referer = "";
     }
     event.setTargetUrl(targetUrl);

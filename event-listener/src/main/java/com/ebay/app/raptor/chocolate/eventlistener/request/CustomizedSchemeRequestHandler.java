@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
@@ -52,14 +53,15 @@ public class CustomizedSchemeRequestHandler {
       ChannelIdEnum channelType = ChannelIdEnum.parse(deeplinkParameters.get(Constants.MKCID).get(0));
 
       if (mkevt.equals(CLICKEVENTFLAG) && channelType != null) {
-        ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+        MonitorUtil.info("IncomingAppDeepLinkWithChocolateParams", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
       } else {
         LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
-        ESMetrics.getInstance().meter(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+        MonitorUtil.info(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
         return null;
       }
 
-      if (deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
+      // this case is only for ePN facebook publisher
+      if (channelType == ChannelIdEnum.EPN & deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
 
         String pageType = deeplinkParameters.get(NAV).get(0);
         String itemId = deeplinkParameters.get(ID).get(0);
@@ -67,18 +69,22 @@ public class CustomizedSchemeRequestHandler {
         if (pageType.equals(VIEWITEM) && !StringUtils.isEmpty(itemId)) {
           String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
           if (!StringUtils.isEmpty(viewItemChocolateURL)) {
-            ESMetrics.getInstance().meter("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+            MonitorUtil.info("IncomingEPNViewItemAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
             Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
             return event;
           } else {
             LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
-            ESMetrics.getInstance().meter(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
+            MonitorUtil.info(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
             return null;
           }
         }
+      } else {
+        MonitorUtil.info("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+        Event event = constructDeeplinkEvent(targetUrl, referer);
+        return event;
       }
     } else if (deeplinkParameters.containsKey(REFERRER)) {
-      ESMetrics.getInstance().meter("IncomingAppDeepLinkWithReferrerParams", 1);
+      MonitorUtil.info("IncomingAppDeepLinkWithReferrerParams", 1);
       String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
 
       try {
@@ -86,19 +92,19 @@ public class CustomizedSchemeRequestHandler {
           deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, StandardCharsets.UTF_8.name());
         }
       } catch (Exception ex) {
-        ESMetrics.getInstance().meter("DecodeDeepLinkTargetUrlError");
+        MonitorUtil.info("DecodeDeepLinkTargetUrlError");
         LOGGER.warn("Decode deeplink target url error." + ex.getMessage());
       }
 
       Matcher deeplinkEbaySitesMatcher = deeplinkEbaySites.matcher(deeplinkTargetUrl.toLowerCase());
       if (deeplinkEbaySitesMatcher.find()) {
-        ESMetrics.getInstance().meter("IncomingAppDeepLinkWithValidTargetURLSuccess");
+        MonitorUtil.info("IncomingAppDeepLinkWithValidTargetURLSuccess");
         deeplinkTargetUrl = CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(deeplinkTargetUrl);
         Event event = constructDeeplinkEvent(deeplinkTargetUrl, referer);
         return event;
       } else {
         LOGGER.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
-        ESMetrics.getInstance().meter(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
+        MonitorUtil.info(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         return null;
       }
     }

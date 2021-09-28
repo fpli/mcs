@@ -48,6 +48,9 @@ public class EventPayload implements Serializable {
   @JsonProperty("checkoutAPIClickTs")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String checkoutAPIClickTs = null;
+  @JsonProperty("placeOfferAPIClickTs")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String placeOfferAPIClickTs = null;
 
 
   /**
@@ -86,6 +89,19 @@ public class EventPayload implements Serializable {
 
   public void setCheckoutAPIClickTs(String checkoutAPIClickTs) {
     this.checkoutAPIClickTs = checkoutAPIClickTs;
+  }
+
+  /**
+   * placeOfferAPIClickTs, mandotary for the click from placeOfferAPI
+   * @return placeOfferAPIClickTs
+   **/
+  @ApiModelProperty(example = "1604475015939", value = "placeOfferAPIClickTs, mandotary for click from placeOfferAPI")
+  public String getPlaceOfferAPIClickTs() {
+    return placeOfferAPIClickTs;
+  }
+
+  public void setPlaceOfferAPIClickTs(String placeOfferAPIClickTs) {
+    this.placeOfferAPIClickTs = placeOfferAPIClickTs;
   }
 
 
