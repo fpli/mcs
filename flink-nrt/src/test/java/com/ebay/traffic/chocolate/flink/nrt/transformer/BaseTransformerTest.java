@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.flink.nrt.transformer;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -33,7 +32,6 @@ public class BaseTransformerTest {
   public void setUp() throws Exception {
     filterMessage = new FilterMessage();
     transformer = new BaseTransformer(filterMessage);
-    ESMetrics.init("test", "localhost");
   }
 
   @After
