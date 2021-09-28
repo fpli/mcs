@@ -12,13 +12,10 @@ import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import com.mysql.jdbc.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
-import javax.persistence.Id;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +53,6 @@ public class CouchbaseClient {
   private static final String UID_MAP_KEY = "uid";
   private static final String ADGUID_MAP_KEY = "adguid";
 
-  private final Metrics metrics = ESMetrics.getInstance();
 
   /**
    * Singleton

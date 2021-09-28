@@ -5,8 +5,6 @@ import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

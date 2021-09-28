@@ -11,7 +11,6 @@ import com.ebay.app.raptor.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +46,6 @@ public class EventListenerService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
-    ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions
-      .getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     int driverId = driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), Long.valueOf(SnapshotId.MAX_DRIVER_ID).intValue(), ApplicationOptions.getInstance().getByNameInteger(DRIVERID_RETRIES));
     if (driverId != -1) {

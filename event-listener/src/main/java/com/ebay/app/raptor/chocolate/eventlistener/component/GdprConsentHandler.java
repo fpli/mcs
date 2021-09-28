@@ -6,8 +6,6 @@ import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.monitoring.ESMetrics;
-import com.ebay.traffic.monitoring.Metrics;
 import com.iabtcf.decoder.TCString;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
