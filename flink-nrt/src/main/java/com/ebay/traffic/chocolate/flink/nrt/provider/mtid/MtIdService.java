@@ -7,6 +7,7 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.mtid;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.token.IAFServiceUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.ESMetrics;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 import org.slf4j.Logger;
@@ -67,14 +68,17 @@ public class MtIdService {
       Idlink idlink = response.readEntity(Idlink.class);
 
       if (idlink.getAccount() != null) {
+        ESMetrics.getInstance().meter("SuccessfullyCallingMTID");
         if(idlink.getAccount().size() > 0) {
           try {
             accountId = Long.parseLong(idlink.getAccount().get(0));
           } catch (NumberFormatException e) {
+              ESMetrics.getInstance().meter("NumberFormatException");
           }
         }
       }
     } catch (Exception ex) {
+      ESMetrics.getInstance().meter("ErrorCallingMTID");
     }
     return CompletableFuture.completedFuture(accountId);
   }

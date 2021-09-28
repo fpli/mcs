@@ -7,6 +7,7 @@ import com.ebay.kernel.patternmatch.dawg.Dawg;
 import com.ebay.kernel.patternmatch.dawg.DawgDictionary;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
+import com.ebay.traffic.monitoring.ESMetrics;
 import com.google.common.base.CaseFormat;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
@@ -203,6 +204,7 @@ public class BaseTransformer {
           query = StringConstants.EMPTY;
         }
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -358,6 +360,7 @@ public class BaseTransformer {
       try {
         result = new URL(link).getHost();
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -379,6 +382,7 @@ public class BaseTransformer {
       try {
         newUri = uri.replace(TransformerConstants.MKGROUPID, TransformerConstants.ADGROUPID).replace(TransformerConstants.MKTYPE, TransformerConstants.ADTYPE);
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -402,6 +406,7 @@ public class BaseTransformer {
         result = StringConstants.EMPTY;
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_QUERY, 1);
       LOGGER.warn("ErrorGetQuery", e);
     }
     return result;
@@ -525,6 +530,7 @@ public class BaseTransformer {
           query = StringConstants.EMPTY;
         }
       } catch (Exception e) {
+        ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
         LOGGER.warn(MALFORMED_URL, e);
       }
     }
@@ -546,6 +552,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PARAM_FROM_QUERY, 1);
       LOGGER.warn(MALFORMED_URL, e);
     }
     return StringConstants.EMPTY;
@@ -573,6 +580,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PERF_TRACK_NAME_VALUE, 1);
       LOGGER.warn(MALFORMED_URL, e);
     }
     return buf.toString();
@@ -611,6 +619,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_PARSEMTID_ERROR, 1);
       LOGGER.warn("ParseMtidError", e);
       LOGGER.warn("ParseMtidError query {}", query);
     }
@@ -635,6 +644,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_GET_PARAM_VALUE_FROM_QUERY, 1);
       LOGGER.warn(MALFORMED_URL, e);
     }
     return result;
@@ -762,6 +772,7 @@ public class BaseTransformer {
         result = Integer.parseInt(rotationId.substring(0, rotationId.indexOf(StringConstants.HYPHEN)));
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(MetricConstants.METRIC_IMK_DUMP_ERROR_PARSE_CLIENTID, 1);
       LOGGER.warn("cannot parse client id", e);
     }
 
@@ -780,6 +791,7 @@ public class BaseTransformer {
         }
       }
     } catch (Exception e) {
+      ESMetrics.getInstance().meter(METRIC_IMK_DUMP_MALFORMED, 1);
       LOGGER.warn(MALFORMED_URL, e);
     }
     return StringConstants.EMPTY;
