@@ -43,13 +43,5 @@
         "ruleName": "IABRobotRule",
         "blacklistName": "IAB_ABC_International_Spiders_and_Robots.txt"}
     ]
-  },
-  {
-    "channelType": "DISPLAY",
-    "filterRules": [
-      {
-        "ruleName": "IPBlacklistRule",
-        "blacklistName": "IP_Blacklist_EPN.txt"}
-    ]
   }
 ]

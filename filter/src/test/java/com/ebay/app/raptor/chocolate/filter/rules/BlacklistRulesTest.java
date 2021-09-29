@@ -52,18 +52,6 @@ public class BlacklistRulesTest {
         (ValidBrowserRule.class.getSimpleName(), "IAB_ABC_International_List_of_Valid_Browsers.txt", null));
     filterRules.get(ChannelType.EPN).put(IABRobotRule.class.getSimpleName(), new FilterRuleContent
         (IABRobotRule.class.getSimpleName(), "IAB_ABC_International_Spiders_and_Robots.txt"));
-
-
-    //Testing Data for DAP channel
-    if (filterRules.get(ChannelType.DISPLAY) == null) {
-      filterRules.put(ChannelType.DISPLAY, new HashMap<String, FilterRuleContent>());
-    }
-    filterRules.get(ChannelType.DISPLAY).put(TwoPassIABRule.class.getSimpleName(), new FilterRuleContent
-        (TwoPassIABRule.class.getSimpleName(), "IAB_ABC_International_List_of_Valid_Browsers.txt" , "IAB_ABC_International_Spiders_and_Robots.txt"));
-    filterRules.get(ChannelType.DISPLAY).put(TestBlacklistRule.class.getSimpleName(), new FilterRuleContent
-        (TestBlacklistRule.class.getSimpleName()));
-    filterRules.get(ChannelType.DISPLAY).put(IPBlacklistRule.class.getSimpleName(), new FilterRuleContent
-        (IPBlacklistRule.class.getSimpleName(), "IP_Blacklist_EPN.txt"));
   }
 
   /**
@@ -74,10 +62,6 @@ public class BlacklistRulesTest {
     BaseFilterRule wrule = TwoPassIABRule.createForTest(ChannelType.EPN);
     FilterRule rule = wrule;
     FilterRequest req = new FilterRequest();
-    assertEquals(1, rule.test(req));
-
-    wrule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
-    rule = wrule;
     assertEquals(1, rule.test(req));
   }
 
@@ -96,16 +80,6 @@ public class BlacklistRulesTest {
     rule.clear();
     assertEquals(1, rule.test(req1));
     assertEquals(1, rule.test(req1));
-
-    rule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
-    assertEquals(1, rule.test(req1));
-    assertEquals(1, rule.test(req2));
-    rule.addWhitelistEntry("bar|1|0");
-    assertEquals(1, rule.test(req1));
-    assertEquals(0, rule.test(req2));
-    rule.clear();
-    assertEquals(1, rule.test(req1));
-    assertEquals(1, rule.test(req1));
   }
 
   @Test
@@ -115,19 +89,6 @@ public class BlacklistRulesTest {
     req1.setUserAgent("foo");
     FilterRequest req2 = new FilterRequest();
     req2.setUserAgent("bar");
-    rule.addWhitelistEntry("foo|1|0");
-    rule.addWhitelistEntry("bar|1|0");
-    rule.addBlacklistEntry("bar|1||0|2|0");
-    assertEquals(0, rule.test(req1));
-    assertEquals(1, rule.test(req2));
-    rule.clear();
-    rule.addWhitelistEntry("foo|1|0");
-    rule.addWhitelistEntry("bar|1|0");
-    assertEquals(0, rule.test(req1));
-    assertEquals(0, rule.test(req2));
-
-    rule.clear();
-    rule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
     rule.addWhitelistEntry("foo|1|0");
     rule.addWhitelistEntry("bar|1|0");
     rule.addBlacklistEntry("bar|1||0|2|0");
@@ -159,21 +120,6 @@ public class BlacklistRulesTest {
     // whitelist, #blacklist
     req.setUserAgent("foozyx");
     assertEquals(0, rule.test(req));
-
-    rule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
-    rule.readFromStrings(wlStr, blStr);
-    // whitelist
-    req.setUserAgent("foo");
-    assertEquals(0, rule.test(req));
-    // #whitelist
-    req.setUserAgent("qizzy");
-    assertEquals(1, rule.test(req));
-    // whitelist, blacklist
-    req.setUserAgent("foobar");
-    assertEquals(1, rule.test(req));
-    // whitelist, #blacklist
-    req.setUserAgent("foozyx");
-    assertEquals(0, rule.test(req));
   }
 
   @Test
@@ -183,11 +129,6 @@ public class BlacklistRulesTest {
     String wlStr = "iCab|1|0\niLiga|1|0\niPhone|1|0\niPod touch|1|0\niPod+touch|1|0\niTunes|1|0";
     rule.readFromStrings(wlStr, blStr);
     FilterRequest req = new FilterRequest();
-    req.setUserAgent("iPhone SohuEnNews");
-    assertEquals(0, rule.test(req));
-
-    rule = TwoPassIABRule.createForTest(ChannelType.DISPLAY);
-    rule.readFromStrings(wlStr, blStr);
     req.setUserAgent("iPhone SohuEnNews");
     assertEquals(0, rule.test(req));
   }
@@ -243,28 +184,12 @@ public class BlacklistRulesTest {
     assertEquals(true, rule.contains("bar"));
     assertEquals(true, rule.contains("zyx"));
     assertEquals(false, rule.contains("baz"));
-
-    rule = new TestBlacklistRule(ChannelType.DISPLAY);
-    rule.readFromString("foo\nBAR\r#baz\nzyx");
-    assertEquals(true, rule.contains("foo"));
-    assertEquals(true, rule.contains("bar"));
-    assertEquals(true, rule.contains("zyx"));
-    assertEquals(false, rule.contains("baz"));
   }
 
   @Test
   public void testIPBlacklistRule() {
     IPBlacklistRule rule = new IPBlacklistRule(ChannelType.EPN);
     FilterRequest req = new FilterRequest();
-    req.setSourceIP("foo");
-    assertEquals(0, rule.test(req));
-    rule.add("foo");
-    assertEquals(1, rule.test(req));
-    rule.clear();
-    assertEquals(0, rule.test(req));
-
-
-    rule = new IPBlacklistRule(ChannelType.DISPLAY);
     req.setSourceIP("foo");
     assertEquals(0, rule.test(req));
     rule.add("foo");

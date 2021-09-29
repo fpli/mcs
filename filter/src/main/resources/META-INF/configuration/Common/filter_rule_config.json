@@ -43,43 +43,5 @@
         "ruleName": "IABRobotRule",
         "blacklistName": "IAB_ABC_International_Spiders_and_Robots.txt"}
     ]
-  },
-  {
-    "channelType": "DISPLAY",
-    "filterRules": [
-      {
-        "ruleName": "IPBlacklistRule",
-        "blacklistName": "IP_Blacklist_EPN.txt"}
-    ]
-  },
-  {
-    "channelType": "PAID_SEARCH",
-    "filterRules": [
-      
-    ]
-  },
-  {
-    "channelType": "ROI",
-    "filterRules": [
-
-    ]
-  },
-  {
-    "channelType": "SOCIAL_MEDIA",
-    "filterRules": [
-
-    ]
-  },
-  {
-    "channelType": "NATURAL_SEARCH",
-    "filterRules": [
-
-    ]
-  },
-  {
-    "channelType": "SEARCH_ENGINE_FREE_LISTINGS",
-    "filterRules": [
-
-    ]
   }
 ]
