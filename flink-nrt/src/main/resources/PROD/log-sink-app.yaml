@@ -2,7 +2,7 @@ job:
   name: log-sink-app
 
 source:
-  topic: marketing.tracking.chocolate-log,marketing.tracking.chocolate-log-preprod
+  topic: marketing.tracking.chocolate-log,marketing.tracking.chocolate-log-preprod,marketing.tracking.self-service-log,marketing.tracking.self-service-log-preprod,marketing.tracking.metadata-api-log
   name: source
   uid: source
   properties: |-
