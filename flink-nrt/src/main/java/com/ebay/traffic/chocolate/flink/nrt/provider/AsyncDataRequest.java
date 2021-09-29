@@ -9,7 +9,6 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 
@@ -29,18 +28,8 @@ import java.util.concurrent.Future;
  */
 public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterMessageV5> {
 
-  void initESMetrics() {
-    if(ESMetrics.getInstance() == null) {
-      Properties properties = PropertyMgr.getInstance()
-          .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
-      ESMetrics.init(properties.getProperty(PropertyConstants.ELASTICSEARCH_INDEX_PREFIX),
-          properties.getProperty(PropertyConstants.ELASTICSEARCH_URL));
-    }
-  }
-
   @Override
   public void asyncInvoke(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
-    initESMetrics();
 
     if( ChannelAction.CLICK.equals(input.getChannelAction())
         && input.getUserId() != null
@@ -52,13 +41,8 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterM
         try {
           Long userId = accountId.get();
           input.setUserId(userId);
-          if (0 != userId) {
-            ESMetrics.getInstance().meter("MTID_GOT_USERID");
-          }
-          ESMetrics.getInstance().mean("MTID_LATENCY", System.currentTimeMillis() - timeMillis);
           return input;
         } catch (InterruptedException | ExecutionException e) {
-          ESMetrics.getInstance().meter("MTID_GOT_USERID_ERROR");
           return input;
         }
       }).thenAccept((FilterMessageV5 outputFilterMessage) -> {
@@ -77,8 +61,6 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterM
    */
   @Override
   public void timeout(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
-    initESMetrics();
-    ESMetrics.getInstance().meter("ASYNC_IO_TIMEOUT");
     resultFuture.complete(Collections.singleton(input));
   }
 }

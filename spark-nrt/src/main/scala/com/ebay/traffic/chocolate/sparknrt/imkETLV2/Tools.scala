@@ -5,7 +5,6 @@ import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util.Date
 import java.util.regex.Pattern
 
-import com.ebay.traffic.monitoring.{ESMetrics, Metrics}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.{Logger, LoggerFactory}

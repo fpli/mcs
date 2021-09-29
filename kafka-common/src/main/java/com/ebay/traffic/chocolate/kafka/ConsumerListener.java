@@ -1,8 +1,7 @@
 package com.ebay.traffic.chocolate.kafka;
 
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -20,13 +19,10 @@ import java.util.Set;
 public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
   private static final Logger LOG = Logger.getLogger(ConsumerListener.class);
 
-  private final Metrics metrics;
-
   private final Consumer<K, V> consumer;
 
   public ConsumerListener(Consumer<K, V> consumer) {
     this.consumer = consumer;
-    this.metrics = ESMetrics.getInstance();
   }
 
   @Override
@@ -34,7 +30,7 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
 
     for (TopicPartition partition : partitions) {
       long offset = consumer.position(partition);
-      metrics.trace2("KafkaConsumerOffset-Assigned", offset,
+      MonitorUtil.info("KafkaConsumerOffset-Assigned", offset,
               Field.of("topic", partition.topic()),
               Field.of("consumer", partition.partition()));
     }
@@ -47,7 +43,7 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
     for (TopicPartition partition : partitions) {
       long offset = consumer.position(partition);
       revoked.put(partition, new OffsetAndMetadata(offset));
-      metrics.trace2("KafkaConsumerOffset-Revoked", offset,
+      MonitorUtil.info("KafkaConsumerOffset-Revoked", offset,
               Field.of("topic", partition.topic()),
               Field.of("consumer", partition.partition()));
     }
@@ -56,7 +52,7 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
       consumer.commitSync(revoked);
     } catch (Exception e) {
       LOG.warn("Commit offset failed!", e);
-      metrics.meter("CommitOffsetFailed");
+      MonitorUtil.info("CommitOffsetFailed");
     }
   }
 
@@ -66,7 +62,7 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
   public void commitSync() {
     Set<TopicPartition> assignment = consumer.assignment();
     for (TopicPartition tp : assignment) {
-      metrics.trace2("KafkaConsumerOffset", consumer.position(tp),
+      MonitorUtil.info("KafkaConsumerOffset", consumer.position(tp),
               Field.of("topic", tp.topic()),
               Field.of("consumer", tp.partition()));
     }
@@ -75,7 +71,7 @@ public class ConsumerListener<K, V> implements ConsumerRebalanceListener {
       consumer.commitSync();
     } catch (Exception e) {
       LOG.warn("Commit offset failed!", e);
-      metrics.meter("CommitOffsetFailed");
+      MonitorUtil.info("CommitOffsetFailed");
     }
   }
 }

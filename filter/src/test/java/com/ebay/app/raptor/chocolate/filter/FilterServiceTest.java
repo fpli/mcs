@@ -72,21 +72,6 @@ public class FilterServiceTest {
     producer.send(new ProducerRecord<>("dev_listener", 2L, ePNmessage2));
     producer.send(new ProducerRecord<>("dev_listener", 3L, ePNmessage3));
 
-    ListenerMessage displayMessage1 = newListenerMessage(
-            ChannelType.DISPLAY, ChannelAction.CLICK, 1L, 11L, 111L);
-    ListenerMessage displayMessage2 = newListenerMessage(
-            ChannelType.DISPLAY, ChannelAction.IMPRESSION, 2L, 22L, 333L);
-
-    producer.send(new ProducerRecord<>("dev_listener_display", 1L, displayMessage1));
-    producer.send(new ProducerRecord<>("dev_listener_display", 2L, displayMessage2));
-
-    ListenerMessage roiMessage = newROIMessage(
-        ChannelType.ROI, ChannelAction.ROI, 1L, -1L, -1L);
-    ListenerMessage roverRoiMessage = roverROIMessage(
-        ChannelType.ROI, ChannelAction.ROI, 2L, -1L, -1L);
-    producer.send(new ProducerRecord<>("dev_listener_roi", 1L, roiMessage));
-    producer.send(new ProducerRecord<>("dev_listener_roi", 2L, roverRoiMessage));
-
     producer.flush();
     producer.close();
   }
@@ -118,35 +103,5 @@ public class FilterServiceTest {
     Assert.assertEquals(1L, filterMessagesEPN.get(1L).getSnapshotId().longValue());
     Assert.assertEquals(2L, filterMessagesEPN.get(2L).getSnapshotId().longValue());
     Assert.assertEquals(3L, filterMessagesEPN.get(3L).getSnapshotId().longValue());
-
-    Consumer<Long, FilterMessage> consumerDisplay = kafkaCluster.createConsumer(
-            LongDeserializer.class, FilterMessageDeserializer.class);
-
-    Map<Long, FilterMessage> filterMessagesDisplay = pollFromKafkaTopic(
-            consumerDisplay, Arrays.asList("dev_filter_display"), 2, 60 * 1000);
-    consumerDisplay.close();
-
-    Assert.assertEquals(2, filterMessagesDisplay.size());
-    Assert.assertEquals(1L, filterMessagesDisplay.get(1L).getSnapshotId().longValue());
-    Assert.assertEquals(2L, filterMessagesDisplay.get(2L).getSnapshotId().longValue());
-    Assert.assertEquals(ChannelAction.IMPRESSION, filterMessagesDisplay.get(2L).getChannelAction());
-
-    Consumer<Long, FilterMessage> consumerROI = kafkaCluster.createConsumer(
-        LongDeserializer.class, FilterMessageDeserializer.class);
-
-    Map<Long, FilterMessage> filterMessagesROI = pollFromKafkaTopic(
-      consumerROI, Arrays.asList("dev_filter_roi"), 1, 60 * 1000);
-
-    Assert.assertEquals(1, filterMessagesROI.size());
-    Assert.assertEquals(1L, filterMessagesROI.get(1L).getSnapshotId().longValue());
-    Assert.assertEquals(ChannelAction.ROI, filterMessagesROI.get(1L).getChannelAction());
-
-    Map<Long, FilterMessage> filterMessagesRoverROI = pollFromKafkaTopic(
-      consumerROI, Arrays.asList("dev_filter_new_roi"), 1, 60 * 1000);
-    consumerROI.close();
-
-    Assert.assertEquals(1, filterMessagesRoverROI.size());
-    Assert.assertEquals(2L, filterMessagesRoverROI.get(2L).getSnapshotId().longValue());
-    Assert.assertEquals(ChannelAction.ROI, filterMessagesRoverROI.get(2L).getChannelAction());
   }
 }
