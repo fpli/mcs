@@ -5,7 +5,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
@@ -26,10 +26,10 @@ import java.util.concurrent.Future;
  * @author xiangli4
  * @since 2020/6/09
  */
-public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterMessageV5> {
+public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV6, FilterMessageV6> {
 
   @Override
-  public void asyncInvoke(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
+  public void asyncInvoke(FilterMessageV6 input, ResultFuture<FilterMessageV6> resultFuture) throws Exception {
 
     if( ChannelAction.CLICK.equals(input.getChannelAction())
         && input.getUserId() != null
@@ -45,7 +45,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterM
         } catch (InterruptedException | ExecutionException e) {
           return input;
         }
-      }).thenAccept((FilterMessageV5 outputFilterMessage) -> {
+      }).thenAccept((FilterMessageV6 outputFilterMessage) -> {
         resultFuture.complete(Collections.singleton(outputFilterMessage));
       });
     } else {
@@ -60,7 +60,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV5, FilterM
    * @throws Exception exception
    */
   @Override
-  public void timeout(FilterMessageV5 input, ResultFuture<FilterMessageV5> resultFuture) throws Exception {
+  public void timeout(FilterMessageV6 input, ResultFuture<FilterMessageV6> resultFuture) throws Exception {
     resultFuture.complete(Collections.singleton(input));
   }
 }
