@@ -271,6 +271,9 @@ public class CollectionServiceUtilTest {
 
     targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
     assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    targetUrl = "ebay://link?nav=item.deals&ul_skipRefererCheck=true&ul_alt=store&sabg=ce2e0bea17b0a44ceaf29dd0ffbf2938&sabc=ce2e072617b0a12bbc23843df98e30c8&campid=5338757545&mkevt=1&mkcid=4&mkrid=711-58542-18990-20&ufes_redirect=true";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
   }
 
   @Test
