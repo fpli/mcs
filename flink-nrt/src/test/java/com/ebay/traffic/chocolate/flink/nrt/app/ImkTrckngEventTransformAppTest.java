@@ -3,7 +3,7 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import io.ebay.rheos.kafka.client.StreamConnectorConfig;
 import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
@@ -102,85 +102,85 @@ public class ImkTrckngEventTransformAppTest {
   @SuppressWarnings("unchecked")
   @Test
   public void filterEbaySites() throws Exception {
-    StreamFilter<FilterMessageV5> operator = new StreamFilter<>(new ImkTrckngEventTransformApp.FilterEbaySites());
-    OneInputStreamOperatorTestHarness<FilterMessageV5, FilterMessageV5> testHarness = new OneInputStreamOperatorTestHarness<>(operator);
+    StreamFilter<FilterMessageV6> operator = new StreamFilter<>(new ImkTrckngEventTransformApp.FilterEbaySites());
+    OneInputStreamOperatorTestHarness<FilterMessageV6, FilterMessageV6> testHarness = new OneInputStreamOperatorTestHarness<>(operator);
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
 
-    FilterMessageV5 filterMessage = createSourceRecord(json);
+    FilterMessageV6 filterMessage = createSourceRecord(json);
 
-    FilterMessageV5 testMessage1 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage1 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage1.setSnapshotId(1L);
     testMessage1.setChannelType(ChannelType.ROI);
     testMessage1.setChannelAction(ChannelAction.ROI);
     testMessage1.setUri("https://www.qa.ebay.com/i/180010255913");
     testMessage1.setReferer("http://www.ebay.com");
 
-    FilterMessageV5 testMessage2 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage2 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage2.setSnapshotId(2L);
     testMessage2.setChannelType(ChannelType.DISPLAY);
     testMessage2.setChannelAction(ChannelAction.SERVE);
     testMessage2.setUri("https://www.qa.ebay.com/itm/180010255913");
     testMessage2.setReferer("http://www.ebay.com");
 
-    FilterMessageV5 testMessage3 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage3 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage3.setSnapshotId(3L);
     testMessage3.setChannelType(ChannelType.DISPLAY);
     testMessage3.setChannelAction(ChannelAction.CLICK);
     testMessage3.setUri("https://www.qa.ebay.com/p/180010255913");
     testMessage3.setReferer("www.ebay.com");
 
-    FilterMessageV5 testMessage4 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage4 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage4.setSnapshotId(4L);
     testMessage4.setChannelType(ChannelType.DISPLAY);
     testMessage4.setChannelAction(ChannelAction.CLICK);
     testMessage4.setUri("https://www.qa.ebay.com/b/180010255913");
     testMessage4.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
-    FilterMessageV5 testMessage5 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage5 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage5.setSnapshotId(5L);
     testMessage5.setChannelType(ChannelType.DISPLAY);
     testMessage5.setChannelAction(ChannelAction.CLICK);
     testMessage5.setUri("https://www.qa.ebay.com/e/180010255913");
     testMessage5.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
-    FilterMessageV5 testMessage6 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage6 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage6.setSnapshotId(6L);
     testMessage6.setChannelType(ChannelType.DISPLAY);
     testMessage6.setChannelAction(ChannelAction.CLICK);
     testMessage6.setUri("https://www.qa.ebay.com/sch/180010255913");
     testMessage6.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
-    FilterMessageV5 testMessage7 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage7 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage7.setSnapshotId(7L);
     testMessage7.setChannelType(ChannelType.DISPLAY);
     testMessage7.setChannelAction(ChannelAction.CLICK);
     testMessage7.setUri("https://www.qa.ebay.com/deals/180010255913");
     testMessage7.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
-    FilterMessageV5 testMessage8 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage8 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage8.setSnapshotId(8L);
     testMessage8.setChannelType(ChannelType.DISPLAY);
     testMessage8.setChannelAction(ChannelAction.CLICK);
     testMessage8.setUri("https://www.qa.ebay.com");
     testMessage8.setReferer("www.ebay.com/ulk/sch/?_nkw=iphone+cases&mkevt=1&mkrid=123&mkcid=2&keyword=testkeyword&crlp=123&MT_ID=1geo_id=123&rlsatarget=123&adpos=1&device=m&loc=1&poi=1&abcId=1&cmpgn=123&sitelnk=123&test=XiangMobile");
 
-    FilterMessageV5 testMessage9 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage9 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage9.setSnapshotId(9L);
     testMessage9.setChannelType(ChannelType.DISPLAY);
     testMessage9.setChannelAction(ChannelAction.CLICK);
     testMessage9.setUri("https://www.qa.ebay.com");
     testMessage9.setReferer("https://ebay.mtag.io/");
 
-    FilterMessageV5 testMessage10 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage10 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage10.setSnapshotId(10L);
     testMessage10.setChannelType(ChannelType.DISPLAY);
     testMessage10.setChannelAction(ChannelAction.IMPRESSION);
     testMessage10.setUri("https://www.qa.ebay.com");
     testMessage10.setReferer("https://ebay.mtag.io/");
 
-    FilterMessageV5 testMessage11 = FilterMessageV5.newBuilder(filterMessage).build();
+    FilterMessageV6 testMessage11 = FilterMessageV6.newBuilder(filterMessage).build();
     testMessage11.setSnapshotId(11L);
     testMessage11.setChannelType(ChannelType.DISPLAY);
     testMessage11.setChannelAction(ChannelAction.CLICK);
@@ -199,7 +199,7 @@ public class ImkTrckngEventTransformAppTest {
     testHarness.processElement(testMessage10, System.currentTimeMillis());
     testHarness.processElement(testMessage11, System.currentTimeMillis());
 
-    List<FilterMessageV5> expected = new ArrayList<>();
+    List<FilterMessageV6> expected = new ArrayList<>();
     expected.add(testMessage1);
     expected.add(testMessage4);
     expected.add(testMessage5);
@@ -210,13 +210,13 @@ public class ImkTrckngEventTransformAppTest {
     expected.add(testMessage10);
     expected.add(testMessage11);
 
-    List<FilterMessageV5> actual = new ArrayList<>();
-    testHarness.getOutput().forEach(elem -> actual.add(((StreamRecord<FilterMessageV5>) elem).getValue()));
+    List<FilterMessageV6> actual = new ArrayList<>();
+    testHarness.getOutput().forEach(elem -> actual.add(((StreamRecord<FilterMessageV6>) elem).getValue()));
 
     assertEquals(expected, actual);
   }
 
-  private FilterMessageV5 createSourceRecord(String json) throws IOException {
+  private FilterMessageV6 createSourceRecord(String json) throws IOException {
     return FilterMessage.readFromJSON(json);
   }
 
@@ -224,7 +224,7 @@ public class ImkTrckngEventTransformAppTest {
   @Test
   public void decodeFilterMessageFunction() throws Exception {
     ImkTrckngEventTransformApp.DecodeFilterMessageFunction decodeFilterMessageFunction = new ImkTrckngEventTransformApp.DecodeFilterMessageFunction();
-    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, FilterMessageV5> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(decodeFilterMessageFunction));
+    OneInputStreamOperatorTestHarness<ConsumerRecord<byte[], byte[]>, FilterMessageV6> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(decodeFilterMessageFunction));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
@@ -238,9 +238,9 @@ public class ImkTrckngEventTransformAppTest {
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
     assertEquals(1, output.size());
-    StreamRecord<FilterMessageV5> streamRecord = (StreamRecord<FilterMessageV5>) output.poll();
+    StreamRecord<FilterMessageV6> streamRecord = (StreamRecord<FilterMessageV6>) output.poll();
     assertNotNull(streamRecord);
-    FilterMessageV5 behaviorEvent = streamRecord.getValue();
+    FilterMessageV6 behaviorEvent = streamRecord.getValue();
     assertEquals(Long.valueOf(2333219813745L), behaviorEvent.getSnapshotId());
   }
 
@@ -292,12 +292,12 @@ public class ImkTrckngEventTransformAppTest {
   @Test
   public void transformFunction() throws Exception {
     ImkTrckngEventTransformApp.TransformFunction transformFunction = new ImkTrckngEventTransformApp.TransformFunction();
-    OneInputStreamOperatorTestHarness<FilterMessageV5, Tuple3<String, Long, byte[]>> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformFunction));
+    OneInputStreamOperatorTestHarness<FilterMessageV6, Tuple3<String, Long, byte[]>> testHarness = new OneInputStreamOperatorTestHarness<>(new StreamMap<>(transformFunction));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
 
-    FilterMessageV5 filterMessage = createSourceRecord(json);
+    FilterMessageV6 filterMessage = createSourceRecord(json);
 
     testHarness.processElement(filterMessage, System.currentTimeMillis());
 

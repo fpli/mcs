@@ -28,9 +28,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -390,9 +388,11 @@ public class CollectionService {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.SITE_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL) {
+      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL ||
+              urlRefChannel.getRight() == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
         fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
       } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
           || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
@@ -420,6 +420,8 @@ public class CollectionService {
   }
   protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
     if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
+      return false;
+    } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType) {
       return false;
     }
 
@@ -657,9 +659,9 @@ public class CollectionService {
 
 
     // add channel specific tags, and produce message for EPN and IMK
-    if (channelType == ChannelIdEnum.SITE_EMAIL) {
+    if (channelType == ChannelIdEnum.SITE_EMAIL || channelType == ChannelIdEnum.SITE_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-    } else if (channelType == ChannelIdEnum.MRKT_EMAIL) {
+    } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
     } else {
       firePMEvent(baseEvent, requestContext);

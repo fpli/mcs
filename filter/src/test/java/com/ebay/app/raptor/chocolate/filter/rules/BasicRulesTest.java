@@ -30,7 +30,7 @@ public class BasicRulesTest {
   }
 
   @Before
-  public void addTestRules() throws IOException {
+  public void addTestRules() {
     Map<ChannelType, Map<String, FilterRuleContent>> filterRules = ApplicationOptions.filterRuleConfigMap;
     filterRules.get(ChannelType.EPN).put(CguidStalenessWindowRule.class.getSimpleName(), new FilterRuleContent
         (CguidStalenessWindowRule.class.getSimpleName(), null, null, 500l));
@@ -40,15 +40,6 @@ public class BasicRulesTest {
         (ProtocolRule.class.getSimpleName()));
     filterRules.get(ChannelType.EPN).put(MissingRefererRule.class.getSimpleName(), new FilterRuleContent
         (MissingRefererRule.class.getSimpleName()));
-    if (filterRules.get(ChannelType.DISPLAY) == null) {
-      filterRules.put(ChannelType.DISPLAY, new HashMap<String, FilterRuleContent>());
-    }
-    filterRules.get(ChannelType.DISPLAY).put(InternalTrafficRule.class.getSimpleName(), new FilterRuleContent
-        (InternalTrafficRule.class.getSimpleName()));
-    filterRules.get(ChannelType.DISPLAY).put(ProtocolRule.class.getSimpleName(), new FilterRuleContent
-        (ProtocolRule.class.getSimpleName()));
-    filterRules.get(ChannelType.DISPLAY).put(MissingRefererRule.class.getSimpleName(), new FilterRuleContent
-        (MissingRefererRule.class.getSimpleName()));
   }
 
   @Test
@@ -57,14 +48,6 @@ public class BasicRulesTest {
     FilterRule rule = wrule;
 
     FilterRequest req = new FilterRequest();
-    assertEquals(0, rule.test(req));
-    req.setPrefetch(true);
-    assertEquals(1, rule.test(req));
-
-    // DISPLAY Channel
-    wrule = new PrefetchRule(ChannelType.DISPLAY);
-    rule = wrule;
-    req = new FilterRequest();
     assertEquals(0, rule.test(req));
     req.setPrefetch(true);
     assertEquals(1, rule.test(req));
@@ -84,31 +67,12 @@ public class BasicRulesTest {
     assertEquals(1, rule.test(req));
     req.setProtocol(HttpMethod.PUT);
     assertEquals(1, rule.test(req));
-
-    wrule = new ProtocolRule(ChannelType.DISPLAY);
-    rule = wrule;
-    req = new FilterRequest();
-    assertEquals(1, rule.test(req));
-    req.setProtocol(HttpMethod.GET);
-    assertEquals(0, rule.test(req));
-    req.setProtocol(HttpMethod.POST);
-    assertEquals(0, rule.test(req));
-    req.setProtocol(HttpMethod.HEAD);
-    assertEquals(1, rule.test(req));
-    req.setProtocol(HttpMethod.PUT);
-    assertEquals(1, rule.test(req));
   }
 
   @Test
   public void testMissingRefererRule() {
     MissingRefererRule rule = new MissingRefererRule(ChannelType.EPN);
     FilterRequest req = new FilterRequest();
-    assertEquals(1, rule.test(req));
-    req.setReferrerDomain("foo");
-    assertEquals(0, rule.test(req));
-
-    rule = new MissingRefererRule(ChannelType.DISPLAY);
-    req = new FilterRequest();
     assertEquals(1, rule.test(req));
     req.setReferrerDomain("foo");
     assertEquals(0, rule.test(req));
@@ -142,18 +106,6 @@ public class BasicRulesTest {
     assertEquals(0, rule.test(req));
     req.setPublisherId(1);
     assertEquals(0, rule.test(req));
-
-    // DISPLAY Channel
-    wrule = new PublisherValidRule(ChannelType.DISPLAY);
-    rule = wrule;
-    req.setPublisherId(-100l);
-    assertEquals(1, rule.test(req));
-    req.setPublisherId(-1l);
-    assertEquals(1, rule.test(req));
-    req.setPublisherId(0);
-    assertEquals(0, rule.test(req));
-    req.setPublisherId(1);
-    assertEquals(0, rule.test(req));
   }
 
   @Test
@@ -173,20 +125,6 @@ public class BasicRulesTest {
     assertEquals(0, rule.test(req));
     assertEquals(1, rule.test(req));
     assertEquals(1, rule.test(req));
-
-    // DISPLAY Channel
-    wrule = new CampaignClickThroughRateRule(ChannelType.DISPLAY);
-    rule = wrule;
-    req.setCampaignId(1);
-    req.setChannelAction(ChannelAction.IMPRESSION);
-    for (int i = 0; i < 198; ++i) {
-      assertEquals(0, rule.test(req));
-    }
-
-    req.setChannelAction(ChannelAction.CLICK);
-    assertEquals(0, rule.test(req));
-    assertEquals(0, rule.test(req));
-    assertEquals(0, rule.test(req));
   }
 
   @Test
@@ -208,23 +146,6 @@ public class BasicRulesTest {
 
     // The 100th fails
     assertEquals(1, rule.test(req));
-
-    // DISPLAY Channel
-    rule = new CampaignClickThroughRateRule(ChannelType.DISPLAY);
-    req = new FilterRequest();
-    req.setChannelAction(ChannelAction.CLICK);
-    req.setCampaignId(2);
-    // Test the first 99 events do not fail no matter what the ratio is
-    for (int i = 0; i < 50; ++i) {
-      assertEquals(0, rule.test(req));
-    }
-    req.setChannelAction(ChannelAction.IMPRESSION);
-    for (int i = 0; i < 49; ++i) {
-      assertEquals(0, rule.test(req));
-    }
-
-    // The 100th fails
-    assertEquals(0, rule.test(req));
   }
 
   @Test
@@ -242,21 +163,6 @@ public class BasicRulesTest {
     }
 
     assertEquals(1, rule2.test(req));
-
-    //DISPLAY Channel
-    rule1 = new CampaignClickThroughRateRule(ChannelType.DISPLAY);
-    rule2 = new CampaignClickThroughRateRule(ChannelType.DISPLAY);
-
-    // Test that the two rule instances share the log
-    req = new FilterRequest();
-    req.setCampaignId(3);
-    req.setChannelAction(ChannelAction.CLICK);
-    assertEquals(0, rule2.test(req));
-    for (int i = 0; i < 100; ++i) {
-      rule1.test(req);
-    }
-
-    assertEquals(0, rule2.test(req));
   }
 
   @Test
@@ -285,36 +191,12 @@ public class BasicRulesTest {
     req.setSourceIP("");
     req.setReferrerDomain("www.bing.com");
     assertEquals(0, rule.test(req));
-
-    rule = new InternalTrafficRule(ChannelType.DISPLAY);
-    req = new FilterRequest();
-    req.setSourceIP("204.79.197.200");
-    req.setReferrerDomain("www.bing.com");
-    assertEquals(0, rule.test(req));
-    req.setSourceIP("");
-    req.setReferrerDomain("www.bing.com");
-    assertEquals(0, rule.test(req));
   }
 
   @Test
   public void internalTrafficRuleFailsInternal() {
     FilterRule rule = new InternalTrafficRule(ChannelType.EPN);
     FilterRequest req = new FilterRequest();
-    req.setSourceIP("192.168.0.1");
-    req.setReferrerDomain("www.bing.com");
-    assertEquals(1, rule.test(req));
-    req.setSourceIP("127.0.0.1");
-    assertEquals(1, rule.test(req));
-    req.setSourceIP("10.64.251.5");       // In-VPN IP
-    assertEquals(1, rule.test(req));
-    req.setSourceIP("204.79.197.200");
-    req.setReferrerDomain("chocolate-qa-slc-1-4595.slc01.dev.ebayc3.com");
-    assertEquals(0, rule.test(req));
-    req.setReferrerDomain("localhost");
-    assertEquals(1, rule.test(req));
-
-    rule = new InternalTrafficRule(ChannelType.DISPLAY);
-    req = new FilterRequest();
     req.setSourceIP("192.168.0.1");
     req.setReferrerDomain("www.bing.com");
     assertEquals(1, rule.test(req));

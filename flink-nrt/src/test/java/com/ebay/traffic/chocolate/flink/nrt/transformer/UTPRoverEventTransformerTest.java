@@ -366,7 +366,7 @@ public class UTPRoverEventTransformerTest {
   @Test
   public void getIsBot() {
     assertFalse(transformer.getIsBot());
-    transformer = new UTPRoverEventTransformer("behavior.pulsar.misc.bot", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+    transformer = new UTPRoverEventTransformer("behavior.pulsar.customized.marketing-tracking.bot", 0, 0L, genericRecord, rheosEvent, schemaVersion);
     assertTrue(transformer.getIsBot());
   }
 

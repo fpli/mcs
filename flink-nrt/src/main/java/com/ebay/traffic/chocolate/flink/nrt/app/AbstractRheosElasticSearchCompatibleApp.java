@@ -58,7 +58,7 @@ public abstract class AbstractRheosElasticSearchCompatibleApp<IN, OUT> {
     );
     esSinkBuilder.setFailureHandler((ActionRequestFailureHandler) (actionRequest, throwable, i, requestIndexer) -> {
       // log error but not throw exceptions
-      LOGGER.warn("Fail to write es.");
+      LOGGER.warn("Fail to write es.", throwable);
     });
 
     esSinkBuilder.setBulkFlushMaxActions(NUM_MAX_ACTIONS);
