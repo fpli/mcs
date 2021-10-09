@@ -16,6 +16,11 @@ public class UrlPatternUtil {
   public static final Pattern ebaysites = Pattern.compile(
       "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)",
       Pattern.CASE_INSENSITIVE);
+
+  public static final Pattern ebaySitesIncludeULK = Pattern.compile(
+          "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/.*)",
+          Pattern.CASE_INSENSITIVE);
+
   public static final Pattern roversites = Pattern.compile(
       "^(http[s]?:\\/\\/)?rover\\.(qa\\.)?ebay\\.[\\w-.]+(\\/.*)",
       Pattern.CASE_INSENSITIVE);
@@ -37,4 +42,8 @@ public class UrlPatternUtil {
   public static final Pattern signinsites = Pattern.compile("^(http[s]?:\\/\\/)?signin\\.([\\w-.]+\\.)?ebay\\.[\\w-.]+(\\/.*)",
       Pattern.CASE_INSENSITIVE);
 
+  // ulk link
+  public static final Pattern ulksites = Pattern.compile(
+          "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+(\\/ulk\\/.*)",
+          Pattern.CASE_INSENSITIVE);
 }

@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
-import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
  * @author xiangli4
@@ -569,5 +569,28 @@ public class CollectionServiceUtil {
       }
     }
     return isROIFromPlaceofferAPI;
+  }
+
+  /**
+   * Determine whether the click is a duplicate click caused by CM ULK link
+   * 1. channel is marketing email or site email
+   * 2. click url is ebay://
+   * 3. referer is ulk link
+   * 4. user agent is iOS
+   * If so, send to internal topic
+   */
+  public static boolean isCMUlkDuplicateClick(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+    boolean isCMULKDuplicateClick = false;
+
+    Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
+    Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
+
+    if ((ChannelType.SITE_EMAIL == channelType || ChannelType.MRKT_EMAIL == channelType)
+         && deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
+         && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()) {
+      isCMULKDuplicateClick = true;
+    }
+
+    return isCMULKDuplicateClick;
   }
 }
