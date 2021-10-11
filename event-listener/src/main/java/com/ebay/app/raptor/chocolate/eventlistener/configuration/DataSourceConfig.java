@@ -32,6 +32,7 @@ public class DataSourceConfig {
         dataSource.setUrl(databaseProperties.getBridgeConfig().getUrl());
         dataSource.setUsername(userName);
         logger.info("channel name config {} / pass config {}", userName, pass);
+        fideliusClient.create(pass,"airflow");
         dataSource.setPassword(fideliusClient.getContent(pass));
         dataSource.setValidationQuery(databaseProperties.getBridgeConfig().getTestStatement());
         return dataSource;
