@@ -19,9 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,6 +100,14 @@ public class CollectionServiceUtil {
   private static final List<String> REFERER_WHITELIST = Arrays.asList(
           "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
+
+  /**
+   * Customer marketing channels
+   */
+  private static final Set<ChannelType> CM_CHANNELS = new HashSet<>(
+          Arrays.asList(ChannelType.SITE_EMAIL, ChannelType.MRKT_EMAIL,
+                  ChannelType.MRKT_MESSAGE_CENTER, ChannelType.SITE_MESSAGE_CENTER)
+  );
 
   /**
    * get app id from user agent info
@@ -573,7 +579,7 @@ public class CollectionServiceUtil {
 
   /**
    * Determine whether the click is a duplicate click caused by CM ULK link
-   * 1. channel is marketing email or site email
+   * 1. CM channels
    * 2. click url is ebay://
    * 3. referer is ulk link
    * 4. user agent is iOS
@@ -585,9 +591,10 @@ public class CollectionServiceUtil {
     Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
     Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
 
-    if ((ChannelType.SITE_EMAIL == channelType || ChannelType.MRKT_EMAIL == channelType)
+    if (CM_CHANNELS.contains(channelType)
          && deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
-         && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()) {
+         && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
+         && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
       isCMULKDuplicateClick = true;
     }
 

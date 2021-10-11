@@ -1040,6 +1040,16 @@ public class EventListenerServiceTest {
 
     event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
     event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxAndroid, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
