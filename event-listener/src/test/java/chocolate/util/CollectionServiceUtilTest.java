@@ -349,24 +349,27 @@ public class CollectionServiceUtilTest {
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Mobile Safari/537.36");
     UserAgentInfo dwebAgentInfo = agentParser.parse("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
 
-    String deeplinkUrl = "ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123";
+    String iphoneDeeplinkUrl = "ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123";
+    String ipadDeeplinkUrl = "padebay://link?nav=home&mkevt=1&mkcid=7";
     String ulkReferer = "https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7";
     String chocolateUrl = "https://www.ebay.com/itm/154613805298?mkevt=1&mkpid=0&emsid=e11000.m44.l9734&mkcid=7&ch=osgood&euid=82786bfb68184f0d8499977526dabee4&bu=45167398409&osub=-1%7E1&crd=20210923074143&segname=11000&sojTags=ch%3Dch%2Cbu%3Dbu%2Cosub%3Dosub%2Ccrd%3Dcrd%2Csegname%3Dsegname%2Cchnl%3Dmkcid";
     String referer = "android-app://com.google.android.gm/";
 
-    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.MRKT_EMAIL, ulkReferer, deeplinkUrl, iphoneAgentInfo));
-    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, iphoneAgentInfo));
-    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, ipadAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.DISPLAY, ulkReferer, deeplinkUrl, iphoneAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.EPN, ulkReferer, deeplinkUrl, iphoneAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SOCIAL_MEDIA, ulkReferer, deeplinkUrl, iphoneAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, referer, deeplinkUrl, iphoneAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, "", deeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.MRKT_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.MRKT_EMAIL, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.DISPLAY, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.EPN, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SOCIAL_MEDIA, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, referer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, "", ipadDeeplinkUrl, ipadAgentInfo));
     assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, chocolateUrl, iphoneAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, androidAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, iphoneMwebAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, ipadMwebAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, androidMwebAgentInfo));
-    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, deeplinkUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, chocolateUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, ipadMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isCMUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, dwebAgentInfo));
   }
 }
