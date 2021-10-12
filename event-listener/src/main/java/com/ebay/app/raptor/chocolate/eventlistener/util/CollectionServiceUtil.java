@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.traffic.monitoring.Field;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -579,13 +580,19 @@ public class CollectionServiceUtil {
   public static boolean isUlkDuplicateClick(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
     boolean isULKDuplicateClick = false;
 
-    Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
-    Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
+    try {
+      Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
+      Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
 
-    if (deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
-         && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
-         && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
-      isULKDuplicateClick = true;
+      if (deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
+              && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
+              && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
+        isULKDuplicateClick = true;
+        MonitorUtil.info("FilteredULKDuplicateClick", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+      }
+    } catch (Exception e) {
+      LOGGER.error("Determine whether the click belongs to ulk duplicate click error");
+      MonitorUtil.info("DetermineULKDuplicateClickError");
     }
 
     return isULKDuplicateClick;
