@@ -102,14 +102,6 @@ public class CollectionServiceUtil {
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
 
   /**
-   * Customer marketing channels
-   */
-  private static final Set<ChannelType> CM_CHANNELS = new HashSet<>(
-          Arrays.asList(ChannelType.SITE_EMAIL, ChannelType.MRKT_EMAIL,
-                  ChannelType.MRKT_MESSAGE_CENTER, ChannelType.SITE_MESSAGE_CENTER)
-  );
-
-  /**
    * get app id from user agent info
    *
    * @param uaInfo UserAgentInfo object
@@ -578,15 +570,14 @@ public class CollectionServiceUtil {
   }
 
   /**
-   * Determine whether the click is a duplicate click caused by CM ULK link
-   * 1. CM channels
-   * 2. click url is ebay://
-   * 3. referer is ulk link
-   * 4. user agent is iOS
+   * Determine whether the click is a duplicate click caused by ULK link
+   * 1. click url is ebay://
+   * 2. referer is ulk link
+   * 3. user agent is iOS
    * If so, send to internal topic
    */
-  public static boolean isCMUlkDuplicateClick(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
-    boolean isCMULKDuplicateClick = false;
+  public static boolean isUlkDuplicateClick(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+    boolean isULKDuplicateClick = false;
 
     Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
     Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
@@ -594,9 +585,9 @@ public class CollectionServiceUtil {
     if (deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
          && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
          && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
-      isCMULKDuplicateClick = true;
+      isULKDuplicateClick = true;
     }
 
-    return isCMULKDuplicateClick;
+    return isULKDuplicateClick;
   }
 }

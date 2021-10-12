@@ -371,11 +371,11 @@ public class CollectionService {
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
         baseEvent.getReferer(), baseEvent.getUrl());
 
-    // filter duplicate clicks which are caused by CM ULK link and send to internal topic: XC-4032
-    boolean isCMULKDuplicateClick = CollectionServiceUtil.isCMUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
+    // filter duplicate clicks which are caused by ULK link and send to internal topic: XC-4032
+    boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
             baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
 
-    if(isInternalRef || isCMULKDuplicateClick) {
+    if(isInternalRef || isULKDuplicateClick) {
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
       sendClickToInternalClickTopic(producer, listenerMessage);
@@ -389,7 +389,7 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
     SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
 
-    if(!isInternalRef && !isCMULKDuplicateClick) {
+    if(!isInternalRef && !isULKDuplicateClick) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);
