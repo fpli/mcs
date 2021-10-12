@@ -591,8 +591,7 @@ public class CollectionServiceUtil {
     Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
     Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
 
-    if (CM_CHANNELS.contains(channelType)
-         && deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
+    if (deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
          && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
          && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
       isCMULKDuplicateClick = true;

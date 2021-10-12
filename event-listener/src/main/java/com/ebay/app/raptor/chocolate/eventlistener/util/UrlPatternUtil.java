@@ -27,7 +27,7 @@ public class UrlPatternUtil {
 
   // app deeplink sites XC-1797
   public static final Pattern deeplinksites =
-      Pattern.compile("^ebay:\\/\\/link([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("^(pad)?ebay:\\/\\/link([\\w-$%?&/.])?", Pattern.CASE_INSENSITIVE);
   // determine whether the url belongs to ebay sites for app deep link, and don't do any filter
   public static final Pattern deeplinkEbaySites = Pattern.compile(
       "^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|.*)",
