@@ -22,7 +22,7 @@ import static com.ebay.traffic.chocolate.kafka.KafkaCluster.DELIMITER;
 
 /**
  * Controls the parsing of Chocolate application options.
- * 
+ *
  * @author jepounds
  */
 public class ApplicationOptions extends AbstractApplicationOptions implements KafkaSink.KafkaConfigurable {
@@ -56,7 +56,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /** prefix of in Kafka topic for channels. */
     // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
     // for ePN:  chocolate.filter.kafka.consumer.topic.EPN
-    // for display: chocolate.filter.kafka.consumer.topic.DISPLAY
     public static final String KAFKA_IN_TOPIC_PREFIX = "chocolate.filter.kafka.consumer.topic.";
 
     /** Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos". */
@@ -64,8 +63,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
     /** prefix of out Kafka topic for channels. */
     // refer to com.ebay.app.raptor.chocolate.avro.ChannelType for channels.
-    // for ePN:  chocolate.filter.kafka.consumer.topic.EPN
-    // for display: chocolate.filter.kafka.consumer.topic.DISPLAY
+    // for ePN:  chocolate.filter.kafka.producer.topic.EPN
     public static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.filter.kafka.producer.topic.";
 
     /** Configurable Filter Rules **/
@@ -179,7 +177,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
     /**
      * For UT purposes mainly
-     * 
+     *
      * @param properties to initialize using
      */
     public static void init(final Properties properties) {

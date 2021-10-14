@@ -37,34 +37,7 @@ public class WeightedRuleTest {
     //Testing Data for EPN channel
     filterRules.get(ChannelType.EPN).put(TestRule1.class.getSimpleName(), new FilterRuleContent
         (TestRule1.class.getSimpleName()));
-
-    //Testing Data for DAP channel
-    if (filterRules.get(ChannelType.DISPLAY) == null) {
-      filterRules.put(ChannelType.DISPLAY, new HashMap<String, FilterRuleContent>());
-    }
-    filterRules.get(ChannelType.DISPLAY).put(TestRule1.class.getSimpleName(), new FilterRuleContent
-        (TestRule1.class.getSimpleName()));
-    filterRules.get(ChannelType.DISPLAY).put(TestRule2.class.getSimpleName(), new FilterRuleContent
-        (TestRule2.class.getSimpleName()));
   }
-
-//  @Test
-//  public void testWeightRequestToOptions() {
-//    TestRule testRule = new TestRule1(ChannelType.EPN);
-//    assertEquals(5.5, testRule.getWeight(), 0.001);
-//    PrefetchRule prefetchRuleEPN = new PrefetchRule(ChannelType.EPN);
-//    assertEquals(1, prefetchRuleEPN.test(), 0.001);
-//    TwoPassIABRule twoPassIABRuleEPN = new TwoPassIABRule(ChannelType.EPN);
-//    assertEquals(1, twoPassIABRuleEPN.getRuleWeight(), 0.001);
-//
-//    //Different Channel
-//    TestRule testRule1 = new TestRule1(ChannelType.DISPLAY);
-//    assertEquals(2.2, testRule1.getWeight(), 0.001);
-//    TestRule testRule2 = new TestRule2(ChannelType.DISPLAY);
-//    assertEquals(1.5, testRule2.getWeight(), 0.001);
-//    PrefetchRule prefetchRuleDAP = new PrefetchRule(ChannelType.DISPLAY);
-//    assertEquals(1.0, prefetchRuleDAP.getRuleWeight(), 0.001);
-//  }
 
   @Test
   public void rulesIgnoreAppDL() {

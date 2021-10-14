@@ -148,7 +148,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>ads-tracking-handler-starter</artifactId>
-      <version>1.0.10-SNAPSHOT</version>
+      <version>1.0.13-RELEASE</version>
     </dependency>
 
     <!--global config-->
@@ -467,6 +467,11 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-envoyhealth-status-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.23</version>
     </dependency>
   </dependencies>
 
