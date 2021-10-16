@@ -28,9 +28,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
-import com.ebay.traffic.monitoring.ESMetrics;
 import com.ebay.traffic.monitoring.Field;
-import com.ebay.traffic.monitoring.Metrics;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -372,7 +370,12 @@ public class CollectionService {
     // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
         baseEvent.getReferer(), baseEvent.getUrl());
-    if(isInternalRef) {
+
+    // filter duplicate clicks which are caused by ULK link and send to internal topic: XC-4032
+    boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
+            baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
+
+    if(isInternalRef || isULKDuplicateClick) {
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
       sendClickToInternalClickTopic(producer, listenerMessage);
@@ -386,7 +389,7 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
     SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
 
-    if(!isInternalRef) {
+    if(!isInternalRef && !isULKDuplicateClick) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);

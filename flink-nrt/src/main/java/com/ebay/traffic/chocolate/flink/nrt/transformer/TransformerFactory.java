@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
 
 /**
  * Determine the specific transformer.
@@ -10,7 +10,7 @@ import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
  * @since 2019/12/8
  */
 public class TransformerFactory {
-  public static BaseTransformer getConcreteTransformer(FilterMessageV5 sourceRecord) {
+  public static BaseTransformer getConcreteTransformer(FilterMessageV6 sourceRecord) {
     ChannelType channelType = sourceRecord.getChannelType();
     if(channelType == null) {
       return new BaseTransformer(sourceRecord);

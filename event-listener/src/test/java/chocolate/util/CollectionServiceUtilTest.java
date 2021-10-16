@@ -271,6 +271,9 @@ public class CollectionServiceUtilTest {
 
     targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
     assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    targetUrl = "ebay://link?nav=item.deals&ul_skipRefererCheck=true&ul_alt=store&sabg=ce2e0bea17b0a44ceaf29dd0ffbf2938&sabc=ce2e072617b0a12bbc23843df98e30c8&campid=5338757545&mkevt=1&mkcid=4&mkrid=711-58542-18990-20&ufes_redirect=true";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
   }
 
   @Test
@@ -329,5 +332,44 @@ public class CollectionServiceUtilTest {
     roiPayloadMap.put("roisrc", "6");
     when(mockEndUserContext.getUserAgent()).thenReturn("");
     assertFalse(CollectionServiceUtil.isROIFromPlaceOfferAPI(roiPayloadMap, mockEndUserContext));
+  }
+
+  @Test
+  public void testIsUlkDuplicateClick() {
+    UserAgentParser agentParser = new UserAgentParser();
+    UserAgentInfo iphoneAgentInfo = agentParser.parse("eBayiPhone/6.9.6");
+    UserAgentInfo androidAgentInfo = agentParser.parse("ebayUserAgent/eBayAndroid;6.9.6;Android;10;OnePlus;" +
+            "OnePlus6T;YES OPTUS;1080x2260;2.6");
+    UserAgentInfo ipadAgentInfo = agentParser.parse("eBayiPad/6.9.6");
+    UserAgentInfo iphoneMwebAgentInfo = agentParser.parse("Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) " +
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1");
+    UserAgentInfo ipadMwebAgentInfo = agentParser.parse("Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) " +
+            "AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1");
+    UserAgentInfo androidMwebAgentInfo = agentParser.parse("Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Mobile Safari/537.36");
+    UserAgentInfo dwebAgentInfo = agentParser.parse("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
+
+    String iphoneDeeplinkUrl = "ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123";
+    String ipadDeeplinkUrl = "padebay://link?nav=home&mkevt=1&mkcid=7";
+    String ulkReferer = "https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7";
+    String chocolateUrl = "https://www.ebay.com/itm/154613805298?mkevt=1&mkpid=0&emsid=e11000.m44.l9734&mkcid=7&ch=osgood&euid=82786bfb68184f0d8499977526dabee4&bu=45167398409&osub=-1%7E1&crd=20210923074143&segname=11000&sojTags=ch%3Dch%2Cbu%3Dbu%2Cosub%3Dosub%2Ccrd%3Dcrd%2Csegname%3Dsegname%2Cchnl%3Dmkcid";
+    String referer = "android-app://com.google.android.gm/";
+
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.MRKT_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.MRKT_EMAIL, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.DISPLAY, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.EPN, ulkReferer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertTrue(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SOCIAL_MEDIA, ulkReferer, ipadDeeplinkUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, referer, iphoneDeeplinkUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, "", ipadDeeplinkUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, chocolateUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, chocolateUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, ipadMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, dwebAgentInfo));
   }
 }

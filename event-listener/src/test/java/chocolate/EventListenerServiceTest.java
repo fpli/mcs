@@ -25,7 +25,6 @@ import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -113,6 +112,7 @@ public class EventListenerServiceTest {
   private static String endUserCtxMobileTabletWeb;
   private static String endUserCtxBot;
   private static String endUserCtxPlaceOfferAPI;
+  private static String endUserCtxAndroidNoReferer;
 
   private static String tracking;
   private static Pattern roversites;
@@ -131,7 +131,6 @@ public class EventListenerServiceTest {
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
 
-    ESMetrics.init("test", "http://10.148.181.34:9200");
     CouchbaseClientMock.createClient();
     CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
     BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
@@ -285,6 +284,17 @@ public class EventListenerServiceTest {
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
       "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
+    endUserCtxAndroidNoReferer = "ip=10.148.184.210,userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml" +
+            "%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage%2Fapng%2C*%2F*%3Bq%3D0.8," +
+            "userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
+            "userAgent=ebayUserAgent%2FeBayAndroid%3B5.27.1%3BAndroid%3B8.0.0%3Bsamsung%3Bgreatqlte%3BU.S" +
+            ".%20Cellular%3B1080x2094%3B2.6,deviceId=8101a7ad1670ac3c41a87509fffc40b4,deviceIdType=IDREF," +
+            "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
+            ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
+            "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
+            "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
+            "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
+            "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
 
 
     tracking = "guid=8101a7ad1670ac3c41a87509fffc40b4,cguid=8101b2b31670ac797944836ecffb525d," +
@@ -913,8 +923,16 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link/?nav=home&referrer=https%3A%2F%2Fwww.ebay.com%3Fmkevt%3D1%26mkcid%3D1%26mkrid%3D711-53200-19255-0%26toolid%3D11800%26campid%3D5338433963%26customid%3Dfakesrctok-app-test");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // success request (remove '/' after ebay://link)
     event.setTargetUrl("ebay://link?nav=home&referrer=https%3A%2F%2Fwww.ebay.com%3Fmkevt%3D1%26mkcid%3D1%26mkrid%3D711-53200-19255-0%26toolid%3D11800%26campid%3D5338433963%26customid%3Dfakesrctok-app-test");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&referrer=https%3A%2F%2Fwww.ebay.com%3Fmkevt%3D1%26mkcid%3D1%26mkrid%3D711-53200-19255-0%26toolid%3D11800%26campid%3D5338433963%26customid%3Dfakesrctok-app-test");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -925,8 +943,20 @@ public class EventListenerServiceTest {
     ErrorType errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     //invalid target url in deeplink case
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982&referrer=http%3A%2F%2Frover.ebay.com%2Frover%2F1%2F710-53481-19255-0%2F1%3Fff3%3D2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -937,13 +967,25 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2F");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // no mkevt
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // invalid mkevt
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D0%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D0%26mkrid%3D724-218635-24755-0%26mkcid%3D16%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -953,15 +995,28 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // invalid mkcid
     // service will pass but no message to kafka
     event.setTargetUrl("ebay://link/?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D99%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay:///?nav=item.view&id=143421740982&referrer=https%3A%2F%2Fwww.ebay.it%2Fi%2F143421740982%3Fitemid%3D143421740982%26prid%3D143421740982%26norover%3D1%26siteid%3D101%26mkevt%3D1%26mkrid%3D724-218635-24755-0%26mkcid%3D99%26adsetid%3D23843848068040175%26adid%3D23843848069230175%26audtag%3DMID_R02%26tag4%3D23843848068040175");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+
     // custom uri with Chocolate parameters
     // success request (custom uri with valid Chocolate parameters)
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=chocolatetest&referrer=https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-53200-19255-0%2F1");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=5337369893&toolid=11800&customid=chocolatetest&referrer=https%3A%2F%2Frover.ebay.com%2Frover%2F1%2F711-53200-19255-0%2F1");
     event.setReferrer("");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
@@ -973,7 +1028,19 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=1");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -985,7 +1052,19 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=2&mkcid=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=99");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=99");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -996,12 +1075,26 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
     event.setTargetUrl("ebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=1234567");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=item.view&mkevt=1&mkcid=1&mkrid=710-53481-19255-0&campid=1234567");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
     // no valid item id
     event.setTargetUrl("ebay://link?nav=item.view&id=&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("padebay://link?nav=item.view&id=&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -1014,8 +1107,20 @@ public class EventListenerServiceTest {
     errorMessage = response.readEntity(ErrorType.class);
     assertEquals(4012, errorMessage.getErrorCode());
 
+    event.setTargetUrl("padebay://link?nav=home&id=154347659933&mkevt=1&mkcid=1&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
     // invalid rotation
     event.setTargetUrl("ebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=999-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(200, response.getStatus());
+    errorMessage = response.readEntity(ErrorType.class);
+    assertEquals(4012, errorMessage.getErrorCode());
+
+    event.setTargetUrl("padebay://link?nav=item.view&id=154347659933&mkevt=1&mkcid=1&mkrid=999-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(200, response.getStatus());
     errorMessage = response.readEntity(ErrorType.class);
@@ -1026,27 +1131,135 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link?nav=item.view&id=&mkevt=1&mkcid=4&mkrid=710-53481-19255-0&keyword=search&gclid=123");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
     event.setTargetUrl("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
+    event.setTargetUrl("padebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
     event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
-    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-20");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38&campid=1234566&toolid=11001&customid=123");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=1&mkrid=711-58542-18990-38");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
     event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
-    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-20");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=home&ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
+    event.setReferrer("https://www.ebay.fr/ulk/start/shop?ul_skipRefererCheck=true&ul_alt=store&sabg=355858d317a0a64695678467ffe56a8e&sabc=15f8667e17a0a8260c24e171f44d2fc7&mkevt=1&mkcid=4&mkrid=711-58542-18990-38");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
     event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
+    event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
+    event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxAndroidNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
     event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
     event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
     event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    event.setReferrer("https://www.ebay.co.uk/ulk/messages/reply?M2MContact&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("https://www.ebay.co.uk/ulk/usr/amyonline2010?mkevt=1&mkcid=8");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("ebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=7&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=11923&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=abc&placement-type=abcd&keyword=bcd&gclid=123");
+    event.setReferrer("");
+    response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
+    assertEquals(201, response.getStatus());
+
+    event.setTargetUrl("padebay://link?nav=user.compose&item=164208764236&requested=chevy.ray&qid=2412462805015&redirect=0&self=bbpexpress&mkevt=1&mkcid=8&euid=2b5f1a613fee48aba94db71577623ff6&bu=45261687245&segname=TE1798&crd=20210901231250&osub=-1%7E1&ch=osgood&exe=euid&ext=39554&3=&sojTags=null%2Cbu%3Dbu%2Cch%3Dch%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Dloc%2Cosub%3Dosub&choco_bs=1&trkId=123456&trid=1234567&mkpid=0&emsid=eabc.mle&adcamp_landingpage=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460&placement-type=abcd&keyword=bcd&gclid=123&mesgId=12&pid=000&ppo=ab&fdbk=no&recoId=hehe&rpo=tu&ymmmid=1&ymsid=2&yminstc=a&adcamp_locationsrc=abc&pu=12345&loc=https%3A%2F%2Fwww.ebay.co.uk%2Fi%2F393515271460");
+    event.setReferrer("");
     response = postMcsResponse(eventsPath, endUserCtxNoReferer, tracking, event);
     assertEquals(201, response.getStatus());
 
@@ -1057,11 +1270,11 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
             LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 3, 30 * 1000);
+            consumerEpn, Arrays.asList("dev_listened-epn"), 20, 30 * 1000);
     consumerEpn.close();
 
     Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
-    assertEquals(6, listenerMessagesEpnExcludeRover.size());
+    assertEquals(14, listenerMessagesEpnExcludeRover.size());
 
 
     // validate kafka message
@@ -1080,9 +1293,9 @@ public class EventListenerServiceTest {
     Consumer<Long, ListenerMessage> consumerDisplay = kafkaCluster.createConsumer(
             LongDeserializer.class, ListenerMessageDeserializer.class);
     Map<Long, ListenerMessage> listenerMessagesDisplay = pollFromKafkaTopic(
-            consumerDisplay, Arrays.asList("dev_listened-display"), 2, 30 * 1000);
+            consumerDisplay, Arrays.asList("dev_listened-display"), 10, 30 * 1000);
     consumerDisplay.close();
-    assertEquals(3, listenerMessagesDisplay.size());
+    assertEquals(8, listenerMessagesDisplay.size());
   }
 
   @Test

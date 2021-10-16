@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.jdbc.data.ThirdpartyWhitelistCache;
 import com.ebay.app.raptor.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.app.raptor.chocolate.jdbc.repo.ThirdpartyWhitelistRepo;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import com.ebay.traffic.monitoring.ESMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +27,6 @@ import java.io.IOException;
 public class AdserviceService {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceService.class);
 
-  private static final String ELASTICSEARCH_URL = "chocolate.adservice.elasticsearch.url";
-  private static final String METRICS_INDEX_PREFIX = "chocolate.adservice.elasticsearch.index.prefix";
   private static final String DRIVERID_RETRIES = "chocolate.adservice.driverid.retries";
 
   @Autowired
@@ -43,8 +40,6 @@ public class AdserviceService {
     logger.info("Initializer called.");
 
     ApplicationOptions.init();
-    ESMetrics.init(ApplicationOptions.getInstance().getByNameString(METRICS_INDEX_PREFIX), ApplicationOptions
-      .getInstance().getByNameString(ELASTICSEARCH_URL));
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setDriverId(driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), DAPRvrId.getMaxDriverId(), ApplicationOptions.getInstance().getByNameInteger(DRIVERID_RETRIES)));
     ThirdpartyWhitelistCache.init(thirdpartyWhitelistRepo);

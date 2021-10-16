@@ -10,7 +10,6 @@ import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbase.CorpCouchbaseClient
 import com.ebay.traffic.chocolate.sparknrt.meta.{DateFiles, MetaFiles, Metadata, MetadataEnum}
 import com.ebay.traffic.chocolate.sparknrt.utils.{Cguid, TableSchema}
-import com.ebay.traffic.monitoring.{ESMetrics, Field, Metrics}
 import com.google.gson.Gson
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
@@ -63,13 +62,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
   }
 
   @transient lazy val schema_imk_table = TableSchema("df_imk.json")
-
-  @transient lazy val metrics: Metrics = {
-    if (params.elasticsearchUrl != null && !params.elasticsearchUrl.isEmpty) {
-      ESMetrics.init(METRICS_INDEX_PREFIX, params.elasticsearchUrl)
-      ESMetrics.getInstance()
-    } else null
-  }
 
   @transient lazy val metaPostFix = ".epnnrt"
 
@@ -142,16 +134,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
         import org.apache.spark.sql.catalyst.encoders.RowEncoder
         implicit val encoder: ExpressionEncoder[Row] = RowEncoder(coreDf.schema)
         val imkDf = coreDf.mapPartitions((iter: Iterator[Row]) => {
-          if (metrics != null) {
-            metrics.flush()
-          }
-          if (tools.metrics != null) {
-            tools.metrics.flush()
-          }
           iter
         }).repartition(params.partitions)
 
-        metrics.meter("imk.dump.out", imkDf.count(), Field.of[String, AnyRef]("channelType", params.channel))
 
         saveDFToFiles(imkDf, sparkDir, "gzip", "csv", "bel")
         val files = renameFiles(outputDir, sparkDir, date)
@@ -163,13 +148,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
       inputMetadata.deleteDedupeOutputMeta(metaFile)
 
     })
-
-    if (metrics != null) {
-      metrics.flush()
-    }
-    if (tools.metrics != null) {
-      tools.metrics.flush()
-    }
   }
 
   /**
@@ -295,7 +273,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     */
   def judgeCGuidNotNull(cguid: String): Boolean = {
     if (StringUtils.isEmpty(cguid)) {
-      metrics.meter("imk.dump.nullCguid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       false
     }  else {
       true
@@ -318,9 +295,6 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
           .replace("mktype", "adtype")
       } catch {
         case e: Exception => {
-          if(metrics != null) {
-            metrics.meter("imk.dump.malformed", 1, Field.of[String, AnyRef]("channelType", params.channel))
-          }
           logger.warn("MalformedUrl", e)
         }
       }
@@ -338,11 +312,9 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     if (StringUtils.isNotEmpty(cguid)) {
       cguid
     } else {
-      metrics.meter("imk.dump.tryCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
       if (guidCguidMap != null) {
         val result = guidCguidMap.getOrDefault(guid, "")
         if (StringUtils.isNotEmpty(result)) {
-          metrics.meter("imk.dump.gotCguidByGuid", 1, Field.of[String, AnyRef]("channelType", params.channel))
           result
         } else {
           guid
@@ -381,14 +353,12 @@ class ImkDumpJob(params: Parameter) extends BaseSparkNrtJob(params.appName, para
     } catch {
       case e: Exception => {
         logger.error("Corp Couchbase error while getting cguid by guid list" +  e)
-        metrics.meter("imk.dump.error.cbquery", 1, Field.of[String, AnyRef]("channelType", params.channel))
         // should we throw the exception and make the job fail?
         throw new Exception(e)
       }
     }
     CorpCouchbaseClient.returnClient(cacheClient)
     val endTime = System.currentTimeMillis
-    metrics.mean("imk.dump.cb.latency", endTime - startTime, Field.of[String, AnyRef]("channelType", params.channel))
     res
   }
 

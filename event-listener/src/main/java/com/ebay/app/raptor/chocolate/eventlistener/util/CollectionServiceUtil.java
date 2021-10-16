@@ -3,14 +3,13 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.constant.RoiTransactionEnum;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
-import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +20,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
-import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
 /**
  * @author xiangli4
@@ -571,5 +568,33 @@ public class CollectionServiceUtil {
       }
     }
     return isROIFromPlaceofferAPI;
+  }
+
+  /**
+   * Determine whether the click is a duplicate click caused by ULK link
+   * 1. click url is ebay://
+   * 2. referer is ulk link
+   * 3. user agent is iOS
+   * If so, send to internal topic
+   */
+  public static boolean isUlkDuplicateClick(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+    boolean isULKDuplicateClick = false;
+
+    try {
+      Matcher deeplinkSitesMatcher = deeplinksites.matcher(finalUrl.toLowerCase());
+      Matcher ulkSitesMatcher = ulksites.matcher(referer.toLowerCase());
+
+      if (deeplinkSitesMatcher.find() && ulkSitesMatcher.find()
+              && userAgentInfo.getDeviceInfo().osiOS() && userAgentInfo.requestIsNativeApp()
+              && (userAgentInfo.requestedFromSmallDevice() || userAgentInfo.requestedFromLargeDevice())) {
+        isULKDuplicateClick = true;
+        MonitorUtil.info("FilteredULKDuplicateClick", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
+      }
+    } catch (Exception e) {
+      LOGGER.error("Determine whether the click belongs to ulk duplicate click error");
+      MonitorUtil.info("DetermineULKDuplicateClickError");
+    }
+
+    return isULKDuplicateClick;
   }
 }

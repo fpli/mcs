@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV5;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import org.apache.flink.api.common.typeutils.base.IntSerializer;
 import org.apache.flink.formats.avro.typeutils.AvroSerializer;
@@ -38,7 +38,7 @@ public class AsyncDataRequestTest {
 
   }
 
-  private FilterMessageV5 createSourceRecord(String json) throws IOException {
+  private FilterMessageV6 createSourceRecord(String json) throws IOException {
     return FilterMessage.readFromJSON(json);
   }
 
@@ -55,15 +55,15 @@ public class AsyncDataRequestTest {
 
   @Test
   public void test() throws Exception {
-    final OneInputStreamOperatorTestHarness<FilterMessageV5, FilterMessageV5> testHarness =
+    final OneInputStreamOperatorTestHarness<FilterMessageV6, FilterMessageV6> testHarness =
             new OneInputStreamOperatorTestHarness<>(
                     new AsyncWaitOperatorFactory<>(new AsyncDataRequest(), TIMEOUT, 1, AsyncDataStream.OutputMode.UNORDERED),
-                    new AvroSerializer<>(FilterMessageV5.class));
+                    new AvroSerializer<>(FilterMessageV6.class));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
 
-    FilterMessageV5 filterMessage = createSourceRecord(json);
+    FilterMessageV6 filterMessage = createSourceRecord(json);
     filterMessage.setUserId(-1L);
 
     long initialTime = System.currentTimeMillis();
@@ -76,7 +76,7 @@ public class AsyncDataRequestTest {
     }
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
-    StreamRecord<FilterMessageV5> poll = (StreamRecord<FilterMessageV5>) output.poll();
+    StreamRecord<FilterMessageV6> poll = (StreamRecord<FilterMessageV6>) output.poll();
     assertNotNull(poll);
     assertEquals(Long.valueOf(0L), poll.getValue().getUserId());
   }
