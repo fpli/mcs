@@ -15,9 +15,9 @@ class ClickDataFrameV2(df: DataFrame, common: EpnNrtCommonV2) extends Serializab
   def build(): DataFrame = {
     logger.debug("Building EPN Click dataframe")
     var clickDf  = df
-      .withColumn("uri_no_blank",common.filterTab(col("uri")))
+      .withColumn("uri_no_blank", common.filterTab(col("uri")))
       .drop(col("uri"))
-      .withColumnRenamed("uri_no_blank","uri")
+      .withColumnRenamed("uri_no_blank", "uri")
       .withColumn("RFR_URL_NAME", col("referer"))
       .withColumn("google_fltr_do_flag", common.get_google_fltr_do_flag_udf(col("referer"), col("publisher_id")))
       .withColumn("traffic_source_code", common.get_trfc_src_cd_click_udf(col("user_agent")))
