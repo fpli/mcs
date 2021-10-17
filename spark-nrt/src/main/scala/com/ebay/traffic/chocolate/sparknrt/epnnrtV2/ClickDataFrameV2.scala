@@ -34,7 +34,7 @@ class ClickDataFrameV2(df: DataFrame, common: EpnNrtCommonV2) extends Serializab
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id").cast(DecimalType(18, 0)))
       .withColumn("AMS_TOOL_ID", common.getToolIdUdf(col("uri")).cast(DecimalType(18, 0)))
       .withColumn("CSTM_ID", common.filterTab(common.getCustomIdUdf(col("uri"))))
-      .withColumn("LNDNG_PAGE_URL_NAME", common.get_lnd_page_url_name_udf(col("response_headers"), col("landing_page_url")))
+      .withColumn("LNDNG_PAGE_URL_NAME", common.filterTab(common.get_lnd_page_url_name_udf(col("response_headers"), col("landing_page_url"))))
       .withColumn("USER_QUERY_TXT", common.filterTab(common.getUserQueryTextUdf(col("uri"), lit("click"))))
       .withColumn("FLEX_FLD_1_TXT", common.filterTab(common.getFFValueUdf(col("uri"), lit(1))))
       .withColumn("FLEX_FLD_2_TXT", common.filterTab(common.getFFValueUdf(col("uri"), lit(2))))
