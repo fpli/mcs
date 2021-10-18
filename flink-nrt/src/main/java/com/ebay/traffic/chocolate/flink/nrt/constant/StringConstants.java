@@ -17,4 +17,6 @@ public class StringConstants {
   public static final String DATE_BUCKET_PREFIX = "dt=";
   public static final String QUESTION_MARK = "?";
   public static final String HOUR_BUCKET_PREFIX = "hour=";
+  public static final String EBAY_DEEPLINK_HEAD = "ebay://";
+  public static final String PADEBAY_DEEPLINK_HEAD = "padebay://";
 }
