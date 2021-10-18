@@ -18,6 +18,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.flink.metrics.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -149,7 +150,11 @@ public class UTPImkTransformer {
     String q = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(url)) {
       try {
-        q = new URL(url).getQuery();
+        if(url.toLowerCase().startsWith(StringConstants.EBAY_DEEPLINK_HEAD) || url.toLowerCase().startsWith(StringConstants.PADEBAY_DEEPLINK_HEAD)){
+          q = UriComponentsBuilder.fromUriString(url).build().getQuery();
+        }else {
+          q = new URL(url).getQuery();
+        }
         if (StringUtils.isEmpty(q)) {
           q = StringConstants.EMPTY;
         }
@@ -395,7 +400,11 @@ public class UTPImkTransformer {
     String result = StringConstants.EMPTY;
     if (StringUtils.isNotEmpty(link)) {
       try {
-        result = new URL(link).getHost();
+        if(link.toLowerCase().startsWith(StringConstants.EBAY_DEEPLINK_HEAD) || url.toLowerCase().startsWith(StringConstants.PADEBAY_DEEPLINK_HEAD)){
+          return StringConstants.EMPTY;
+        }else {
+          result = new URL(link).getHost();
+        }
       } catch (Exception e) {
         etlMetrics.get(UTPImkTransformerMetrics.NUM_ERROR_MALFORMED_RATE).markEvent();
         LOGGER.warn(MALFORMED_URL, e);
@@ -753,7 +762,11 @@ public class UTPImkTransformer {
   private String getItemIdFromUri(String uri) {
     String path;
     try {
-      path = new URL(uri).getPath();
+      if(uri.toLowerCase().startsWith(StringConstants.EBAY_DEEPLINK_HEAD) || url.toLowerCase().startsWith(StringConstants.PADEBAY_DEEPLINK_HEAD)){
+        return getParamValueFromQuery(query, "itemid");
+      }else {
+        path = new URL(uri).getPath();
+      }
       if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
         String itemId = path.substring(path.lastIndexOf(StringConstants.SLASH) + 1);
         if (StringUtils.isNumeric(itemId)) {
