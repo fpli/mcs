@@ -763,7 +763,13 @@ public class UTPImkTransformer {
     String path;
     try {
       if(uri.toLowerCase().startsWith(StringConstants.EBAY_DEEPLINK_HEAD) || url.toLowerCase().startsWith(StringConstants.PADEBAY_DEEPLINK_HEAD)){
-        return getParamValueFromQuery(query, "itemid");
+        if(uri.toLowerCase().contains("item.view")) {
+          return getParamValueFromQuery(query, "id");
+        }
+        if(uri.toLowerCase().contains("item.product")) {
+          return getParamValueFromQuery(query, "iid");
+        }
+        return StringConstants.EMPTY;
       }else {
         path = new URL(uri).getPath();
       }
