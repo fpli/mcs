@@ -1,9 +1,7 @@
 package com.ebay.app.raptor.chocolate.eventlistener.component;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
-import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.iabtcf.decoder.TCString;
@@ -14,7 +12,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
@@ -37,12 +35,9 @@ public class GdprConsentHandler {
 
     Logger logger = LoggerFactory.getLogger(GdprConsentHandler.class);
 
-    private CouchbaseClient couchbaseClient;
 
-    @Autowired
-    public void init() {
-        couchbaseClient = CouchbaseClient.getInstance();
-    }
+    @Value("${gdpr-consent.vendorId}")
+    private String purposeVendorId;
 
     /**
      * some fields not be allowed put into kafka messages based on GDPR consent.
@@ -83,13 +78,12 @@ public class GdprConsentHandler {
                     //Purpose consent
                     IntIterable purposesConsent = tcString.getPurposesConsent();
                     IntIterable vendorConsent = tcString.getVendorConsent();
-                    String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
-                    logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
-                    if (StringUtils.isBlank(purposeVendorIdString)) {
+                    logger.info("Purpose vendor id list is {} ", purposeVendorId);
+                    if (StringUtils.isBlank(purposeVendorId)) {
                         logger.warn("Can't get purposeVendorID from CB, take a look please.");
                     }
-                    if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
-                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
+                    if (StringUtils.isNotBlank(purposeVendorId) && vendorConsent != null) {
+                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorId, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
                         //vendor consent have to contain all of purpose vendor ids
                         if (containsAll) {
