@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
@@ -40,6 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -288,6 +290,13 @@ public class UnifiedTrackingMessageParser {
     if (uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
+
+    // append clientdata
+    Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
+    if (clientHints != null && clientHints.size() > 0) {
+      fullPayload.put("clientData", formatClientData(clientHints));
+    }
+
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     // data governance
@@ -738,5 +747,22 @@ public class UnifiedTrackingMessageParser {
     }
 
     return environment;
+  }
+
+  /**
+   * Convert Map to query string
+   * @param map
+   * @return
+   */
+  public static String formatClientData(Map<String, String> map) {
+    if(map != null && map.size() > 0){
+      try {
+        return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
+      }catch (Exception e){
+        MonitorUtil.info("formatClientDataError");
+        logger.warn("format client data to map error");
+      }
+    }
+    return "";
   }
 }
