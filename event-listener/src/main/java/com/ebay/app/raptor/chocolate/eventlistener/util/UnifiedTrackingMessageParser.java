@@ -293,13 +293,15 @@ public class UnifiedTrackingMessageParser {
     }
 
     // append clientdata
+    logger.info("deal with clientHints begin");
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
     if (!CollectionUtils.isEmpty(clientHints)) {
-      logger.info(formatClientData(clientHints));
+      logger.info("clientHints:" + formatClientData(clientHints));
       fullPayload.put("clientdata", formatClientData(clientHints));
     }else {
       logger.info("clientHints is empty");
     }
+    logger.info("deal with clientHints end");
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
