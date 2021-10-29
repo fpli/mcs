@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
@@ -295,6 +296,7 @@ public class UnifiedTrackingMessageParser {
     // append clientdata
     logger.info("deal with clientHints begin");
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
+    SpanEventHelper.writeEvent("Info", "clientHints","0",formatClientData(clientHints));
     if (!CollectionUtils.isEmpty(clientHints)) {
       logger.info("clientHints:" + formatClientData(clientHints));
       fullPayload.put("clientdata", formatClientData(clientHints));
