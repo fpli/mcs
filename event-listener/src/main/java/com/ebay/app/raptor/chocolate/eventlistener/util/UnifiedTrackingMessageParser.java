@@ -30,6 +30,7 @@ import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
 import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
 import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -293,7 +294,7 @@ public class UnifiedTrackingMessageParser {
 
     // append clientdata
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
-    if (clientHints != null && clientHints.size() > 0) {
+    if (MapUtils.isNotEmpty(clientHints)) {
       fullPayload.put("clientData", formatClientData(clientHints));
     }
 
@@ -755,7 +756,7 @@ public class UnifiedTrackingMessageParser {
    * @return
    */
   public static String formatClientData(Map<String, String> map) {
-    if(map != null && map.size() > 0){
+    if(MapUtils.isNotEmpty(map)){
       try {
         return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
       }catch (Exception e){
