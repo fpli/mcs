@@ -33,7 +33,6 @@ import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.apache.commons.lang.StringUtils;
 
@@ -297,13 +296,17 @@ public class UnifiedTrackingMessageParser {
     logger.info("deal with clientHints begin");
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
     SpanEventHelper.writeEvent("Info", "clientHints","0",formatClientData(clientHints));
-    if (!CollectionUtils.isEmpty(clientHints)) {
+    SpanEventHelper.writeEvent("Info", "hasClientHints","0", String.valueOf(clientHints != null && clientHints.size() > 0));
+    if (clientHints != null && clientHints.size() > 0) {
       logger.info("clientHints:" + formatClientData(clientHints));
+      SpanEventHelper.writeEvent("Info", "setClientHints","0",formatClientData(clientHints));
       fullPayload.put("clientdata", formatClientData(clientHints));
     }else {
+      SpanEventHelper.writeEvent("Info", "hasClientHints","0", "false");
       logger.info("clientHints is empty");
     }
     logger.info("deal with clientHints end");
+    SpanEventHelper.writeEvent("Info", "setClientHints","0","endSetClientHints");
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
@@ -763,7 +766,7 @@ public class UnifiedTrackingMessageParser {
    * @return
    */
   public static String formatClientData(Map<String, String> map) {
-    if(!CollectionUtils.isEmpty(map)){
+    if(map != null && map.size() > 0){
       try {
         return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
       }catch (Exception e){
