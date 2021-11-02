@@ -761,7 +761,7 @@ public class UnifiedTrackingMessageParser {
         return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
       }catch (Exception e){
         MonitorUtil.info("formatClientDataError");
-        logger.warn("format client data to map error");
+        logger.warn("format client data to map error", e);
       }
     }
     return "";
