@@ -576,6 +576,7 @@ public class UTPRoverEventTransformer {
     }
 
     payload.put("cobrand", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.COBRAND));
+    payload.put("seqNum", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SEQ_NUM));
 
     return payload;
   }
