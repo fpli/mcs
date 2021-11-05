@@ -372,5 +372,8 @@ public class UTPRoverEventTransformerTest {
 
   @Test
   public void getPayload() {
+    genericRecord.put("seqNum", "2");
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+    assertEquals("2", transformer.getPayload().get("seqNum"));
   }
 }
