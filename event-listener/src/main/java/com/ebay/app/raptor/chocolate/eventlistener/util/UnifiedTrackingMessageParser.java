@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
@@ -29,6 +30,7 @@ import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
 import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
 import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -40,6 +42,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
@@ -288,6 +291,13 @@ public class UnifiedTrackingMessageParser {
     if (uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
     }
+
+    // append clientdata
+    Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
+    if (MapUtils.isNotEmpty(clientHints)) {
+      fullPayload.put("clientData", formatClientData(clientHints));
+    }
+
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     // data governance
@@ -744,5 +754,22 @@ public class UnifiedTrackingMessageParser {
     }
 
     return environment;
+  }
+
+  /**
+   * Convert Map to query string
+   * @param map
+   * @return
+   */
+  public static String formatClientData(Map<String, String> map) {
+    if(MapUtils.isNotEmpty(map)){
+      try {
+        return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
+      }catch (Exception e){
+        MonitorUtil.info("formatClientDataError");
+        logger.warn("format client data to map error", e);
+      }
+    }
+    return "";
   }
 }

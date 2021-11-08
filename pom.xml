@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.13.1-RELEASE</version>
+    <version>0.13.2-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -22,11 +22,10 @@
     <scala.compat.version>2.11</scala.compat.version>
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
-    <hadoop.version>2.7.4</hadoop.version>
+    <hadoop.version>3.3.0</hadoop.version>
     <spark.version>2.4.7</spark.version>
     <avro.version>1.8.2</avro.version>
     <parquet.version>1.10.1</parquet.version>
-    <actuator.component.version>0.13.1-RELEASE</actuator.component.version>
     <zookeeper.version>3.7.0</zookeeper.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.11</couchbase.client.version>
