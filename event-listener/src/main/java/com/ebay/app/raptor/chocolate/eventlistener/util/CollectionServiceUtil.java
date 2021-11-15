@@ -497,6 +497,13 @@ public class CollectionServiceUtil {
       return false;
     }
 
+    if (parameters.containsKey(Constants.MKCID)) {
+      ChannelIdEnum channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+      if (PM_CHANNELS.contains(channelType)) {
+        return false;
+      }
+    }
+
     return roverSitesMatcher.find();
   }
 
