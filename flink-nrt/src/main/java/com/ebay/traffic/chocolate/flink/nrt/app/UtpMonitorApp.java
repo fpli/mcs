@@ -122,10 +122,11 @@ public class UtpMonitorApp {
 
     private static class Transform extends RichMapFunction<UnifiedTrackingRheosMessage, String> {
         private SherlockioMetrics sherlockioMetrics;
-        private transient ConcurrentHashMap<String,Counter> counters;
+        private transient ConcurrentHashMap<String, Counter> counters;
+
         @Override
         public void open(Configuration parameters) throws Exception {
-            counters=new ConcurrentHashMap<>();
+            counters = new ConcurrentHashMap<>();
             Properties properties = PropertyMgr.getInstance()
                     .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
             Timer timer = new Timer();
@@ -143,22 +144,23 @@ public class UtpMonitorApp {
         }
 
         @SafeVarargs
-        public final Counter getCounter(RuntimeContext runtimeContext, String metricsName, Field<String, Object>... fields){
-            StringBuilder counterKey= new StringBuilder(metricsName);
+        public final Counter getCounter(RuntimeContext runtimeContext, String metricsName, Field<String, Object>... fields) {
+            StringBuilder counterKey = new StringBuilder(metricsName);
             for (Field<String, Object> stringObjectField : fields) {
                 counterKey.append(stringObjectField.getValue().toString());
             }
-            if(!counters.containsKey(counterKey.toString())){
+            if (!counters.containsKey(counterKey.toString())) {
                 MetricGroup metricGroup = runtimeContext
                         .getMetricGroup();
                 for (Field<String, Object> field : fields) {
                     metricGroup = metricGroup.addGroup(field.getKey(), field.getValue().toString());
                 }
-                Counter counter=metricGroup.counter(metricsName);
-                counters.put(counterKey.toString(),counter);
+                Counter counter = metricGroup.counter(metricsName);
+                counters.put(counterKey.toString(), counter);
             }
             return counters.get(counterKey.toString());
         }
+
         @Override
         public String map(UnifiedTrackingRheosMessage message) {
             String channelType = nullVerifier(message.getChannelType());
@@ -169,7 +171,7 @@ public class UtpMonitorApp {
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
 
-            getCounter(getRuntimeContext(),"unified_tracking_incoming_v2",
+            getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
                     Field.of("channel", channelType),
                     Field.of("action", actionType),
                     Field.of("producer", producer),
@@ -196,7 +198,6 @@ public class UtpMonitorApp {
             );
 
 
-
             if ("true".equals(isUep.toLowerCase())) {
                 try {
                     List<String> mesgId = getMesgId(message.getPayload());
@@ -220,10 +221,10 @@ public class UtpMonitorApp {
                     }
 
                     String url = nullVerifier(message.getUrl());
-                    String mkcid=getDuplicateValue(url, "mkcid");
-                    String mkrid=getDuplicateValue(url, "mkrid");
-                    String mkpid=getDuplicateValue(url, "mkpid");
-                    String mksid=getDuplicateValue(url, "mksid");
+                    String mkcid = getDuplicateValue(url, "mkcid");
+                    String mkrid = getDuplicateValue(url, "mkrid");
+                    String mkpid = getDuplicateValue(url, "mkpid");
+                    String mksid = getDuplicateValue(url, "mksid");
 
                     sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
                             Field.of("channel", channelType),
