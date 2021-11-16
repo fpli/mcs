@@ -268,7 +268,7 @@ public class UtpMonitorApp {
 
     private static List<String> getMessageId(Map<String, String> payload) throws Exception {
         List<String> nullMessageList = new ArrayList<>();
-        nullMessageList.add("null");
+        nullMessageList.add("NULL");
         String messageListString = payload.getOrDefault("annotation.mesg.list", "[]");
         List<Message> messageList = mapper.readValue(messageListString, new TypeReference<List<Message>>() {
         });
@@ -279,7 +279,7 @@ public class UtpMonitorApp {
                 .stream()
                 .map(e -> {
                     if (e.mesgId == null) {
-                        return "null";
+                        return "NULL";
                     }
                     return e.mesgId;
                 })
@@ -290,33 +290,33 @@ public class UtpMonitorApp {
      * Check the payload, see if there is a exist is getCnvId
      *
      * @param payload the payload to be read
-     * @return the corresponding value if so, otherwise return "null"
+     * @return the corresponding value if so, otherwise return "NULL"
      */
     private static String getCnvId(Map<String, String> payload) {
-        return payload.getOrDefault("annotation.cnv.id", "null");
+        return payload.getOrDefault("annotation.cnv.id", "NULL");
     }
 
     /**
      * Check if the input is null
      *
      * @param dimension the dimension that needs to be checked
-     * @return return itself if it's not null, otherwise return "null"
+     * @return return itself if it's not null, otherwise return "NULL"
      */
     private static String nullVerifier(String dimension) {
         if (dimension != null && StringUtils.isNotEmpty(dimension.trim())) {
             return dimension;
         }
-        return "null";
+        return "NULL";
     }
 
     /**
      * Check the payload, see if there is a exist is UEP key
      *
      * @param payload the payload to be read
-     * @return the corresponding value if so, otherwise return "null"
+     * @return the corresponding value if so, otherwise return "NULL"
      */
     private static String getUEP(Map<String, String> payload) {
-        return payload.getOrDefault("isUEP", "null");
+        return payload.getOrDefault("isUEP", "NULL");
     }
 
     /**
@@ -332,7 +332,7 @@ public class UtpMonitorApp {
             if (userAgent != null) {
                 return "DESKTOP";
             } else {
-                return "null";
+                return "NULL";
             }
         } else {
             switch (appId) {
@@ -347,7 +347,7 @@ public class UtpMonitorApp {
                 case "2571":
                     return "ANDROID";
                 default:
-                    return "null";
+                    return "NULL";
             }
         }
     }
