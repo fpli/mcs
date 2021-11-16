@@ -303,7 +303,7 @@ public class UtpMonitorApp {
      * @return return itself if it's not null, otherwise return "null"
      */
     private static String nullVerifier(String dimension) {
-        if (dimension != null && !"".equals(dimension.trim())) {
+        if (dimension != null && StringUtils.isNotEmpty(dimension.trim())) {
             return dimension;
         }
         return "null";
