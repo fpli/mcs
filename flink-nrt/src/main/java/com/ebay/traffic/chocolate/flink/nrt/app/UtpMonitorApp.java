@@ -157,7 +157,6 @@ public class UtpMonitorApp {
             SherlockioMetrics.init(properties.getProperty(PropertyConstants.MONITOR_SHERLOCKIO_NAMESPACE),
                     properties.getProperty(PropertyConstants.SHERLOCKIO_ENDPOINT), properties.getProperty(PropertyConstants.SHERLOCKIO_USER));
             sherlockioMetrics = SherlockioMetrics.getInstance();
-            sherlockioMetrics.setJobName(PropertyConstants.UNIFIED_TRACKING_MONITOR_JOBNAME);
         }
 
         @SafeVarargs

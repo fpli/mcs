@@ -97,7 +97,6 @@ public class PropertyConstants {
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_RHEOS_PRODUCER_TOPIC_PROPERTIES = "unified-tracking-bot-transform-app.rheos.producer.topic.properties";
   public static final String UNIFIED_TRACKING_BOT_TRANSFORM_APP_JOBNAME = "UnifiedTrackingBotTransformApp";
-  public static final String UNIFIED_TRACKING_MONITOR_JOBNAME = "UnifiedTrackingMonitorApp";
 
   public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_TOPIC_PROPERTIES = "flink-log-collection.rheos.producer.topic.properties";
   public static final String FLINK_LOG_COLLECTION_RHEOS_PRODUCER_PROPERTIES = "flink-log-collection.rheos.producer.properties";
