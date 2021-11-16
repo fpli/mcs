@@ -54,7 +54,6 @@ public class MetricsUtil {
             });
             targetMap.clear();
             for (DimensionEntity dimensionEntity : dimensions) {
-                System.out.println(dimensionEntity.getDimensionName());
                 add(dimensionEntity);
             }
         } catch (IOException e) {

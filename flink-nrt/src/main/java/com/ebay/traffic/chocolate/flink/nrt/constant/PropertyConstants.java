@@ -135,8 +135,8 @@ public class PropertyConstants {
 
   public static final String UTP_PATHFINDER_EVENT_TRANSFORM_APP_YAML = "utp-pathfinder-event-transform-app.yaml";
 
-  public static final String UTP_MONITOR_APP_RHEOS_CONSUMER_PROPERTIES = "utp-monitor-app.rheos.consumer.properties";
-  public static final String UTP_MONITOR_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES = "utp-monitor-app.rheos.consumer.topic.properties";
+  public static final String UTP_MONITOR_APP_YAML = "utp-monitor-app.yaml";
+
 
 
 

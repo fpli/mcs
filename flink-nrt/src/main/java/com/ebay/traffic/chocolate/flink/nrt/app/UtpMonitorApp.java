@@ -3,12 +3,17 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
+import com.ebay.traffic.chocolate.flink.nrt.provider.monitor.DimensionEntity;
 import com.ebay.traffic.chocolate.flink.nrt.util.MetricsUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.utp.common.model.Message;
 import com.ebay.traffic.chocolate.utp.common.model.MessageRoot;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
@@ -32,6 +37,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -56,20 +62,37 @@ public class UtpMonitorApp {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    protected Map<String, Object> config;
+
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
         utpMonitorApp.run();
     }
 
     protected void run() throws Exception {
-        String jobName = this.getClass().getSimpleName();
-
+        loadProperty();
         streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
         prepareBaseExecutionEnvironment();
-        streamExecutionEnvironment.addSource(getKafkaConsumer()).name("source").uid("source")
+        addSource();
+        execute();
+    }
+
+    private void execute() throws Exception {
+        Map<String, Object> job = (Map<String, Object>) config.get("job");
+        streamExecutionEnvironment.execute((String) job.get("name"));
+    }
+
+    protected void addSource() throws IOException {
+        Map<String, Object> source = (Map<String, Object>) config.get("source");
+        String name = (String) source.get("name");
+        String uid = (String) source.get("uid");
+        streamExecutionEnvironment.addSource(getKafkaConsumer()).name(name).uid(uid)
                 .map(new Deserialize()).name("deserialize").uid("deserialize")
                 .map(new Transform());
-        streamExecutionEnvironment.execute(jobName);
+    }
+
+    protected void loadProperty() {
+        this.config = PropertyMgr.getInstance().loadYaml(PropertyConstants.UTP_MONITOR_APP_YAML);
     }
 
     protected void prepareBaseExecutionEnvironment() {
@@ -82,20 +105,14 @@ public class UtpMonitorApp {
                 .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
     }
 
-    protected List<String> getConsumerTopics() {
-        return Arrays.asList(PropertyMgr.getInstance()
-                .loadProperty(PropertyConstants.UTP_MONITOR_APP_RHEOS_CONSUMER_TOPIC_PROPERTIES)
-                .getProperty(PropertyConstants.TOPIC).split(StringConstants.COMMA));
-    }
+    protected FlinkKafkaConsumer<ConsumerRecord<byte[], byte[]>> getKafkaConsumer() throws IOException {
+        Map<String, Object> source = (Map<String, Object>) config.get("source");
+        String topics = (String) source.get("topic");
 
-    protected Properties getConsumerProperties() {
-        return PropertyMgr.getInstance()
-                .loadProperty(PropertyConstants.UTP_MONITOR_APP_RHEOS_CONSUMER_PROPERTIES);
-    }
-
-    protected FlinkKafkaConsumer<ConsumerRecord<byte[], byte[]>> getKafkaConsumer() {
-        return new FlinkKafkaConsumer<>(getConsumerTopics(),
-                new DefaultKafkaDeserializationSchema(), getConsumerProperties());
+        Properties consumerProperties = new Properties();
+        consumerProperties.load(new StringReader((String) source.get("properties")));
+        return new FlinkKafkaConsumer<>(Arrays.asList(topics.split(",")),
+                new DefaultKafkaDeserializationSchema(), consumerProperties);
     }
 
     private static class Deserialize extends RichMapFunction<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage> {
@@ -197,16 +214,29 @@ public class UtpMonitorApp {
                     Field.of("producer", producer)
             );
 
+            String url = nullVerifier(message.getUrl());
+            String mkcid = getDuplicateValue(url, "mkcid");
+            String mkrid = getDuplicateValue(url, "mkrid");
+            String mkpid = getDuplicateValue(url, "mkpid");
+            String mksid = getDuplicateValue(url, "mksid");
+
+            sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
+                    Field.of("channel", channelType),
+                    Field.of("action", actionType),
+                    Field.of("producer", producer),
+                    Field.of("isBot", isBot),
+                    Field.of("mkcid", mkcid),
+                    Field.of("mkrid", mkrid),
+                    Field.of("mkpid", mkpid),
+                    Field.of("mksid", mksid)
+            );
 
             if ("true".equals(isUep.toLowerCase())) {
                 try {
-                    List<String> mesgId = getMesgId(message.getPayload());
+                    List<String> messageId = getMessageId(message.getPayload());
                     String cnvId = nullVerifier(getCnvId(message.getPayload()));
-                    String is1stMId = "true";
-                    for (int i = 0; i < mesgId.size(); i++) {
-                        if (i > 0) {
-                            is1stMId = "false";
-                        }
+                    for (int i = 0; i < messageId.size(); i++) {
+                        System.out.println(messageId.get(i));
                         sherlockioMetrics.meterByGauge("unified_tracking_payload_v3", 1,
                                 Field.of("channel", channelType),
                                 Field.of("action", actionType),
@@ -214,30 +244,11 @@ public class UtpMonitorApp {
                                 Field.of("isBot", isBot),
                                 Field.of("isUEP", isUep),
                                 Field.of("platform", platform),
-                                Field.of("mesgId", mesgId.get(i)),
+                                Field.of("messageId", messageId.get(i)),
                                 Field.of("cnvId", cnvId),
-                                Field.of("is1stMId", is1stMId)
+                                Field.of("is1stMId", i == 0 ? "true" : "false")
                         );
                     }
-
-                    String url = nullVerifier(message.getUrl());
-                    String mkcid = getDuplicateValue(url, "mkcid");
-                    String mkrid = getDuplicateValue(url, "mkrid");
-                    String mkpid = getDuplicateValue(url, "mkpid");
-                    String mksid = getDuplicateValue(url, "mksid");
-
-                    sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
-                            Field.of("channel", channelType),
-                            Field.of("action", actionType),
-                            Field.of("producer", producer),
-                            Field.of("isBot", isBot),
-                            Field.of("mkcid", mkcid),
-                            Field.of("mkrid", mkrid),
-                            Field.of("mkpid", mkpid),
-                            Field.of("mksid", mksid)
-                    );
-
-
                 } catch (Exception e) {
                     sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error", 1,
                             Field.of("channel", channelType),
@@ -255,33 +266,24 @@ public class UtpMonitorApp {
         }
     }
 
-    private static List<String> getMesgId(Map<String, String> payload) throws IOException {
-        List<String> mesgList = new ArrayList<>();
-        String mesgListString = payload.getOrDefault("annotation.mesg.list", "null");
-        if ("{}".equals(mesgListString) ||
-                "null".equals(mesgListString) ||
-                "[{}]".equals(mesgListString) ||
-                "[]".equals(mesgListString)
-        ) {
-            mesgList.add("null");
-            return mesgList;
-        } else {
-            MessageRoot messageRootFromJson;
-            messageRootFromJson = mapper.readValue("{\"annotation.mesg.list\":" + mesgListString + "}", MessageRoot.class);
-            if (messageRootFromJson.mesgList.size() == 0) {
-                mesgList.add("null");
-                return mesgList;
-            }
-            for (Message m : messageRootFromJson.mesgList) {
-                if (m.mesgId == null || "null".equals(m.mesgId)) {
-                    mesgList.add("null");
-                } else {
-                    mesgList.add(m.mesgId);
-                }
-            }
-
+    private static List<String> getMessageId(Map<String, String> payload) throws Exception {
+        List<String> nullMessageList = new ArrayList<>();
+        nullMessageList.add("null");
+        String messageListString = payload.getOrDefault("annotation.mesg.list", "[]");
+        List<Message> messageList = mapper.readValue(messageListString, new TypeReference<List<Message>>() {
+        });
+        if (messageList.size() == 0) {
+            return nullMessageList;
         }
-        return mesgList;
+        return messageList
+                .stream()
+                .map(e -> {
+                    if (e.mesgId == null) {
+                        return "null";
+                    }
+                    return e.mesgId;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -326,11 +328,11 @@ public class UtpMonitorApp {
     private static String getPlatform(UnifiedTrackingRheosMessage message) {
         String appId = message.getAppId();
         String userAgent = message.getUserAgent();
-        if (appId == null || "null".equals(appId) || "".equals(appId)) {
-            if (userAgent == null || "null".equals(userAgent) || "".equals(userAgent)) {
-                return "null";
-            } else {
+        if (appId == null) {
+            if (userAgent != null) {
                 return "DESKTOP";
+            } else {
+                return "null";
             }
         } else {
             switch (appId) {
@@ -355,18 +357,26 @@ public class UtpMonitorApp {
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
             MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
             if (parameters.containsKey(duplicateItemName)) {
-                List<String> items = parameters.get(duplicateItemName).stream().map(String::trim).distinct().map(e -> {
-                    if (e.length() == 0) {
-                        return "EMPTY";
-                    }
-                    return e;
-                }).sorted(StringUtils::compare).collect(Collectors.toList());
-                if (items.size() > 1) {
+                List<String> items = parameters
+                        .get(duplicateItemName)
+                        .stream()
+                        .map(String::trim)
+                        .distinct()
+                        .map(e -> {
+                            if (e.length() == 0) {
+                                return "EMPTY";
+                            }
+                            return e;
+                        })
+                        .sorted(StringUtils::compare)
+                        .collect(Collectors.toList());
+
+                boolean duplicateOrNonExist = (items.size() > 1) || (items.size() == 1 && "EMPTY".equals(items.get(0)));
+                if (duplicateOrNonExist) {
                     return StringUtils.join(items, '+');
-                } else if (items.size() == 1 && "EMPTY".equals(items.get(0))) {
-                    return "EMPTY";
+                } else {
+                    return "DEFAULT";
                 }
-                return "DEFAULT";
             } else {
                 return "NULL";
             }
