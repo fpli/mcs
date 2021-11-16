@@ -292,6 +292,11 @@ public class CollectionService {
         Field.of(LANDING_PAGE_TYPE, landingPageType),
         Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
 
+    // UFES Redirect metrics
+    if (parameters.containsKey(Constants.UFES_REDIRECT) && ("true".equals(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+        MonitorUtil.info("UFESRedirect", 1, Field.of(CHANNEL_TYPE, urlRefChannel.getRight().getLogicalChannel().getAvro().toString()));
+    }
+
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
