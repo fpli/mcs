@@ -32,6 +32,8 @@ import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -63,6 +65,9 @@ public class UtpMonitorApp {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     protected Map<String, Object> config;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
+
 
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
@@ -186,75 +191,82 @@ public class UtpMonitorApp {
             String isUep = nullVerifier(getUEP(message.getPayload()));
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
+            try {
+                getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
+                        Field.of("channel", channelType),
+                        Field.of("action", actionType),
+                        Field.of("producer", producer),
+                        Field.of("isBot", isBot),
+                        Field.of("isUEP", isUep),
+                        Field.of("platform", platform),
+                        Field.of("site", site)).inc();
 
-            getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
-                    Field.of("channel", channelType),
-                    Field.of("action", actionType),
-                    Field.of("producer", producer),
-                    Field.of("isBot", isBot),
-                    Field.of("isUEP", isUep),
-                    Field.of("platform", platform),
-                    Field.of("site", site)).inc();
+                sherlockioMetrics.meterByGauge("unified_tracking_incoming_v3", 1,
+                        Field.of("channel", channelType),
+                        Field.of("action", actionType),
+                        Field.of("producer", producer),
+                        Field.of("isBot", isBot),
+                        Field.of("isUEP", isUep),
+                        Field.of("platform", platform),
+                        Field.of("site", site)
+                );
 
-            sherlockioMetrics.meterByGauge("unified_tracking_incoming_v3", 1,
-                    Field.of("channel", channelType),
-                    Field.of("action", actionType),
-                    Field.of("producer", producer),
-                    Field.of("isBot", isBot),
-                    Field.of("isUEP", isUep),
-                    Field.of("platform", platform),
-                    Field.of("site", site)
-            );
+                sherlockioMetrics.meterByGauge("unified_tracking_latency_v3",
+                        message.getEventTs() - message.getProducerEventTs(),
+                        Field.of("channel", channelType),
+                        Field.of("action", actionType),
+                        Field.of("producer", producer)
+                );
 
-            sherlockioMetrics.meterByGauge("unified_tracking_latency_v3",
-                    message.getEventTs() - message.getProducerEventTs(),
-                    Field.of("channel", channelType),
-                    Field.of("action", actionType),
-                    Field.of("producer", producer)
-            );
+                String url = nullVerifier(message.getUrl());
+                String mkcid = getDuplicateValue(url, "mkcid");
+                String mkrid = getDuplicateValue(url, "mkrid");
+                String mkpid = getDuplicateValue(url, "mkpid");
+                String mksid = getDuplicateValue(url, "mksid");
 
-            String url = nullVerifier(message.getUrl());
-            String mkcid = getDuplicateValue(url, "mkcid");
-            String mkrid = getDuplicateValue(url, "mkrid");
-            String mkpid = getDuplicateValue(url, "mkpid");
-            String mksid = getDuplicateValue(url, "mksid");
+                sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
+                        Field.of("channel", channelType),
+                        Field.of("action", actionType),
+                        Field.of("producer", producer),
+                        Field.of("isBot", isBot),
+                        Field.of("mkcid", mkcid),
+                        Field.of("mkrid", mkrid),
+                        Field.of("mkpid", mkpid),
+                        Field.of("mksid", mksid)
+                );
 
-            sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
-                    Field.of("channel", channelType),
-                    Field.of("action", actionType),
-                    Field.of("producer", producer),
-                    Field.of("isBot", isBot),
-                    Field.of("mkcid", mkcid),
-                    Field.of("mkrid", mkrid),
-                    Field.of("mkpid", mkpid),
-                    Field.of("mksid", mksid)
-            );
-
-            if ("true".equals(isUep.toLowerCase())) {
-                try {
-                    List<String> messageId = getMessageId(message.getPayload());
-                    String cnvId = nullVerifier(getCnvId(message.getPayload()));
-                    for (int i = 0; i < messageId.size(); i++) {
-                        System.out.println(messageId.get(i));
-                        sherlockioMetrics.meterByGauge("unified_tracking_payload_v3", 1,
+                if ("true".equals(isUep.toLowerCase())) {
+                    try {
+                        List<String> messageId = getMessageId(message.getPayload());
+                        String cnvId = nullVerifier(getCnvId(message.getPayload()));
+                        for (int i = 0; i < messageId.size(); i++) {
+                            sherlockioMetrics.meterByGauge("unified_tracking_payload_v3", 1,
+                                    Field.of("channel", channelType),
+                                    Field.of("action", actionType),
+                                    Field.of("producer", producer),
+                                    Field.of("isBot", isBot),
+                                    Field.of("isUEP", isUep),
+                                    Field.of("platform", platform),
+                                    Field.of("messageId", messageId.get(i)),
+                                    Field.of("cnvId", cnvId),
+                                    Field.of("is1stMId", i == 0 ? "true" : "false")
+                            );
+                        }
+                    } catch (Exception e) {
+                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error", 1,
                                 Field.of("channel", channelType),
                                 Field.of("action", actionType),
-                                Field.of("producer", producer),
-                                Field.of("isBot", isBot),
-                                Field.of("isUEP", isUep),
-                                Field.of("platform", platform),
-                                Field.of("messageId", messageId.get(i)),
-                                Field.of("cnvId", cnvId),
-                                Field.of("is1stMId", i == 0 ? "true" : "false")
+                                Field.of("producer", producer)
                         );
                     }
-                } catch (Exception e) {
-                    sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error", 1,
-                            Field.of("channel", channelType),
-                            Field.of("action", actionType),
-                            Field.of("producer", producer)
-                    );
                 }
+            } catch (Exception e) {
+                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error", 1,
+                        Field.of("channel", channelType),
+                        Field.of("action", actionType),
+                        Field.of("producer", producer)
+                );
+                LOGGER.error("error fields of message "+message.getUrl());
             }
             return "";
         }
@@ -365,6 +377,15 @@ public class UtpMonitorApp {
                             if (e.length() == 0) {
                                 return "EMPTY";
                             }
+                            if (e.contains(";")) {
+                                e = e.replaceAll(";", "");
+                            }
+                            if (e.contains("|")) {
+                                e = e.replaceAll(";", "");
+                            }
+                            if (e.contains(";")) {
+                                e = e.replaceAll(";", "");
+                            }
                             return e;
                         })
                         .sorted(StringUtils::compare)
@@ -372,7 +393,8 @@ public class UtpMonitorApp {
 
                 boolean duplicateOrNonExist = (items.size() > 1) || (items.size() == 1 && "EMPTY".equals(items.get(0)));
                 if (duplicateOrNonExist) {
-                    return StringUtils.join(items, '+');
+                    String value = StringUtils.join(items, '+').replaceAll(";", "").replaceAll("\\|", "").replaceAll("=", "");
+                    return value;
                 } else {
                     return "DEFAULT";
                 }
