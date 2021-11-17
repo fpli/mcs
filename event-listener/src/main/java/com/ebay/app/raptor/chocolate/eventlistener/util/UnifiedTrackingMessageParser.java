@@ -562,6 +562,13 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.ADGUID, adguid);
     }
 
+    // ep treatmentId
+    String xt = HttpRequestUtil.parseTagFromParams(parameters, Constants.XT);
+    if (!StringUtils.isEmpty(xt)) {
+      payload.put(Constants.XT, xt);
+    }
+
+
     // is from ufes
     String isUfes = baseEvent.getRequestHeaders().get(Constants.IS_FROM_UFES_HEADER);
     if (StringUtils.isEmpty(isUfes)) {
