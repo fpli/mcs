@@ -563,9 +563,9 @@ public class UnifiedTrackingMessageParser {
     }
 
     // ep treatmentId
-    String xt = HttpRequestUtil.parseTagFromParams(parameters, Constants.XT);
-    if (!StringUtils.isEmpty(xt)) {
-      payload.put(Constants.XT, xt);
+    String cxt = HttpRequestUtil.parseTagFromParams(parameters, Constants.CXT);
+    if (!StringUtils.isEmpty(cxt)) {
+      payload.put(Constants.XT, cxt);
     }
 
 

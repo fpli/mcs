@@ -50,8 +50,7 @@ public class UepPayloadHelper {
   public static final String RECO_POS_S = "rpo";
   public static final String FEEDBACK = "fdbk";
   public static final String IS_UEP = "isUEP";
-  public static final String NQT = "nqt";
-  public static final String XT = "xt";
+  public static final String MXT = "mxt";
 
   // for ORS migration
   public static final String EMAIL = "EMAIL";
@@ -184,9 +183,6 @@ public class UepPayloadHelper {
     // message list
     Message message = new Message();
     message.mobTrkId = parameters.getFirst(MOB_TRK_ID);
-    if (actionTypeEnum.equals(ActionTypeEnum.OPEN)) {
-      message.xt = parameters.getFirst(XT);
-    }
 
     if (actionTypeEnum.equals(ActionTypeEnum.CLICK)) {
       // message level
@@ -200,7 +196,7 @@ public class UepPayloadHelper {
       }
 
       // treated ep
-      message.xt = parameters.getFirst(XT);
+      message.xt = parameters.getFirst(MXT);
 
       // recommendation level
       Recommendation recommendation = new Recommendation();
