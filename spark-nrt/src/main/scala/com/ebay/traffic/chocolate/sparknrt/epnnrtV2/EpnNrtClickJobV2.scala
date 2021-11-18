@@ -133,7 +133,7 @@ class EpnNrtClickJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params, para
 
           retry(3) {
             deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
-            outputMetadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
+            //outputMetadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
             outputMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meterByGauge("OutputMetaSuccessfulTess", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
@@ -141,14 +141,14 @@ class EpnNrtClickJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params, para
           }
 
           //rename meta files
-          renameMeta(epnNrtResultMetaClickTempDir, epnNrtResultMetaClickDir)
+          //renameMeta(epnNrtResultMetaClickTempDir, epnNrtResultMetaClickDir)
           renameMeta(epnNrtScpMetaClickTempDir, epnNrtScpMetaClickDir)
         }
       })
 
       // 6. archive the meta file
       logger.info(s"archive metafile=$file")
-      archiveMetafile(file, archiveDir)
+      //archiveMetafile(file, archiveDir)
 
       // 7.delete the finished meta files
       logger.info(s"delete metafile=$file")
