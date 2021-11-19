@@ -132,7 +132,7 @@ class EpnNrtClickJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params, para
           val click_metaFile = new MetaFiles(Array(DateFiles(date, clickFiles)))
 
           retry(3) {
-            deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
+            //deleteMetaTmpDir(epnNrtResultMetaClickTempDir)
             //outputMetadata.writeOutputMeta(click_metaFile, epnNrtResultMetaClickTempDir, "epnnrt_click", Array(".epnnrt_1", ".epnnrt_2"))
             deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
             outputMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
