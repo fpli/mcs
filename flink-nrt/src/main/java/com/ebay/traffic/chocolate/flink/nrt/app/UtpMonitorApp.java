@@ -150,7 +150,6 @@ public class UtpMonitorApp {
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    System.out.println("Start refreshing the metricsTarget");
                     MetricsUtil.updateCache(properties.getProperty(PropertyConstants.FIDELIUS_URL));
                 }
             }, 0, 10000);
@@ -376,10 +375,7 @@ public class UtpMonitorApp {
                                 e = e.replaceAll(";", "");
                             }
                             if (e.contains("|")) {
-                                e = e.replaceAll(";", "");
-                            }
-                            if (e.contains(";")) {
-                                e = e.replaceAll(";", "");
+                                e = e.replaceAll("\\|", "");
                             }
                             return e;
                         })

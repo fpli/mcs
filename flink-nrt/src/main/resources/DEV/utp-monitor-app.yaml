@@ -23,10 +23,3 @@ source:
       iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960"\n\
       iafEnv="staging";
     rheos.services.urls: https://rheos-services.qa.ebay.com
-monitor:
-  monitor:
-    fideliusUrl=https://trackingproxy:
-      vip:
-        qa:
-          ebay:
-            com/tracking/proxy/v1/fidelius/secrets?path=trackingproxy/utpmonitor/dimension:
