@@ -148,7 +148,7 @@ class EpnNrtClickJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params, para
 
       // 6. archive the meta file
       logger.info(s"archive metafile=$file")
-      //archiveMetafile(file, archiveDir)
+      archiveMetafile(file, archiveDir)
 
       // 7.delete the finished meta files
       logger.info(s"delete metafile=$file")
