@@ -185,12 +185,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.ebay.traffic</groupId>
-            <artifactId>metrics-common</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-metrics-dropwizard</artifactId>
             <version>${flink.version}</version>
@@ -267,6 +261,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>metrics-common</artifactId>
+            <version>1.3.2-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

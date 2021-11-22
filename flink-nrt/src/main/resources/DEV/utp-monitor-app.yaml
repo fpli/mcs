@@ -1,0 +1,25 @@
+job:
+  name: utp-monitor-app
+
+source:
+  topic: marketing.tracking.staging.events.total
+  name: source
+  uid: source
+  properties: |-
+    bootstrap.servers: \
+      rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,\
+      rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092
+    group.id: utp-monitor
+    session.timeout.ms: 10000
+    auto.offset.reset: latest
+    receive.buffer.bytes: 16777216
+    request.timeout.ms: 305000
+    sasl.mechanism: IAF
+    security.protocol: SASL_PLAINTEXT
+    sasl.jaas.config: io.ebay.rheos.kafka.security.iaf.IAFLoginModule required\n\
+      iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639"\n\
+      iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960"\n\
+      iafEnv="staging";
+    rheos.services.urls: https://rheos-services.qa.ebay.com
