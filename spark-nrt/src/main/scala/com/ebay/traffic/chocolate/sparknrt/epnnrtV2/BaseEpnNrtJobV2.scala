@@ -115,6 +115,12 @@ abstract class BaseEpnNrtJobV2(params: ParameterV2,
       if (outputStatus.nonEmpty) {
         max = outputStatus.map(status => {
           val name = status.getPath.getName
+          if(!name.contains("_")){
+            logger.error("file name is "+name)
+          }
+          if(!name.contains("_")){
+            Integer.valueOf(-1)
+          }
           val number = name.substring(name.lastIndexOf("_"))
           Integer.valueOf(number.substring(1, number.indexOf(".")))
         }).sortBy(i => i).last
