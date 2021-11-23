@@ -35,6 +35,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -359,6 +360,7 @@ public class UtpMonitorApp {
 
     public static String getDuplicateValue(String url, String duplicateItemName) {
         try {
+            url = URLDecoder.decode(url,"UTF-8");
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
             MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
             if (parameters.containsKey(duplicateItemName)) {
