@@ -116,7 +116,7 @@ abstract class BaseEpnNrtJobV2(params: ParameterV2,
         max = outputStatus.map(status => {
           val name = status.getPath.getName
           if(!name.contains("_")){
-            logger.error("file name is "+name)
+            logger.error("file name {} is in {}",name,date)
             Integer.valueOf(-1)
           }
           else {
