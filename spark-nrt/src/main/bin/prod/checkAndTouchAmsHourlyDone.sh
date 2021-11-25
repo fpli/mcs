@@ -41,8 +41,6 @@ echo "Timestamp of earliest dedupe lag: "${earliest_ts}
 
 echo "============================== Start checking data timestamp =============================="
 
-flag_ts=0
-flag_meta=0
 ## Check if there is any meta to check
 let meta_num=`${apollo_command} dfs -ls ${WORK_DIR}'/meta/'${CHANNEL}'/output/'${USAGE} | grep ${META_SUFFIX} | wc -l`
 
@@ -60,10 +58,11 @@ else
     echo "No meta! No need to check!"
 fi
 
-
 ################################################## Define Check Hour ##################################################
 for ((a=1; ; a++))
 do
+    flag_ts=0
+    flag_meta=0
     echo "============== Search for last hourly done date to define current check hour =============="
 
     local_done_date=`cat ${LOCAL_DONE_DATE_FILE}`
