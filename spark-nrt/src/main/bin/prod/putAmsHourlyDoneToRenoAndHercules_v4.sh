@@ -7,12 +7,12 @@
 #           /apps/b_marketing_tracking/watch
 # Schedule: /3 * ? * *
 # case：
-#./putAmsHourlyDoneToRenoAndHercules_v2.sh click
-#./putAmsHourlyDoneToRenoAndHercules_v2.sh imp
+#./putAmsHourlyDoneToRenoAndHercules_v4.sh click
+#./putAmsHourlyDoneToRenoAndHercules_v4.sh imp
 
 set -x
 
-usage="Usage: putAmsHourlyDoneToRenoAndHercules_v2.sh [type]"
+usage="Usage: putAmsHourlyDoneToRenoAndHercules_v4.sh [type]"
 
 if [ $# -lt 1 ]; then
   echo $usage

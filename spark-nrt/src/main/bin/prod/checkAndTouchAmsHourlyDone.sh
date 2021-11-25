@@ -59,10 +59,10 @@ else
 fi
 
 ################################################## Define Check Hour ##################################################
-for ((a=1; ; a++))
+for ((a=1;a<5; a++))
 do
     flag_ts=0
-    flag_meta=0
+    flag_lag=0
     echo "============== Search for last hourly done date to define current check hour =============="
 
     local_done_date=`cat ${LOCAL_DONE_DATE_FILE}`
@@ -88,10 +88,10 @@ do
     if [[ ${flag_lag} -eq 1 && ${flag_ts} -eq 1 && ${flag_meta} -eq 1 ]]
     then
         echo "Hourly data is ready"
-        current_done_click=$(get_current_done ${RENO_LOCAL_DONE_DATE_FILE_CLICK})
+        current_done_click=$(get_current_done ${LOCAL_DONE_DATE_FILE})
         echo "=================== Start touching reno click hourly done file ==================="
-        ./touchAmsHourlyDone_v3.sh ${current_done_click} ${RENO_LOCAL_DONE_DATE_FILE_CLICK} ${TYPE} reno
-        ./touchAmsHourlyDone_v3.sh ${current_done_click} ${RENO_LOCAL_DONE_DATE_FILE_CLICK} ${TYPE} hercules
+        ./touchAmsHourlyDone_v4.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE} ${TYPE} reno
+        ./touchAmsHourlyDone_v4.sh ${current_done_click} ${LOCAL_DONE_DATE_FILE} ${TYPE} hercules
     else
         echo "Hourly data is not ready"
         exit 0
