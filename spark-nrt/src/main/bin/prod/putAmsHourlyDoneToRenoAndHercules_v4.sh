@@ -35,12 +35,12 @@ RENO_MIN_TS_FILE_IMP=/apps/b_marketing_tracking/chocolate/epnnrt_v2/min_ts_rno_i
 if [ ${TYPE} == "click" ]
 then
   echo "================ reno click touch hourly done file ================"
-  ./checkAndTouchAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${RENO_META_SUFFIX} ${RENO_LOCAL_DONE_DATE_FILE_CLICK} ${RENO_MIN_TS_FILE_CLICK} ${TYPE}
+  ./checkAndTouchAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_CLICK} ${RENO_META_SUFFIX} ${RENO_LOCAL_DONE_DATE_FILE_CLICK} ${RENO_MIN_TS_FILE_CLICK} click
 
   echo "================ hercules click touch hourly done file ================"
 elif [ ${TYPE} == "imp"  ]; then
   echo "================ reno imp touch hourly done file ================"
-  ./checkAndTouchAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${RENO_META_SUFFIX} ${RENO_LOCAL_DONE_DATE_FILE_IMP} ${RENO_MIN_TS_FILE_IMP} ${TYPE}
+  ./checkAndTouchAmsHourlyDone.sh ${WORK_DIR} ${CHANNEL} ${USAGE_IMP} ${RENO_META_SUFFIX} ${RENO_LOCAL_DONE_DATE_FILE_IMP} ${RENO_MIN_TS_FILE_IMP} imp
 else
   echo $usage
   exit 1
