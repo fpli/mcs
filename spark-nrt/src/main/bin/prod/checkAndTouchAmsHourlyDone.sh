@@ -58,6 +58,8 @@ else
     echo "No meta! No need to check!"
 fi
 
+let data_min_ts=`${apollo_command} dfs -cat ${MIN_TS_FILE}`
+
 ################################################## Define Check Hour ##################################################
 for ((a=1;a<5; a++))
 do
@@ -71,7 +73,7 @@ do
     check_last_timestamp=$(date -d "${check_last_time}" +%s)000
     let check_now_timestamp=${check_last_timestamp}+7200000
 
-    let data_min_ts=`${apollo_command} dfs -cat ${MIN_TS_FILE}`
+
     echo "Timestamp of earliest epn nrt data: "${data_min_ts}
     if [ ${data_min_ts} -ge ${check_now_timestamp} ]
     then
