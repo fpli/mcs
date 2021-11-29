@@ -160,7 +160,7 @@ public class UTPPathfinderEventTransformApp
             GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
             UTPPathfinderEventTransformer transformer = new UTPPathfinderEventTransformer(consumerRecord.topic(), consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion);
             if (!transformer.isValid()) {
-                sherlockioMetrics.meter("UTPPathfinderEventInvalid");
+                sherlockioMetrics.meter("UTPPathfinderEventInvalid", 1);
                 return;
             }
 
