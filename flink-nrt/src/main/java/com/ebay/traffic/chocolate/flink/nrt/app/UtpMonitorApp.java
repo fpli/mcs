@@ -379,6 +379,9 @@ public class UtpMonitorApp {
                             if (e.contains("|")) {
                                 e = e.replaceAll("\\|", "");
                             }
+                            if (e.contains("=")) {
+                                e = e.replaceAll("=", "");
+                            }
                             return e;
                         })
                         .sorted(StringUtils::compare)
@@ -386,8 +389,7 @@ public class UtpMonitorApp {
 
                 boolean duplicateOrNonExist = (items.size() > 1) || (items.size() == 1 && "EMPTY".equals(items.get(0)));
                 if (duplicateOrNonExist) {
-                    String value = StringUtils.join(items, '+').replaceAll(";", "").replaceAll("\\|", "").replaceAll("=", "");
-                    return value;
+                    return StringUtils.join(items, '+');
                 } else {
                     return "DEFAULT";
                 }
