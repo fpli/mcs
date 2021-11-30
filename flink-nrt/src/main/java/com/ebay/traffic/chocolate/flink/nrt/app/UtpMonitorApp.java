@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.util.MetricsUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.utp.common.model.Message;
 import com.ebay.traffic.monitoring.Field;
@@ -39,6 +38,7 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +64,7 @@ public class UtpMonitorApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
 
+    public static final Pattern parameterPattern = Pattern.compile("\\d+\\-\\d+\\-\\d+\\-\\d+|\\d+");
 
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
@@ -221,10 +222,6 @@ public class UtpMonitorApp {
                 String mkrid = getDuplicateValue(url, "mkrid");
                 String mkpid = getDuplicateValue(url, "mkpid");
                 String mksid = getDuplicateValue(url, "mksid");
-                boolean duplicateExist = false;
-                if (mkcid.contains("+") || mkrid.contains("+") || mkpid.contains("+") || mksid.contains("+")) {
-                    duplicateExist = true;
-                }
                 sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -267,7 +264,7 @@ public class UtpMonitorApp {
                         Field.of("action", actionType),
                         Field.of("producer", producer)
                 );
-                LOGGER.error("error fields of message " + message.getUrl()+" and error is"+e.toString());
+                LOGGER.error("error fields of message " + message.getUrl() + " and error is" + e.toString());
             }
             return "";
         }
@@ -366,12 +363,10 @@ public class UtpMonitorApp {
 
     public static String getDuplicateValue(String url, String duplicateItemName) {
         try {
-            String decodeUrl=url;
-            /*
+            String decodeUrl = url;
             for (int i = 0; i < 3; i++) {
                 decodeUrl = URLDecoder.decode(decodeUrl, "UTF-8");
             }
-             */
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(decodeUrl).build();
             MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
             if (parameters.containsKey(duplicateItemName)) {
@@ -383,22 +378,22 @@ public class UtpMonitorApp {
                         .map(e -> {
                             //if the parameter is parsed error(sometimes it is not enough to decode one time for a url
                             // and the parameter will be too long), give it the default value "ERROR"
-                            if(e.length()>40||e.contains("http")){
-                                System.out.println("wrong url format "+url);
-                                LOGGER.info("wrong url format "+url);
+                            if (!parameterPattern.matcher(e).find()) {
+                                System.out.println("wrong url format " + url);
+                                LOGGER.info("wrong url format " + url);
                                 return "ERROR";
                             }
                             if (e.length() == 0) {
                                 return "EMPTY";
                             }
                             if (e.contains(";")) {
-                                e = e.replaceAll(";", "quote");
+                                e = e.replaceAll(";", "");
                             }
                             if (e.contains("|")) {
-                                e = e.replaceAll("\\|", "split");
+                                e = e.replaceAll("\\|", "");
                             }
                             if (e.contains("=")) {
-                                e = e.replaceAll("=", "equal");
+                                e = e.replaceAll("=", "");
                             }
                             return e;
                         })
