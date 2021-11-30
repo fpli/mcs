@@ -142,7 +142,9 @@
           "MRKT_SMS",
           "SITE_SMS",
           "SEARCH_ENGINE_FREE_LISTINGS",
-          "UNKNOWN"
+          "UNKNOWN",
+          "GCX_EMAIL",
+          "GCX_MESSAGE_CENTER"
         ]
       }
     },

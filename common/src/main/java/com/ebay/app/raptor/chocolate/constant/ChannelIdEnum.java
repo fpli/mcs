@@ -81,12 +81,22 @@ public enum ChannelIdEnum {
   /**
    * Channel 0 -- production ROI
    */
-  ROI("0", LogicalChannelEnum.ROI, false);
+  ROI("0", LogicalChannelEnum.ROI, false),
 
   /**
    * Channel -1 -- production new ROI test channel
    *//*
   NEW_ROI("-1", LogicalChannelEnum.ROI, false);*/
+
+  /**
+   * Channel 29 -- GCX Email
+   */
+  GCX_EMAIL("29", LogicalChannelEnum.GCX_EMAIL, false),
+
+  /**
+   * Channel 30 -- GCX Message Center
+   */
+  GCX_MESSAGE_CENTER("30", LogicalChannelEnum.GCX_MESSAGE_CENTER, false);
 
   /**
    * The human-parsable channel name.
