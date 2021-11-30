@@ -198,7 +198,7 @@ public class UtpMonitorApp {
                         Field.of("platform", platform),
                         Field.of("site", site)).inc();
 */
-                sherlockioMetrics.meterByGauge("unified_tracking_incoming_total", 1,
+                sherlockioMetrics.meter("unified_tracking_incoming_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer),
@@ -208,7 +208,7 @@ public class UtpMonitorApp {
                         Field.of("site", site)
                 );
 
-                sherlockioMetrics.meterByGauge("unified_tracking_latency_total",
+                sherlockioMetrics.meter("unified_tracking_latency_total",
                         message.getEventTs() - message.getProducerEventTs(),
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -220,7 +220,7 @@ public class UtpMonitorApp {
                 String mkrid = getDuplicateValue(url, "mkrid");
                 String mkpid = getDuplicateValue(url, "mkpid");
                 String mksid = getDuplicateValue(url, "mksid");
-                sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_total", 1,
+                sherlockioMetrics.meter("unified_tracking_duplicate_incoming_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer),
@@ -236,7 +236,7 @@ public class UtpMonitorApp {
                         List<String> messageId = getMessageId(message.getPayload());
                         String cnvId = nullVerifier(getCnvId(message.getPayload()));
                         for (int i = 0; i < messageId.size(); i++) {
-                            sherlockioMetrics.meterByGauge("unified_tracking_payload_total", 1,
+                            sherlockioMetrics.meter("unified_tracking_payload_total", 1,
                                     Field.of("channel", channelType),
                                     Field.of("action", actionType),
                                     Field.of("producer", producer),
@@ -249,7 +249,7 @@ public class UtpMonitorApp {
                             );
                         }
                     } catch (Exception e) {
-                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error_total", 1,
+                        sherlockioMetrics.meter("unified_tracking_payload_parsing_error_total", 1,
                                 Field.of("channel", channelType),
                                 Field.of("action", actionType),
                                 Field.of("producer", producer)
@@ -257,7 +257,7 @@ public class UtpMonitorApp {
                     }
                 }
             } catch (Exception e) {
-                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error_total", 1,
+                sherlockioMetrics.meter("unified_tracking_metrics_error_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer)
