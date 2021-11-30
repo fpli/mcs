@@ -376,8 +376,6 @@ public class UtpMonitorApp {
                         .map(String::trim)
                         .distinct()
                         .map(e -> {
-                            //if the parameter is parsed error(sometimes it is not enough to decode one time for a url
-                            // and the parameter will be too long), give it the default value "ERROR"
                             if (!parameterPattern.matcher(e).find()) {
                                 System.out.println("wrong url format " + url);
                                 LOGGER.info("wrong url format " + url);
