@@ -64,8 +64,6 @@ public class UtpMonitorApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
 
-    public static final Pattern parameterPattern = Pattern.compile("\\d+\\-\\d+\\-\\d+\\-\\d+|\\d+");
-
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
         utpMonitorApp.run();
@@ -362,6 +360,7 @@ public class UtpMonitorApp {
     }
 
     public static String getDuplicateValue(String url, String duplicateItemName) {
+        String parameterPattern = "\\d+\\-\\d+\\-\\d+\\-\\d+|\\d+";
         try {
             String decodeUrl = url;
             for (int i = 0; i < 3; i++) {
@@ -376,7 +375,7 @@ public class UtpMonitorApp {
                         .map(String::trim)
                         .distinct()
                         .map(e -> {
-                            if (!parameterPattern.matcher(e).find()) {
+                            if (!e.matches(parameterPattern)) {
                                 System.out.println("wrong url format " + url);
                                 LOGGER.info("wrong url format " + url);
                                 return "ERROR";
