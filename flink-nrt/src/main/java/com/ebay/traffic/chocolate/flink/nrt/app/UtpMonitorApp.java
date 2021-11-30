@@ -147,6 +147,7 @@ public class UtpMonitorApp {
             counters = new ConcurrentHashMap<>();
             Properties properties = PropertyMgr.getInstance()
                     .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+            /*
             Timer timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
@@ -154,6 +155,7 @@ public class UtpMonitorApp {
                     MetricsUtil.updateCache(properties.getProperty(PropertyConstants.FIDELIUS_URL));
                 }
             }, 0, 10000);
+             */
             SherlockioMetrics.init(properties.getProperty(PropertyConstants.MONITOR_SHERLOCKIO_NAMESPACE),
                     properties.getProperty(PropertyConstants.SHERLOCKIO_ENDPOINT), properties.getProperty(PropertyConstants.SHERLOCKIO_USER));
             sherlockioMetrics = SherlockioMetrics.getInstance();
@@ -187,6 +189,7 @@ public class UtpMonitorApp {
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
             try {
+                /*
                 getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -195,7 +198,7 @@ public class UtpMonitorApp {
                         Field.of("isUEP", isUep),
                         Field.of("platform", platform),
                         Field.of("site", site)).inc();
-
+*/
                 sherlockioMetrics.meterByGauge("unified_tracking_incoming_v3", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -218,7 +221,10 @@ public class UtpMonitorApp {
                 String mkrid = getDuplicateValue(url, "mkrid");
                 String mkpid = getDuplicateValue(url, "mkpid");
                 String mksid = getDuplicateValue(url, "mksid");
-
+                boolean duplicateExist = false;
+                if (mkcid.contains("+") || mkrid.contains("+") || mkpid.contains("+") || mksid.contains("+")) {
+                    duplicateExist = true;
+                }
                 sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -248,7 +254,7 @@ public class UtpMonitorApp {
                             );
                         }
                     } catch (Exception e) {
-                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error", 1,
+                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error_v3", 1,
                                 Field.of("channel", channelType),
                                 Field.of("action", actionType),
                                 Field.of("producer", producer)
@@ -256,12 +262,12 @@ public class UtpMonitorApp {
                     }
                 }
             } catch (Exception e) {
-                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error", 1,
+                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error_v3", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer)
                 );
-                LOGGER.error("error fields of message "+message.getUrl());
+                LOGGER.error("error fields of message " + message.getUrl()+" and error is"+e.toString());
             }
             return "";
         }
@@ -360,8 +366,13 @@ public class UtpMonitorApp {
 
     public static String getDuplicateValue(String url, String duplicateItemName) {
         try {
-            url = URLDecoder.decode(url,"UTF-8");
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
+            String decodeUrl=url;
+            /*
+            for (int i = 0; i < 3; i++) {
+                decodeUrl = URLDecoder.decode(decodeUrl, "UTF-8");
+            }
+             */
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(decodeUrl).build();
             MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
             if (parameters.containsKey(duplicateItemName)) {
                 List<String> items = parameters
@@ -370,17 +381,24 @@ public class UtpMonitorApp {
                         .map(String::trim)
                         .distinct()
                         .map(e -> {
+                            //if the parameter is parsed error(sometimes it is not enough to decode one time for a url
+                            // and the parameter will be too long), give it the default value "ERROR"
+                            if(e.length()>40||e.contains("http")){
+                                System.out.println("wrong url format "+url);
+                                LOGGER.info("wrong url format "+url);
+                                return "ERROR";
+                            }
                             if (e.length() == 0) {
                                 return "EMPTY";
                             }
                             if (e.contains(";")) {
-                                e = e.replaceAll(";", "");
+                                e = e.replaceAll(";", "quote");
                             }
                             if (e.contains("|")) {
-                                e = e.replaceAll("\\|", "");
+                                e = e.replaceAll("\\|", "split");
                             }
                             if (e.contains("=")) {
-                                e = e.replaceAll("=", "");
+                                e = e.replaceAll("=", "equal");
                             }
                             return e;
                         })
