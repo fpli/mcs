@@ -127,7 +127,7 @@ public class Constants {
   public static final String UFES_REDIRECT = "ufes_redirect";
 
   // ep's treatment id: qualified and treated
-  public static final String CXT = "cxt";
+//  public static final String CXT = "cxt";
   public static final String XT = "xt";
 
 
