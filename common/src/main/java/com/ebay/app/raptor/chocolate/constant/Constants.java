@@ -38,7 +38,6 @@ public class Constants {
   public static final String STR_NULL = "null";
   public static final String TAG_IS_UFES = "isUfes";
   public static final String TAG_STATUS_CODE = "statusCode";
-  public static final String TAG_IS_UFES_REDIRECT = "isUFESRedirect";
 
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
