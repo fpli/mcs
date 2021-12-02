@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -842,12 +843,15 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
     SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
-    if (message != null) {
-      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
-          UnifiedTrackingKafkaSink.callback);
+    if (message != null)
+      if (ChannelTypeEnum.ONSITE.getValue().equals(message.getChannelType())) {
+        MonitorUtil.info("CollectionServiceSkipOnsite");
+      } else {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
+                UnifiedTrackingKafkaSink.callback);
 
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-          Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
+        stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
+                Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
       }
   }
 
@@ -867,8 +871,12 @@ public class CollectionService {
       if(!StringUtils.isEmpty(eventId)) {
         utpMessage.setEventId(eventId);
       }
-      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-              utpMessage), UnifiedTrackingKafkaSink.callback);
+      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType()) && utpMessage.getIsBot()) {
+        MonitorUtil.info("CollectionServiceSkipFreeListingBot");
+      } else {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+                utpMessage), UnifiedTrackingKafkaSink.callback);
+      }
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
       MonitorUtil.info("UTPMessageError");
