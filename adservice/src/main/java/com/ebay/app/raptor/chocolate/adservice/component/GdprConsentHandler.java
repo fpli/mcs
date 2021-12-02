@@ -4,8 +4,8 @@ import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.util.Base64;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.iabtcf.decoder.TCString;
 import com.iabtcf.utils.IntIterable;
 import org.apache.commons.lang3.StringUtils;
@@ -14,11 +14,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,9 +38,6 @@ public class GdprConsentHandler {
 
     private CouchbaseClient couchbaseClient;
 
-    @Value("${gdpr-consent.vendorId}")
-    private String purposeVendorId;
-
     @Autowired
     public void init() {
         couchbaseClient = CouchbaseClient.getInstance();
@@ -57,7 +54,14 @@ public class GdprConsentHandler {
         String gdprParam = request.getParameter(gdprParameter);
         String enableTcfComplianceModeString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_TCF_COMPLIANCE_MODE);
         logger.info("enableTcfComplianceMode {}", enableTcfComplianceModeString);
-        boolean enableTcfComplianceMode = true;
+        boolean enableTcfComplianceMode = false;
+        if (StringUtils.isNotBlank(enableTcfComplianceModeString)) {
+            try {
+                enableTcfComplianceMode = new ObjectMapper().readValue(enableTcfComplianceModeString, Boolean.class);
+            } catch (IOException e) {
+                logger.error("enableTcfComplianceMode format error, take a look please.");
+            }
+        }
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
                 MonitorUtil.info(GdprConsentConstant.TOTAL_TRAFFIC_OF_GDPR_ADSVC);
@@ -72,12 +76,13 @@ public class GdprConsentHandler {
                 if (StringUtils.isNotBlank(consentParam)) {
                     TCString tcString = TCString.decode(consentParam);
                     IntIterable vendorConsent = tcString.getVendorConsent();
-                    logger.info("Purpose vendor id list is {} ", purposeVendorId);
-                    if (StringUtils.isBlank(purposeVendorId)) {
+                    String purposeVendorIdString = couchbaseClient.get(CouchbaseKeyConstant.PURPOSE_VENDOR_ID);
+                    logger.info("Purpose vendor id list is {} ", purposeVendorIdString);
+                    if (StringUtils.isBlank(purposeVendorIdString)) {
                         logger.warn("Can't get purposeVendorID from CB, take a look please.");
                     }
-                    if (StringUtils.isNotBlank(purposeVendorId) && vendorConsent != null) {
-                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorId, List.class);
+                    if (StringUtils.isNotBlank(purposeVendorIdString) && vendorConsent != null) {
+                        List<Integer> vendorIds = new ObjectMapper().readValue(purposeVendorIdString, List.class);
                         boolean containsAll = !vendorIds.stream().map(vendorConsent::contains).collect(Collectors.toSet()).contains(false);
                         //vendor consent have to contain all of purpose vendor ids
                         if (containsAll) {
