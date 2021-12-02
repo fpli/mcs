@@ -6,6 +6,7 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -839,8 +840,8 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
     if (message != null)
-      if (ChannelTypeEnum.ONSITE.getValue().equals(message.getChannelType())) {
-        MonitorUtil.info("CollectionServiceSkipOnsite");
+      if (ChannelTypeEnum.ONSITE.getValue().equals(message.getChannelType()) && ActionTypeEnum.SERVE.getValue().equals(message.getActionType())) {
+        MonitorUtil.info("CollectionServiceSkipOnsite_SERVE");
       } else {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
                 UnifiedTrackingKafkaSink.callback);
