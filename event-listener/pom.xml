@@ -148,7 +148,7 @@
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>ads-tracking-handler-starter</artifactId>
-      <version>1.0.14-RELEASE</version>
+      <version>1.0.13-RELEASE</version>
     </dependency>
 
     <!--global config-->
