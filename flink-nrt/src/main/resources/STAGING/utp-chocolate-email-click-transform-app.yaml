@@ -1,0 +1,60 @@
+job:
+  name: utp-chocolate-email-click-transform-app
+
+source:
+  topic: behavior.pulsar.customized.email
+  name: source
+  uid: source
+  properties: |-
+    bootstrap.servers: \
+      rhs-rbrvkiaa-kfk-1.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-2.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-3.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-4.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-5.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-6.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-7.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-8.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-9.rheos-streaming-qa.stratus.qa.ebay.com:9092,\
+      rhs-rbrvkiaa-kfk-10.rheos-streaming-qa.stratus.qa.ebay.com:9092
+    group.id: utp-chocolate-email-click-transform
+    session.timeout.ms: 30000
+    auto.offset.reset: earliest
+    receive.buffer.bytes: 16777216
+    request.timeout.ms: 305000
+    sasl.mechanism: IAF
+    security.protocol: SASL_PLAINTEXT
+    sasl.jaas.config: io.ebay.rheos.kafka.security.iaf.IAFLoginModule required\n\
+      iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639"\n\
+      iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960"\n\
+      iafEnv="staging";
+    rheos.services.urls: https://rheos-services.qa.ebay.com
+    flink.partition-discovery.interval-millis: 60000
+
+sink:
+  topic: marketing.tracking.staging.events.total
+  name: sink
+  uid: sink
+  properties: |-
+    bootstrap.servers: \
+      rhs-gvrvkiaa-kfk-slc-1.rheos-streaming-qa.svc.33.tess.io:9092,\
+      rhs-gvrvkiaa-kfk-slc-2.rheos-streaming-qa.svc.33.tess.io:9092,\
+      rhs-gvrvkiaa-kfk-slc-3.rheos-streaming-qa.svc.33.tess.io:9092,\
+      rhs-gvrvkiaa-kfk-slc-4.rheos-streaming-qa.svc.33.tess.io:9092
+    acks: -1
+    buffer.memory: 33554432
+    retries: 3
+    batch.size: 16384
+    linger.ms: 20
+    max.block.ms: 120000
+    request.timeout.ms: 900000
+    compression.type: snappy
+    sasl.mechanism: IAF
+    security.protocol: SASL_PLAINTEXT
+    sasl.jaas.config: io.ebay.rheos.kafka.security.iaf.IAFLoginModule required\n\
+      iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639"\n\
+      iafSecret="f660cc36-bf60-4528-befc-bb2fc203a960"\n\
+      iafEnv="staging";
+    rheos.producer: marketing-tracking-producer
+    rheos.topic.schema: marketing.tracking.events.schema
+    rheos.services.urls: https://rheos-services.qa.ebay.com
