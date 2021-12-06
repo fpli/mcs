@@ -125,6 +125,11 @@ public class Constants {
   // UFES redirect flag for the Rover clicks onboarded to UFES
   public static final String UFES_REDIRECT = "ufes_redirect";
 
+  // ep's treatment id: qualified and treated
+  public static final String CXT = "cxt";
+  public static final String XT = "xt";
+
+
   /**
    * Performance marketing channels
    */
