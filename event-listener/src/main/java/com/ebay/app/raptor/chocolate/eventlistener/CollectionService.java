@@ -863,12 +863,18 @@ public class CollectionService {
                                        long shortSnapshotId, String eventId) {
     try {
       UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
-              shortSnapshotId);
-      if(!StringUtils.isEmpty(eventId)) {
+          shortSnapshotId);
+      if (!StringUtils.isEmpty(eventId)) {
         utpMessage.setEventId(eventId);
       }
-      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType()) && utpMessage.getIsBot()) {
+      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType())
+          && utpMessage.getIsBot()) {
         MonitorUtil.info("CollectionServiceSkipFreeListingBot");
+      } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(utpMessage.getChannelType())
+          || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType()))
+          && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType())
+          && utpMessage.getEventTs() >= 1639033200000L) {
+        MonitorUtil.info("UTPSkipChocolateEmailClick");
       } else {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
                 utpMessage), UnifiedTrackingKafkaSink.callback);
