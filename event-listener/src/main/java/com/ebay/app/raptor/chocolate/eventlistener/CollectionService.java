@@ -840,15 +840,11 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
     if (message != null)
-      if (ChannelTypeEnum.ONSITE.getValue().equals(message.getChannelType()) && ActionTypeEnum.SERVE.getValue().equals(message.getActionType())) {
-        MonitorUtil.info("CollectionServiceSkipOnsite_SERVE");
-      } else {
-        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
-                UnifiedTrackingKafkaSink.callback);
+      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
+          UnifiedTrackingKafkaSink.callback);
 
-        stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-                Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
-      }
+    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
+        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
   }
 
   /**
