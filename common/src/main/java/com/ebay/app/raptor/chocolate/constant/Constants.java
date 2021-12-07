@@ -126,6 +126,8 @@ public class Constants {
   // UFES redirect flag for the Rover clicks onboarded to UFES
   public static final String UFES_REDIRECT = "ufes_redirect";
 
+  public static final String SLASH = "/";
+
   /**
    * Performance marketing channels
    */
