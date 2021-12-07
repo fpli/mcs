@@ -183,17 +183,11 @@ public class UTPChocolateEmailClickTransformApp
       }
       String consumerTopic = consumerRecord.topic();
       RheosEvent sourceRheosEvent = deserializer.deserialize(consumerTopic, consumerRecord.value());
-      // TODO: temporary filter all clicks before 12/08, remove it one day later
-      long eventSentTimestamp = sourceRheosEvent.getEventSentTimestamp();
-      if (eventSentTimestamp < 1638946800000L) {
-        numInvalidDateInRate.markEvent();
-        return;
-      }
 
       GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
       UTPChocolateEmailClickTransformer transformer = new UTPChocolateEmailClickTransformer(consumerRecord.topic(),
               consumerRecord.partition(), consumerRecord.offset(), sourceRecord, sourceRheosEvent, schemaVersion,
-              numNoPageIdInRate, numNoChnlInRate, numNotChocolateClickInRate);
+              numInvalidDateInRate, numNoPageIdInRate, numNoChnlInRate, numNotChocolateClickInRate);
       if (!transformer.isValid()) {
         return;
       }

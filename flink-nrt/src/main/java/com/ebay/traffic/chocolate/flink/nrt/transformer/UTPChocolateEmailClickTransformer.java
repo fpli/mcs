@@ -43,6 +43,7 @@ public class UTPChocolateEmailClickTransformer {
   private final GenericRecord sourceRecord;
   private final RheosEvent sourceRheosEvent;
   private final String schemaVersion;
+  private final Meter numInvalidDateInRate;
   private final Meter numNoPageIdInRate;
   private final Meter numNoChnlInRate;
   private final Meter numNotChocolateClickInRate;
@@ -50,6 +51,7 @@ public class UTPChocolateEmailClickTransformer {
   protected Map<String, String> applicationPayload;
   protected Map<String, String> clientData;
   private String url;
+  private long eventTs;
   private MultiValueMap<String, String> queryParams;
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
@@ -116,13 +118,14 @@ public class UTPChocolateEmailClickTransformer {
     return String.format("%s%s", GET_METHOD_PREFIX, upperCamelCase);
   };
 
-  public UTPChocolateEmailClickTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent, String schemaVersion, Meter numNoPageIdInRate, Meter numNoChnlInRate, Meter numNotChocolateClickInRate) {
+  public UTPChocolateEmailClickTransformer(String sourceTopic, int partition, long offset, GenericRecord sourceRecord, RheosEvent sourceRheosEvent, String schemaVersion, Meter numInvalidDateInRate, Meter numNoPageIdInRate, Meter numNoChnlInRate, Meter numNotChocolateClickInRate) {
     this.sourceTopic = sourceTopic;
     this.partition = partition;
     this.offset = offset;
     this.sourceRecord = sourceRecord;
     this.sourceRheosEvent = sourceRheosEvent;
     this.schemaVersion = schemaVersion;
+    this.numInvalidDateInRate = numInvalidDateInRate;
     this.numNoPageIdInRate = numNoPageIdInRate;
     this.numNoChnlInRate = numNoChnlInRate;
     this.numNotChocolateClickInRate = numNotChocolateClickInRate;
@@ -137,6 +140,12 @@ public class UTPChocolateEmailClickTransformer {
   }
 
   private boolean validate() {
+    eventTs = parseEventTs();
+    // TODO: temporary filter all clicks before 12/09, remove it one day later
+    if (eventTs < 1639033200000L) {
+      numInvalidDateInRate.markEvent();
+      return false;
+    }
     pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
     if (pageId == null) {
       numNoPageIdInRate.markEvent();
@@ -169,6 +178,10 @@ public class UTPChocolateEmailClickTransformer {
     } catch (Exception e) {
       return CollectionUtils.unmodifiableMultiValueMap(new LinkedMultiValueMap<>());
     }
+  }
+
+  protected long parseEventTs() {
+    return (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
   }
 
   private String parseUrl() {
@@ -280,7 +293,7 @@ public class UTPChocolateEmailClickTransformer {
   }
 
   protected long getEventTs() {
-    return (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
+    return eventTs;
   }
 
   protected long getProducerEventTs() {
@@ -357,7 +370,6 @@ public class UTPChocolateEmailClickTransformer {
     return EmailPartnerIdEnum.parse(mkpid);
   }
 
-  // TODO need to confirm
   protected String getCampaignId() {
     if (channelType == ChannelTypeEnum.MRKT_EMAIL || channelType == ChannelTypeEnum.MRKT_MESSAGE_CENTER) {
       return applicationPayload.get(TransformerConstants.SEGNAME);
