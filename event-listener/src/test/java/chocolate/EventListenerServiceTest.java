@@ -856,6 +856,16 @@ public class EventListenerServiceTest {
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
 
+    // GCX email open events
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=29&mkdid=4&trkId=1234567&bu=43551630917");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
+    // GCX email open events
+    event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=30&mkdid=4&trkId=1234567&bu=43551630917");
+    response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
+    assertEquals(200, response.getStatus());
+
     // no partner
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
@@ -874,7 +884,7 @@ public class EventListenerServiceTest {
     Map<String, BehaviorMessage> listenerMessagesEmail = pollFromKafkaTopic(
         consumerEmail, Arrays.asList("marketing.tracking.staging.behavior"), 4, 30 * 1000);
     consumerEpn.close();
-    assertTrue(listenerMessagesEmail.size() >= 4);
+    assertTrue(listenerMessagesEmail.size() >= 6);
   }
 
   @Test

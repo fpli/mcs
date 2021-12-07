@@ -6,6 +6,8 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
@@ -291,6 +293,11 @@ public class CollectionService {
     MonitorUtil.info("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
         Field.of(LANDING_PAGE_TYPE, landingPageType),
         Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
+
+    // UFES Redirect metrics
+    if (parameters.containsKey(Constants.UFES_REDIRECT) && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+        MonitorUtil.info("UFESRedirect", 1, Field.of(CHANNEL_TYPE, urlRefChannel.getRight().getLogicalChannel().getAvro().toString()));
+    }
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
@@ -668,6 +675,8 @@ public class CollectionService {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
     } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
+    } else if (channelType == ChannelIdEnum.GCX_EMAIL || channelType == ChannelIdEnum.GCX_MESSAGE_CENTER) {
+      fireGCXEvent(baseEvent, requestContext);
     } else {
       firePMEvent(baseEvent, requestContext);
     }
@@ -837,13 +846,12 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "service", STATUS_OK, message.getService());
     SpanEventHelper.writeEvent(TYPE_INFO, "server", STATUS_OK, message.getServer());
 
-    if (message != null) {
+    if (message != null)
       unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, message.getEventId().getBytes(), message),
           UnifiedTrackingKafkaSink.callback);
 
-      stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-          Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
-      }
+    stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
+        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
   }
 
   /**
@@ -858,12 +866,22 @@ public class CollectionService {
                                        long shortSnapshotId, String eventId) {
     try {
       UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
-              shortSnapshotId);
-      if(!StringUtils.isEmpty(eventId)) {
+          shortSnapshotId);
+      if (!StringUtils.isEmpty(eventId)) {
         utpMessage.setEventId(eventId);
       }
-      unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
-              utpMessage), UnifiedTrackingKafkaSink.callback);
+      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType())
+          && utpMessage.getIsBot()) {
+        MonitorUtil.info("CollectionServiceSkipFreeListingBot");
+      } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(utpMessage.getChannelType())
+          || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType()))
+          && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType())
+          && utpMessage.getEventTs() >= 1639033200000L) {
+        MonitorUtil.info("UTPSkipChocolateEmailClick");
+      } else {
+        unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
+                utpMessage), UnifiedTrackingKafkaSink.callback);
+      }
     } catch (Exception e) {
       LOGGER.warn("UTP message process error.", e);
       MonitorUtil.info("UTPMessageError");
@@ -926,6 +944,11 @@ public class CollectionService {
     // 3. fire utp event
     submitChocolateUtpEvent(baseEvent, requestContext, 0L,
         0L, baseEvent.getUuid());
+  }
+
+  private void fireGCXEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
+    // fire utp event
+    submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L, baseEvent.getUuid());
   }
 
   /**

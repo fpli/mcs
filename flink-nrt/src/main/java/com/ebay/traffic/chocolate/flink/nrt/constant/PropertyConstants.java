@@ -4,7 +4,9 @@ public class PropertyConstants {
   public static final String ELASTICSEARCH_INDEX_PREFIX = "elasticsearch.index.prefix";
   public static final String ELASTICSEARCH_URL = "elasticsearch.url";
 
+  public static final String FIDELIUS_URL= "monitor.fideliusUrl";
   public static final String SHERLOCKIO_NAMESPACE = "sherlockio.namespace";
+  public static final String MONITOR_SHERLOCKIO_NAMESPACE = "monitor.sherlockio.namespace";
   public static final String SHERLOCKIO_ENDPOINT = "sherlockio.endpoint";
   public static final String SHERLOCKIO_USER = "sherlockio.user";
 
@@ -131,4 +133,11 @@ public class PropertyConstants {
   public static final String UTP_EVENT_TRACER_CONSUMER_PROPERTIES = "utp-event-tracer.consumer.properties";
 
   public static final String UTP_PATHFINDER_EVENT_TRANSFORM_APP_YAML = "utp-pathfinder-event-transform-app.yaml";
+
+  public static final String UTP_MONITOR_APP_YAML = "utp-monitor-app.yaml";
+
+
+
+
+
 }

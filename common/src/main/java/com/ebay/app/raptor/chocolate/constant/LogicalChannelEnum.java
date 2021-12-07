@@ -78,9 +78,19 @@ public enum LogicalChannelEnum {
   /**
    * ROI channel
    */
-  ROI(ChannelType.ROI, ChannelActionEnum.ROI);
+  ROI(ChannelType.ROI, ChannelActionEnum.ROI),
 
- /* *//**
+  /**
+   * GCX Email channel
+   */
+  GCX_EMAIL(ChannelType.GCX_EMAIL, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
+
+  /**
+   * GCX Message Center channel
+   */
+  GCX_MESSAGE_CENTER(ChannelType.GCX_MESSAGE_CENTER, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
+
+  /* *//**
    * New ROI Test channel
    *//*
   NEW_ROI(ChannelType.NEW_ROI, ChannelActionEnum.ROI, ChannelActionEnum.ROI);*/
