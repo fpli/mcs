@@ -169,7 +169,11 @@ public class UepPayloadHelper {
         UepPayloadHelper.TRACKING_ID_S));
 //    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
     // isUep
-    if(StringUtils.isNotEmpty(trackingId)) {
+    if((ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) ||
+        ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) ||
+        ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
+        ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum)) &&
+        StringUtils.isNotEmpty(trackingId)) {
       payload.put(IS_UEP, String.valueOf(true));
     } else {
       payload.put(IS_UEP, String.valueOf(false));

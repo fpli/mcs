@@ -330,6 +330,10 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.MRKT_MESSAGE_CENTER;
       case SITE_MESSAGE_CENTER:
         return ChannelTypeEnum.SITE_MESSAGE_CENTER;
+      case GCX_EMAIL:
+        return ChannelTypeEnum.GCX_EMAIL;
+      case GCX_MESSAGE_CENTER:
+        return ChannelTypeEnum.GCX_MESSAGE_CENTER;
       default:
         return ChannelTypeEnum.GENERIC;
     }
@@ -492,7 +496,8 @@ public class UnifiedTrackingMessageParser {
   private static long getUserId(IEndUserContext endUserContext,
                                 String bu, ChannelType channelType) {
     if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
-            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) ||
+        ChannelType.GCX_EMAIL.equals(channelType) || ChannelType.GCX_MESSAGE_CENTER.equals(channelType)) {
       if (!StringUtils.isEmpty(bu)) {
         return EncryptUtil.decryptUserId(Long.parseLong(bu));
       }

@@ -675,6 +675,8 @@ public class CollectionService {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
     } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
+    } else if (channelType == ChannelIdEnum.GCX_EMAIL || channelType == ChannelIdEnum.GCX_MESSAGE_CENTER) {
+      fireGCXEvent(baseEvent, requestContext);
     } else {
       firePMEvent(baseEvent, requestContext);
     }
@@ -942,6 +944,11 @@ public class CollectionService {
     // 3. fire utp event
     submitChocolateUtpEvent(baseEvent, requestContext, 0L,
         0L, baseEvent.getUuid());
+  }
+
+  private void fireGCXEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
+    // fire utp event
+    submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L, baseEvent.getUuid());
   }
 
   /**
