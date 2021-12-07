@@ -261,33 +261,36 @@ public class CollectionServiceUtilTest {
 
   @Test
   public void testIsLegacyRoverDeeplinkCase() {
-    String targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=true";
+    String targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor";
     String referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/1?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
     assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
 
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec";
-    referer = "https://rover.ebay.com/";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "ebay://link?nav=item.deals&ul_skipRefererCheck=true&ul_alt=store&sabg=ce2e0bea17b0a44ceaf29dd0ffbf2938&sabc=ce2e072617b0a12bbc23843df98e30c8&campid=5338757545&mkevt=1&mkcid=4&mkrid=711-58542-18990-20";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=7&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=true";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=7&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec";
+    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor";
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0";
     assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
 
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor&mkevt=1&mkcid=7&mkrid=711-53200-19255-0&ff3=4&pub=5575580116&toolid=10001&campid=5338757545&customid=dec&ufes_redirect=1";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "ebay://link?nav=item.deals&ul_skipRefererCheck=true&ul_alt=store&sabg=ce2e0bea17b0a44ceaf29dd0ffbf2938&sabc=ce2e072617b0a12bbc23843df98e30c8&campid=5338757545&mkevt=1&mkcid=7&mkrid=711-58542-18990-20&ufes_redirect=true";
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/2?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
     assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
 
-    targetUrl = "ebay://link?nav=item.deals&ul_skipRefererCheck=true&ul_alt=store&sabg=ce2e0bea17b0a44ceaf29dd0ffbf2938&sabc=ce2e072617b0a12bbc23843df98e30c8&campid=5338757545&mkevt=1&mkcid=7&mkrid=711-58542-18990-20";
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/4?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/16?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/28?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/7?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/8?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/26?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
+    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
+
+    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/27?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
     assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
 
     referer = "https://www.ebay.com/sch/i.html";

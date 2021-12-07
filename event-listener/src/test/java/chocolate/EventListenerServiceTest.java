@@ -507,7 +507,7 @@ public class EventListenerServiceTest {
       consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 10, 30 * 1000);
     consumerPaidSearch.close();
 
-    assertEquals(14, listenerMessagesPaidSearch.size());
+    assertEquals(12, listenerMessagesPaidSearch.size());
 
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
