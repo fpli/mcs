@@ -106,7 +106,7 @@ public class UTPChocolateEmailClickTransformApp
 
   @Override
   protected DataStream<Tuple3<String, String, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    return dataStreamSource.flatMap(new TransformFlatMapFunction());
+    return dataStreamSource.flatMap(new TransformFlatMapFunction()).name("transform").uid("transform");
   }
 
   protected static class TransformFlatMapFunction extends RichFlatMapFunction<ConsumerRecord<byte[], byte[]>, Tuple3<String, String, byte[]>> {
