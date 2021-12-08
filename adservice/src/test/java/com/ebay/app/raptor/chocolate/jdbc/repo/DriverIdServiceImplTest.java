@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.jdbc.repo;
 import com.ebay.app.raptor.chocolate.AdserviceApplication;
 import junit.framework.TestCase;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,6 +21,7 @@ import java.util.concurrent.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(classes = AdserviceApplication.class)
 @FixMethodOrder()
+@Ignore
 public class DriverIdServiceImplTest extends TestCase {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
