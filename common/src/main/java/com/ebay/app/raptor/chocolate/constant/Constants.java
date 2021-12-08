@@ -131,6 +131,8 @@ public class Constants {
   public static final String XT = "xt";
 
 
+  public static final String SLASH = "/";
+
   /**
    * Performance marketing channels
    */

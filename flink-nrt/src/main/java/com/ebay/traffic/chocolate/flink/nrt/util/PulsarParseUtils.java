@@ -139,9 +139,13 @@ public class PulsarParseUtils {
    * @return soj tags
    */
   public static Map<String, String> getSojTagsFromUrlQueryString(String urlQueryString) {
-    Map<String, String> sojTagsMap = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(urlQueryString).build();
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
+    return getSojTags(parameters);
+  }
+
+  public static Map<String, String> getSojTags(MultiValueMap<String, String> parameters) {
+    Map<String, String> sojTagsMap = new HashMap<>();
     if (!parameters.containsKey(TransformerConstants.SOJ_TAGS)) {
       return sojTagsMap;
     }
