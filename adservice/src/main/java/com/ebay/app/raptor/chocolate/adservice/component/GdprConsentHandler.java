@@ -1,7 +1,5 @@
 package com.ebay.app.raptor.chocolate.adservice.component;
 
-import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.constant.GdprConsentConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
@@ -13,7 +11,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -36,15 +33,8 @@ public class GdprConsentHandler {
 
     Logger logger = LoggerFactory.getLogger(GdprConsentHandler.class);
 
-    private CouchbaseClient couchbaseClient;
-
     @Value("${gdpr-consent.vendorId}")
     private String purposeVendorId;
-
-    @Autowired
-    public void init() {
-        couchbaseClient = CouchbaseClient.getInstance();
-    }
 
     /**
      * for adservice ar
@@ -55,8 +45,6 @@ public class GdprConsentHandler {
     public GdprConsentDomain handleGdprConsent(HttpServletRequest request) {
         GdprConsentDomain gdprConsentDomain = new GdprConsentDomain();
         String gdprParam = request.getParameter(gdprParameter);
-        String enableTcfComplianceModeString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_TCF_COMPLIANCE_MODE);
-        logger.info("enableTcfComplianceMode {}", enableTcfComplianceModeString);
         boolean enableTcfComplianceMode = true;
         try {
             if (StringUtils.isNotBlank(gdprParam) && gdprParam.equals("1") && enableTcfComplianceMode) {
