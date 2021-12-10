@@ -22,7 +22,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 
 /**
@@ -61,8 +63,9 @@ public class UepPayloadHelper {
   public static final String C_URL = "cUrl";
   public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
-  private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
-  private final SimpleDateFormat eventDateStringFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(ZoneId.systemDefault());
+  private final DateTimeFormatter eventDateStringFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
@@ -76,6 +79,14 @@ public class UepPayloadHelper {
   private static final String MESSAGE_SIO = "SellerInitiatedOffer";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UepPayloadHelper.class);
+
+  public static UepPayloadHelper getInstance() {
+    return SingletonHolder.instance;
+  }
+
+  private static class SingletonHolder {
+    private static final UepPayloadHelper instance = new UepPayloadHelper();
+  }
 
   private String getOrDefault(String input) {
     if (input == null) {
@@ -128,7 +139,7 @@ public class UepPayloadHelper {
     try {
       actualRunDateString = parameters.getFirst("crd");
       if(StringUtils.isNotEmpty(actualRunDateString)) {
-        Date tempRunDate = dateFormatter.parse(actualRunDateString);
+        TemporalAccessor tempRunDate = dateFormatter.parse(actualRunDateString);
         runDate = eventDateStringFormatter.format(tempRunDate);
         payload.put(MessageConstantsEnum.RUN_DATE.getValue(), runDate);
       }

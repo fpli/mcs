@@ -58,7 +58,7 @@ public class UTPChocolateEmailClickTransformer {
   private Map<String, String> sojTags;
   private final boolean isValid;
 
-  private static final UepPayloadHelper UEP_PAYLOAD_HELPER = new UepPayloadHelper();
+  private static final UepPayloadHelper UEP_PAYLOAD_HELPER = UepPayloadHelper.getInstance();
 
   private static final String USER_ID = "userId";
   private static final int PAGE_ID_CHOCOLATE_CLICK = 2547208;
