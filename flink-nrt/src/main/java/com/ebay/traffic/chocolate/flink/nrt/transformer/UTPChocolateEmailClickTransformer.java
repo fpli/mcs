@@ -139,11 +139,6 @@ public class UTPChocolateEmailClickTransformer {
 
   private boolean validate() {
     eventTs = parseEventTs();
-    // TODO: temporary filter all clicks before 12/09, remove it one day later
-    if (eventTs < 1639033200000L) {
-      numInvalidDateInRate.markEvent();
-      return false;
-    }
     pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
     if (pageId == null) {
       numNoPageIdInRate.markEvent();
