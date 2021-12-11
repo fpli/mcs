@@ -66,8 +66,8 @@ public class UepPayloadHelper {
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
   public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.ofHours(-7);
 
-  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(DEFAULT_ZONE_OFFSET);
-  private final DateTimeFormatter eventDateStringFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(DEFAULT_ZONE_OFFSET);
+  private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+  private final DateTimeFormatter eventDateStringFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
@@ -245,7 +245,7 @@ public class UepPayloadHelper {
     return payload;
   }
 
-  private static String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
+  private String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
                                           String shortenedParam) {
     if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
       return parameters.getFirst(param);
