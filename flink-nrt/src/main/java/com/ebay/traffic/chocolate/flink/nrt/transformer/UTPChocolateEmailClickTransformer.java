@@ -58,8 +58,6 @@ public class UTPChocolateEmailClickTransformer {
   private Map<String, String> sojTags;
   private final boolean isValid;
 
-  private static final UepPayloadHelper UEP_PAYLOAD_HELPER = new UepPayloadHelper();
-
   private static final String USER_ID = "userId";
   private static final int PAGE_ID_CHOCOLATE_CLICK = 2547208;
   private static final String SITE_EMAIL_CHANNEL_ID = "7";
@@ -141,11 +139,6 @@ public class UTPChocolateEmailClickTransformer {
 
   private boolean validate() {
     eventTs = parseEventTs();
-    // TODO: temporary filter all clicks before 12/09, remove it one day later
-    if (eventTs < 1639033200000L) {
-      numInvalidDateInRate.markEvent();
-      return false;
-    }
     pageId = (Integer) sourceRecord.get(TransformerConstants.PAGE_ID);
     if (pageId == null) {
       numNoPageIdInRate.markEvent();
@@ -484,7 +477,7 @@ public class UTPChocolateEmailClickTransformer {
     payload.putAll(sojTags);
     // add uep tags
     Map<String, String> uepPayload =
-            UEP_PAYLOAD_HELPER.getUepPayload(url, actionTypeEnum, channelType);
+            UepPayloadHelper.getInstance().getUepPayload(url, actionTypeEnum, channelType);
     if (MapUtils.isNotEmpty(uepPayload)) {
       payload.putAll(uepPayload);
     }

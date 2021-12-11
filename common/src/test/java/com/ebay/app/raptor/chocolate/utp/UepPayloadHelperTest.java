@@ -16,7 +16,7 @@ public class UepPayloadHelperTest {
 
   @Test
   public void getUtpPayload() {
-    UepPayloadHelper helper = new UepPayloadHelper();
+    UepPayloadHelper helper = UepPayloadHelper.getInstance();
     String openUrl = "https://www.ebayadservices.com/marketingtracking/v1/impression?mkevt=4&mkpid=2&emsid=0&mkcid=8&bu=44076761443&osub=0&segname=seedlist&crd=20200611000000&ch=osgood&trkId=12345&sojTags=emid%3Dbu%2Cosub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2CtrkId%3DtrkId%2Cchnl%3Dmkcid";
     Map<String, String> result = helper.getUepPayload(openUrl, ActionTypeEnum.OPEN, ChannelTypeEnum.MRKT_EMAIL);
     System.out.println(result);
@@ -49,7 +49,7 @@ public class UepPayloadHelperTest {
 
   @Test
   public void testShortenedParams() {
-    UepPayloadHelper helper = new UepPayloadHelper();
+    UepPayloadHelper helper = UepPayloadHelper.getInstance();
 
     // original params
     String clickUrl = "https://www.ebay.com/i/262844489390?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=45056203152&osub=6d3f46d4dac2fe3af48b0a2235752ade%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20210315090000&ch=osgood&trkId=0AB8FD6A-247ADC67D30-0177B1BC2479-000000000588F6FA&mesgId=3001&plmtId=700001&plmtPos=1&recoId=262844489390&recoPos=1&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2CtrkId%3DtrkId%2CmesgId%3DmesgId%2CplmtId%3DplmtId%2CrecoId%3DrecoId%2CrecoPos%3DrecoPos%2Cchnl%3Dmkcid";
@@ -72,7 +72,7 @@ public class UepPayloadHelperTest {
 
   @Test
   public void testORSFields() {
-    UepPayloadHelper helper = new UepPayloadHelper();
+    UepPayloadHelper helper = UepPayloadHelper.getInstance();
 
     // PA
     String openUrl = "	https://www.ebay.co.uk/itm/184447812891?mkevt=1&mkpid=2&emsid=e112358.m43.l1120&mkcid=8&bu=44979336032&osub=-1%7E1&segname=16TE179832_T_PREPURCHASE_CT1&crd=20210912090000&ch=osgood&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
