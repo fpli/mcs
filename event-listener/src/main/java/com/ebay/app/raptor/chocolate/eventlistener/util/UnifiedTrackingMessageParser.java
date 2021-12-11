@@ -52,7 +52,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
 public class UnifiedTrackingMessageParser {
   private static final Logger logger = LoggerFactory.getLogger(UnifiedTrackingMessageParser.class);
   private static CobrandParser cobrandParser = new CobrandParser();
-  private static UepPayloadHelper uepPayloadHelper = new UepPayloadHelper();
 
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
       "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
@@ -281,7 +280,7 @@ public class UnifiedTrackingMessageParser {
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(baseEvent.getUserAgentInfo());
     // format UEP payload
     Map<String, String> uepPayload =
-        uepPayloadHelper.getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType), channelTypeEnum);
+            UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType), channelTypeEnum);
     Map<String, String> fullPayload =
         getPayload(payload, baseEvent, parameters, appId,
             baseEvent.getChannelType().getLogicalChannel().getAvro(), baseEvent.getActionType().getAvro(), snapshotId,

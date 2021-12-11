@@ -49,8 +49,6 @@ public class UTPRoverEventTransformer {
   private Map<String, String> sojTags;
   private final boolean isValid;
 
-  private static final UepPayloadHelper UEP_PAYLOAD_HELPER = new UepPayloadHelper();
-
   private static final String USER_ID = "userId";
   private static final int PAGE_ID_ROVER_CLICK = 3084;
   private static final int PAGE_ID_ROI = 3086;
@@ -198,7 +196,7 @@ public class UTPRoverEventTransformer {
     }
     return querString;
   }
-  
+
   private String parsePageName() {
     Utf8 utf8 = (Utf8) sourceRecord.get(TransformerConstants.PAGE_NAME);
     return utf8 == null ? null : utf8.toString();
@@ -318,7 +316,7 @@ public class UTPRoverEventTransformer {
   protected String getRlogId() {
     return GenericRecordUtils.getStringFieldOrNull(sourceRecord, TransformerConstants.RLOGID);
   }
-  
+
   protected String getTrackingId() {
     if (actionTypeEnum == ActionTypeEnum.ROI ) {
       return null;
@@ -526,7 +524,7 @@ public class UTPRoverEventTransformer {
       payload.putAll(sojTags);
       // add uep tags
       Map<String, String> uepPayload =
-          UEP_PAYLOAD_HELPER.getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum, channelType);
+          UepPayloadHelper.getInstance().getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum, channelType);
       if (MapUtils.isNotEmpty(uepPayload)) {
         payload.putAll(uepPayload);
       }
