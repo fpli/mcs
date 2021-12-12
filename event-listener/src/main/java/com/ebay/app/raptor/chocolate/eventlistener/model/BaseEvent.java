@@ -60,6 +60,9 @@ public class BaseEvent {
   // flag of placeoffer api
   private boolean isPlaceOfferApi;
 
+  // flag of third party click
+  private boolean isThirdParty;
+
   // roi event
   private ROIEvent roiEvent;
 
@@ -213,5 +216,13 @@ public class BaseEvent {
 
   public void setRemoteIp(String ip) {
     this.remoteIp = ip;
+  }
+
+  public boolean isThirdParty() {
+    return isThirdParty;
+  }
+
+  public void setThirdParty(boolean isThirdParty) {
+    this.isThirdParty = isThirdParty;
   }
 }

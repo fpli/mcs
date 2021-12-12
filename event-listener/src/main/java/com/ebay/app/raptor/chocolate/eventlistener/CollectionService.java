@@ -332,6 +332,9 @@ public class CollectionService {
     boolean isClickFromPlaceOfferAPI = CollectionServiceUtil.isClickFromPlaceOfferAPI(
             urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
 
+    // 3rd party click flag
+    boolean isThirdParty = CollectionServiceUtil.isThirdPartyClick(urlRefChannel.getLeft());
+
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
             Field.of(LANDING_PAGE_TYPE, landingPageType));
 
@@ -353,6 +356,7 @@ public class CollectionService {
     baseEvent.setCheckoutApi(isClickFromCheckoutAPI);
     baseEvent.setPayload(event.getPayload());
     baseEvent.setPlaceOfferApi(isClickFromPlaceOfferAPI);
+    baseEvent.setThirdParty(isThirdParty);
 
     // update startTime if the click comes from checkoutAPI or placeOfferAPI
     baseEvent = performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
@@ -876,7 +880,7 @@ public class CollectionService {
       } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(utpMessage.getChannelType())
           || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType()))
           && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType())
-          && utpMessage.getEventTs() >= 1639033200000L) {
+          && !baseEvent.isThirdParty()) {
         MonitorUtil.info("UTPSkipChocolateEmailClick");
       } else {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
