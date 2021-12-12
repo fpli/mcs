@@ -599,6 +599,12 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.TAG_IS_UFES_REDIRECT, "true");
     }
 
+    // add 3rd party tag
+    if (ChannelAction.CLICK.equals(channelAction)
+        && baseEvent.isThirdParty()) {
+      payload.put(Constants.TAG_IS_THIRD_PARTY, "true");
+    }
+
     return encodeTags(payload);
   }
 

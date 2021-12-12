@@ -606,4 +606,18 @@ public class CollectionServiceUtil {
 
     return isULKDuplicateClick;
   }
+
+  /**
+   * Identify third party clicks
+   * @param url
+   * @return
+   */
+  public static boolean isThirdPartyClick(String url) {
+    if (!ebaySitesIncludeULK.matcher(url.toLowerCase()).find()
+        && !deeplinksites.matcher(url.toLowerCase()).find()) {
+      return true;
+    }
+
+    return false;
+  }
 }
