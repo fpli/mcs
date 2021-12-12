@@ -884,7 +884,7 @@ public class EventListenerServiceTest {
     Map<String, BehaviorMessage> listenerMessagesEmail = pollFromKafkaTopic(
         consumerEmail, Arrays.asList("marketing.tracking.staging.behavior"), 4, 30 * 1000);
     consumerEpn.close();
-    assertTrue(listenerMessagesEmail.size() >= 6);
+    assertTrue(listenerMessagesEmail.size() >= 4);
   }
 
   @Test
