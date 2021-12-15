@@ -5,10 +5,8 @@ import com.ebay.app.raptor.chocolate.adservice.component.EsrXidClient;
 import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
-import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.constant.CouchbaseKeyConstant;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -24,11 +22,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
@@ -66,18 +62,7 @@ public class DAPResponseHandler {
   private AdserviceCookie adserviceCookie;
 
   @Autowired
-  @Qualifier("cb")
-  private IdMapable idMapping;
-
-  public CouchbaseClient couchbaseClient;
-
-  @Autowired
   private EsrXidClient esrXidClient;
-
-  @Autowired
-  private void init() {
-    couchbaseClient = CouchbaseClient.getInstance();
-  }
 
   static {
     List<String> mobileUserAgent = new ArrayList<>();
@@ -322,18 +307,7 @@ public class DAPResponseHandler {
     Client client = GingerClientBuilder.newClient(config);
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
-    boolean enable = false;
-    String enableString = couchbaseClient.get(CouchbaseKeyConstant.ENABLE_DAP_HANDLER_LOG);
-    try {
-      if (StringUtils.isNotBlank(enableString)) {
-        enable = new ObjectMapper().readValue(enableString, Boolean.class);
-      }
-    } catch (IOException e) {
-      LOGGER.warn("Can't get enableDapHandlerLog from cb, take a look please.");
-    }
-    if (enable) {
-      LOGGER.info("call DAP {}", targetUri);
-    }
+
     long startTime = System.currentTimeMillis();
     String body = null;
     int status = -1;
