@@ -408,7 +408,6 @@ public class DAPResponseHandlerTest {
     when(bufferedReader.readLine())
         .thenReturn("first line")
         .thenReturn("second line");
-    dapResponseHandler.couchbaseClient = Mockito.mock(CouchbaseClient.class);
 
     InputStream is = org.mockito.Mockito.mock(InputStream.class);
     when(is.read()).thenReturn(2);
@@ -417,7 +416,6 @@ public class DAPResponseHandlerTest {
     MultivaluedMap<String, Object> headers = null;
     when(response.getHeaders()).thenReturn(headers);
     when(response.getStatus()).thenReturn(Response.Status.OK.getStatusCode());
-    HttpEntity mockHttpEntity = Mockito.mock(HttpEntity.class);
 
     when(response.getEntity()).thenReturn(new Object());
 
