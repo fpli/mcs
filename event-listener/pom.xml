@@ -229,6 +229,21 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dal-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.opendal</groupId>
+      <artifactId>OpenDAL-core</artifactId>
+      <version>0.2.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>KernelDAL</artifactId>
+          <groupId>com.ebay.v3jars.Houston</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>platform-core-annotations</artifactId>
+          <groupId>com.ebayinc.platform.raptor</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!--Chocolate dependencies-->
     <dependency>

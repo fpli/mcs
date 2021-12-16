@@ -20,20 +20,14 @@ public class DataSourceConfig {
     @Autowired
     private DatabaseProperties databaseProperties;
 
-    @Autowired
-    FideliusClient fideliusClient;
-
     @Bean
     public DataSource getDataSourceByBridge() {
-        logger.info("databaseProperties: {}", databaseProperties);
-        String userName = databaseProperties.getBridgeConfig().getUsernameChannel();
-        String pass = databaseProperties.getBridgeConfig().getPasswordChannel();
+        logger.info("begin init mysql datasource");
         BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(databaseProperties.getBridgeConfig().getDriver());
         dataSource.setUrl(databaseProperties.getBridgeConfig().getUrl());
-        dataSource.setUsername(userName);
-        logger.info("channel name config {} / pass config {}", userName, pass);
-        dataSource.setPassword(fideliusClient.getContent(pass));
         dataSource.setValidationQuery(databaseProperties.getBridgeConfig().getTestStatement());
+        logger.info("end init mysql datasource");
         return dataSource;
     }
 }
