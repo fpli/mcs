@@ -3,10 +3,7 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.component.GdprConsentHandler;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
-import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
+import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
@@ -112,6 +109,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
   private static final Client mktClient = GingerClientBuilder.newClient(config);
   private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
   /**
    * Initialize function
    */
@@ -359,13 +357,31 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     // Stop writing to Soj per site tracking's ask. It's external.
     // builder.async().post(Entity.json(mktEvent), new MCSCallback());
 
+    // build guid list <=> adguid <=> user id mapping
     try {
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
-      if (isAddMappingSuccess) {
-        MonitorUtil.info(METRIC_ADD_MAPPING_SUCCESS);
-      } else {
-        MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+      if (StringUtils.hasText(guid)) {
+        String guidList = idMapping.getGuidListByAdguid(adguid);
+        String newGuidList;
+        if (StringUtils.hasText(guidList)) {
+          ArrayList<String> guids = new ArrayList<>(Arrays.asList(guidList.split(StringConstants.COMMA)));
+          if (!guids.contains(guid)) {
+            newGuidList = guidList + StringConstants.COMMA + guid;
+          } else {
+            newGuidList = guidList;
+          }
+        } else {
+          newGuidList = guid;
+        }
 
+        // If the guid is already existed in the mapping, no need to update mapping
+        if (!guidList.equals(newGuidList)) {
+          boolean isAddMappingSuccess = idMapping.addMapping(adguid, newGuidList, guid, uid);
+          if (isAddMappingSuccess) {
+            MonitorUtil.info(METRIC_ADD_MAPPING_SUCCESS);
+          } else {
+            MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+          }
+        }
       }
     } catch (Exception e) {
       try {

@@ -18,13 +18,21 @@ public interface IdMapable {
   /**
    * Add adguid -> guid mapping
    * @param adguid adguid in cookie
-   * @param guid guid from sync command
+   * @param guidList new guid list
+   * @param guid new guid from sync command
    * @return is successful or not
    */
-  boolean addMapping(String adguid, String guid, String userId);
+  boolean addMapping(String adguid, String guidList, String guid, String userId);
 
   /**
-   * Get guid by adguid
+   * Get guid list by adguid
+   * @param id adguid in cookie
+   * @return guid list in String seperated by comma. If there is no guid return empty string.
+   */
+  String getGuidListByAdguid(String id);
+
+  /**
+   * Get the latest guid by adguid
    * @param id adguid in cookie
    * @return guid in String. If there is no guid return empty string.
    */
