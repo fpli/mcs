@@ -124,6 +124,19 @@ public class AdserviceCookie {
     return adguid;
   }
 
+  /**
+   * Get guid list from mapping
+   * @param request http request
+   * @return guid list
+   */
+  public String getGuidList(HttpServletRequest request) {
+    String adguid = readAdguid(request);
+    String guidList = idMapping.getGuidListByAdguid(adguid);
+    if(StringUtils.isEmpty(guidList)) {
+      guidList = "";
+    }
+    return guidList;
+  }
 
   /**
    * Get guid from mapping

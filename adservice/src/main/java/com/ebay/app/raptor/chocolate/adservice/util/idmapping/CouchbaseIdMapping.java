@@ -31,7 +31,7 @@ public class CouchbaseIdMapping implements IdMapable {
     if(!StringUtil.isNullOrEmpty(id)) {
       String guidList = CouchbaseClient.getInstance().getGuidListByAdguid(id);
       if (!StringUtils.isEmpty(guidList)) {
-        String[] guids = guidList.split(StringConstants.COMMA);
+        String[] guids = guidList.split(StringConstants.AND);
         return guids[guids.length - 1];
       }
     }

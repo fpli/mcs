@@ -41,6 +41,7 @@ public class Constants {
 
   // header name
   public static final String GUID = "guid";
+  public static final String GUID_LIST = "guidList";
   public static final String ADGUID = "adguid";
   public static final String USER_AGENT = "User-Agent";
   public static final String REFERER = "Referer";

@@ -52,7 +52,7 @@ public class LocalCacheIdMapping implements IdMapable {
   public String getGuidByAdguid(String id) {
     String guidList = adguidIdMap.getOrDefault(ADGUID_GUID_PREFIX + id, "");
     if (!StringUtils.isEmpty(guidList)) {
-      String[] guids = guidList.split(StringConstants.COMMA);
+      String[] guids = guidList.split(StringConstants.AND);
       return guids[guids.length - 1];
     }
 

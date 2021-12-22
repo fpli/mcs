@@ -32,6 +32,36 @@ public class HttpUtil {
   }
 
   /**
+   * Construct a tracking header with guid list.
+   * @param guid    guid from mapping if there is
+   * @param guidList  guid list
+   * @param adguid  adguid from cookie
+   * @return X-EBAY-C-TRACKING header value
+   */
+  public static String constructTrackingHeader(String guid, String guidList, String adguid) {
+    String cookie = "";
+    if (!StringUtils.isEmpty(guid) && guid.length() >= Constants.GUID_LENGTH) {
+      cookie += Constants.GUID + StringConstants.EQUAL + guid.substring(0, Constants.GUID_LENGTH);
+    }
+
+    if (!StringUtils.isEmpty(guidList)) {
+      if (!StringUtils.isEmpty(cookie)) {
+        cookie += StringConstants.COMMA;
+      }
+      cookie += Constants.GUID_LIST + StringConstants.EQUAL + guidList;
+    }
+
+    if (!StringUtils.isEmpty(adguid)) {
+      if (!StringUtils.isEmpty(cookie)) {
+        cookie += StringConstants.COMMA;
+      }
+      cookie += Constants.ADGUID + StringConstants.EQUAL + adguid;
+    }
+
+    return cookie;
+  }
+
+  /**
    * Transform http parameters from map to multi value map
    * @param params  parameter map
    * @return  multi value parameter map

@@ -212,8 +212,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       // construct X-EBAY-C-TRACKING header
       String guid = adserviceCookie.getGuid(request);
+      String guidList = adserviceCookie.getGuidList(request);
       builder = builder.header(Constants.TRACKING_HEADER,
-          HttpUtil.constructTrackingHeader(guid, adguid));
+          HttpUtil.constructTrackingHeader(guid, guidList, adguid));
 
       // add parameters separately to handle special characters
       URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
@@ -363,9 +364,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         String guidList = idMapping.getGuidListByAdguid(adguid);
         String newGuidList;
         if (StringUtils.hasText(guidList)) {
-          ArrayList<String> guids = new ArrayList<>(Arrays.asList(guidList.split(StringConstants.COMMA)));
+          ArrayList<String> guids = new ArrayList<>(Arrays.asList(guidList.split(StringConstants.AND)));
           if (!guids.contains(guid)) {
-            newGuidList = guidList + StringConstants.COMMA + guid;
+            newGuidList = guidList + StringConstants.AND + guid;
           } else {
             newGuidList = guidList;
           }

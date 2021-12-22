@@ -14,4 +14,5 @@ public class StringConstants {
   public static final String COMMA = ",";
   public static final String EQUAL = "=";
   public static final String SEMICOLON = ";";
+  public static final String AND = "&";
 }
