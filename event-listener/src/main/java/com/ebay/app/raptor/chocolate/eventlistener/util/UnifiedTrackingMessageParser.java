@@ -137,14 +137,12 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(event.getGeoId());
 
     // payload
+    payload.put(Constants.GUID_LIST, event.getGuid());
     payload = deleteNullOrEmptyValue(event.getPayload());
 
     // extra logic for mrkt_email open
-    if (ChannelTypeEnum.MRKT_EMAIL.equals(event.getChannelType()) && ActionTypeEnum.OPEN.equals(event.getActionType())) {
+    if (ActionTypeEnum.OPEN.equals(event.getActionType())) {
       record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-      payload.put(Constants.GUID_LIST, coalesce(event.getGuid(), ""));
-      payload.putIfAbsent(Constants.SESSION_SKEY, "");
-      payload.putIfAbsent(Constants.SEQ_NUM, "1");
     }
 
     record.setPayload(payload);
