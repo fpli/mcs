@@ -613,10 +613,10 @@ public class CollectionServiceUtil {
    * @return
    */
   public static boolean isThirdPartyClick(String url) {
-    if (!url.contains(".ebay.") && !url.contains("ebay://")) {
-      return true;
-    }
 
-    return false;
+    if (!url.isEmpty() && !url.contains(".ebay.") && !url.trim().startsWith("ebay://") && !url.trim().startsWith("padebay://")) {
+      return false;
+    }
+    return true;
   }
 }
