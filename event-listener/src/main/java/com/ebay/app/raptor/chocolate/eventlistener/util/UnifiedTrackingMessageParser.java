@@ -93,6 +93,9 @@ public class UnifiedTrackingMessageParser {
 
     // guid
     record.setGuid(event.getGuid());
+    if (ActionTypeEnum.OPEN.equals(event.getActionType())) {
+      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
+    }
 
     // device info
     record.setIdfa(event.getIdfa());
@@ -139,11 +142,6 @@ public class UnifiedTrackingMessageParser {
     // payload
     payload.put(Constants.GUID_LIST, event.getGuid());
     payload = deleteNullOrEmptyValue(event.getPayload());
-
-    // extra logic for mrkt_email open
-    if (ActionTypeEnum.OPEN.equals(event.getActionType())) {
-      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-    }
 
     record.setPayload(payload);
 
