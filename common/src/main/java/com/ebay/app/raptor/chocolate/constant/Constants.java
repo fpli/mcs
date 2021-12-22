@@ -131,8 +131,13 @@ public class Constants {
 //  public static final String CXT = "cxt";
   public static final String XT = "xt";
 
+  public static final String GUID_LIST = "guidList";
+
+  public static final String SESSION_SKEY = "sessionsKey";
+  public static final String SEQ_NUM = "seqNum";
 
   public static final String SLASH = "/";
+  public static final String HYPHEN = "-";
 
   /**
    * Performance marketing channels
