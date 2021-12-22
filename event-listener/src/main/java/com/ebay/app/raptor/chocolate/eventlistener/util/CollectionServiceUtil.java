@@ -613,8 +613,7 @@ public class CollectionServiceUtil {
    * @return
    */
   public static boolean isThirdPartyClick(String url) {
-    if (!ebaySitesIncludeULK.matcher(url.toLowerCase()).find()
-        && !deeplinksites.matcher(url.toLowerCase()).find()) {
+    if (!url.contains(".ebay.") && !url.contains("ebay://")) {
       return true;
     }
 
