@@ -1,11 +1,13 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 
+import java.io.UnsupportedEncodingException
 import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
 import java.util.Properties
 import java.util.regex.Pattern
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
+import com.ebay.kernel.util.HeaderMultiValue
 import com.ebay.traffic.chocolate.sparknrt.couchbaseV2.CorpCouchbaseClientV2
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
@@ -284,6 +286,7 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
   val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
+  val getGuidListUdf = udf((requestHeaders: String) => getGuidList(requestHeaders))
   def filterTab(e: org.apache.spark.sql.Column): org.apache.spark.sql.Column = {
     regexp_replace(functions.trim(e), "\\r|\\n|\\r\\n", "")
   }
@@ -1561,5 +1564,44 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     }
 
     isEbaySiteUrl
+  }
+
+  /**
+    * Get guid list from tracking header
+    *
+    * @param requestHeaders request headers
+    * @return guid list
+    */
+  def getGuidList(requestHeaders: String): String = {
+    var guidList = ""
+    val trackingHeader = getValueFromRequest(requestHeaders, "X-EBAY-C-TRACKING")
+
+    if (StringUtils.isNotEmpty(trackingHeader)) {
+      guidList = getHeaderValue(trackingHeader, "guidList")
+    }
+
+    guidList
+  }
+
+  /**
+    * Get value from ebay request header
+    *
+    * @param header ebay request header
+    * @param key key name
+    * @return key value in the header
+    */
+  def getHeaderValue(header: String, key: String): String = {
+    try {
+      var value = ""
+      if (header != null) {
+        val headerMultiValue = new HeaderMultiValue(header, "utf-8")
+        value = headerMultiValue.get(key)
+      }
+    } catch {
+      case e: UnsupportedEncodingException =>
+        logger.warn("Failed to parse header {}", header, e)
+    }
+
+    ""
   }
 }

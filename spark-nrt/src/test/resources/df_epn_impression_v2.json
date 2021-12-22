@@ -38,6 +38,11 @@
       "default": ""
     },
     {
+      "name": "GUID_LIST",
+      "dataType": "string",
+      "default": ""
+    },
+    {
       "name": "USER_ID",
       "dataType": "decimal",
       "default": 0
