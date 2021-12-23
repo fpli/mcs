@@ -93,9 +93,6 @@ public class UnifiedTrackingMessageParser {
 
     // guid
     record.setGuid(event.getGuid());
-    if (ActionTypeEnum.OPEN.equals(event.getActionType())) {
-      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-    }
 
     // device info
     record.setIdfa(event.getIdfa());
@@ -140,10 +137,7 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(event.getGeoId());
 
     // payload
-    payload.put(Constants.GUID_LIST, event.getGuid());
-    payload = deleteNullOrEmptyValue(event.getPayload());
-
-    record.setPayload(payload);
+    record.setPayload(deleteNullOrEmptyValue(event.getPayload()));
 
     return record;
   }
@@ -301,6 +295,18 @@ public class UnifiedTrackingMessageParser {
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
     if (MapUtils.isNotEmpty(clientHints)) {
       fullPayload.put("clientData", formatClientData(clientHints));
+    }
+
+    // append guidList
+    boolean isEmailOpen = ActionTypeEnum.OPEN.getValue().equals(actionType) && (
+            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.GCX_EMAIL.equals(channelTypeEnum) ||  ChannelTypeEnum.GCX_MESSAGE_CENTER.equals(channelTypeEnum));
+    if (isEmailOpen) {
+      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
+      if (StringUtils.isNotEmpty(guid)) {
+        fullPayload.put(Constants.GUID_LIST, guid);
+      }
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));

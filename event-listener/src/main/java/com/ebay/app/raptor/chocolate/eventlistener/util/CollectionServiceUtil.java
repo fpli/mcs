@@ -613,9 +613,19 @@ public class CollectionServiceUtil {
    * @return
    */
   public static boolean isThirdPartyClick(String url) {
-    if (url != null && !url.isEmpty() && !url.contains(".ebay.") && !url.trim().startsWith("ebay://") && !url.trim().startsWith("padebay://")) {
+    if (StringUtils.isEmpty(url)) {
       return false;
     }
+    if (url.contains(".ebay.")) {
+      return false;
+    }
+    if (url.trim().startsWith("ebay://")) {
+      return false;
+    }
+    if (url.trim().startsWith("padebay://")) {
+      return false;
+    }
+
     return true;
   }
 }
