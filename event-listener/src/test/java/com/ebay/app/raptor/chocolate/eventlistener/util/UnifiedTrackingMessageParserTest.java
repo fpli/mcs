@@ -31,10 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -113,6 +110,7 @@ public class UnifiedTrackingMessageParserTest {
     requestHeaders.put("X-EBAY-C-TRACKING", "cguid=8b34ef1d1740a4d724970d78eec8ee4c644dc2df");
     baseEvent.setRequestHeaders(requestHeaders);
     baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setUuid(UUID.randomUUID().toString());
 
     UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, snapshotId, shortSnapshotId);
 
