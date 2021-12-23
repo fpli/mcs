@@ -93,9 +93,6 @@ public class UnifiedTrackingMessageParser {
 
     // guid
     record.setGuid(event.getGuid());
-    if (ActionTypeEnum.OPEN.equals(event.getActionType())) {
-      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-    }
 
     // device info
     record.setIdfa(event.getIdfa());
@@ -140,10 +137,7 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(event.getGeoId());
 
     // payload
-    payload.put(Constants.GUID_LIST, event.getGuid());
-    payload = deleteNullOrEmptyValue(event.getPayload());
-
-    record.setPayload(payload);
+    record.setPayload(deleteNullOrEmptyValue(event.getPayload()));
 
     return record;
   }
@@ -223,6 +217,9 @@ public class UnifiedTrackingMessageParser {
     if (guid != null) {
       record.setGuid(guid);
     }
+    if (ActionTypeEnum.OPEN.equals(baseEvent.getActionType())) {
+      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
+    }
 
     // device info
 //    record.setIdfa(event.getIdfa());
@@ -301,6 +298,11 @@ public class UnifiedTrackingMessageParser {
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
     if (MapUtils.isNotEmpty(clientHints)) {
       fullPayload.put("clientData", formatClientData(clientHints));
+    }
+
+    // append guidList
+    if (StringUtils.isNotEmpty(record.getGuid())) {
+      fullPayload.put(Constants.GUID_LIST, record.getGuid());
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
