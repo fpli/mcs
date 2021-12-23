@@ -233,10 +233,6 @@ public class UnifiedTrackingMessageParser {
     String actionType = getActionType(baseEvent.getActionType().getAvro());
     record.setActionType(actionType);
 
-    if (ActionTypeEnum.OPEN.getValue().equals(actionType)) {
-      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-    }
-
     // partner id
     record.setPartner(getPartner(parameters, baseEvent.getChannelType().getLogicalChannel().getAvro()));
 
@@ -302,8 +298,14 @@ public class UnifiedTrackingMessageParser {
     }
 
     // append guidList
-    if (ActionTypeEnum.OPEN.getValue().equals(actionType) && StringUtils.isNotEmpty(guid)) {
-      fullPayload.put(Constants.GUID_LIST, guid);
+    boolean isEmailOpen = ActionTypeEnum.OPEN.getValue().equals(actionType) && (
+            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum));
+    if (isEmailOpen) {
+      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
+      if (StringUtils.isNotEmpty(guid)) {
+        fullPayload.put(Constants.GUID_LIST, guid);
+      }
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
