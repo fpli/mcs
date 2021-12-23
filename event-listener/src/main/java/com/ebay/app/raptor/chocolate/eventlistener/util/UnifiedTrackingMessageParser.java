@@ -301,8 +301,8 @@ public class UnifiedTrackingMessageParser {
     }
 
     // append guidList
-    if (StringUtils.isNotEmpty(record.getGuid())) {
-      fullPayload.put(Constants.GUID_LIST, record.getGuid());
+    if (StringUtils.isNotEmpty(guid)) {
+      fullPayload.put(Constants.GUID_LIST, guid);
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
