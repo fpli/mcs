@@ -300,7 +300,8 @@ public class UnifiedTrackingMessageParser {
     // append guidList
     boolean isEmailOpen = ActionTypeEnum.OPEN.getValue().equals(actionType) && (
             ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
-            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum));
+            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.GCX_EMAIL.equals(channelTypeEnum) ||  ChannelTypeEnum.GCX_MESSAGE_CENTER.equals(channelTypeEnum));
     if (isEmailOpen) {
       record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
       if (StringUtils.isNotEmpty(guid)) {
