@@ -217,9 +217,6 @@ public class UnifiedTrackingMessageParser {
     if (guid != null) {
       record.setGuid(guid);
     }
-    if (ActionTypeEnum.OPEN.equals(baseEvent.getActionType())) {
-      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
-    }
 
     // device info
 //    record.setIdfa(event.getIdfa());
@@ -235,6 +232,10 @@ public class UnifiedTrackingMessageParser {
     // action type
     String actionType = getActionType(baseEvent.getActionType().getAvro());
     record.setActionType(actionType);
+
+    if (ActionTypeEnum.OPEN.getValue().equals(actionType)) {
+      record.setGuid(record.getEventId().replace(Constants.HYPHEN, ""));
+    }
 
     // partner id
     record.setPartner(getPartner(parameters, baseEvent.getChannelType().getLogicalChannel().getAvro()));
@@ -301,7 +302,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // append guidList
-    if (StringUtils.isNotEmpty(guid)) {
+    if (ActionTypeEnum.OPEN.getValue().equals(actionType) && StringUtils.isNotEmpty(guid)) {
       fullPayload.put(Constants.GUID_LIST, guid);
     }
 
