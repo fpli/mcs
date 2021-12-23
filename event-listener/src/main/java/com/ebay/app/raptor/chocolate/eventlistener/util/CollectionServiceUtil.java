@@ -625,6 +625,7 @@ public class CollectionServiceUtil {
     if (url.trim().startsWith("padebay://")) {
       return false;
     }
+
     return true;
   }
 }
