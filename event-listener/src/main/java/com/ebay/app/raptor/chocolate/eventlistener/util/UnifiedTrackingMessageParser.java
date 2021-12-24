@@ -304,7 +304,8 @@ public class UnifiedTrackingMessageParser {
             ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
             ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum) ||
             ChannelTypeEnum.GCX_EMAIL.equals(channelTypeEnum) ||  ChannelTypeEnum.GCX_MESSAGE_CENTER.equals(channelTypeEnum));
-    if (isEmailOpen) {
+
+    if (isEmailOpen || FastURLEncoder.encode("true").equals(fullPayload.get(Constants.TAG_IS_THIRD_PARTY))) {
       record.setGuid(baseEvent.getUuid().replace(Constants.HYPHEN, ""));
       if (StringUtils.isNotEmpty(guid)) {
         fullPayload.put(Constants.GUID_LIST, guid);
