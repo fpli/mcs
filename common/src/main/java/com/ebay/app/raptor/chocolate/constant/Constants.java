@@ -132,8 +132,6 @@ public class Constants {
 //  public static final String CXT = "cxt";
   public static final String XT = "xt";
 
-  public static final String GUID_LIST = "guidList";
-
   public static final String SLASH = "/";
   public static final String HYPHEN = "-";
 
