@@ -19,6 +19,10 @@ public class GenericRecordUtils {
     return genericRecord.get(key) == null ? StringConstants.EMPTY : genericRecord.get(key).toString();
   }
 
+  public static Long getLongFieldOrNull(GenericRecord genericRecord, String key) {
+    return genericRecord.get(key) == null ? null : (Long) genericRecord.get(key);
+  }
+
   public static String getStringFieldOrNull(GenericRecord genericRecord, String key) {
     return genericRecord.get(key) == null ? null: genericRecord.get(key).toString();
   }
