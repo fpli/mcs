@@ -513,4 +513,10 @@ class TestEpnNrtCommonV2 extends BaseFunSuite{
     assert(epnNrtCommon.isEbaySitesUrl(roverImpressionUrl) == false )
     assert(epnNrtCommon.isEbaySitesUrl(invalidUrL) == false )
   }
+
+  test("test get guid list from the request header") {
+    val requestHeaders = "Referer:http://translate.google.com.mx|X-Purpose:preview|Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8|Accept-Encoding:gzip, deflate, sdch|Accept-Language:en-US,en;q=0.8|Cookie:ebay=%5Esbf%3D%23%5E; nonsession=CgADLAAFY825/NQDKACBiWWj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDjrjVIf; dp1=bbl/USen-US5cb5ce77^; s=CgAD4ACBY9Lj3NzZjYmQ5ZWExNWIwYTkzZDEyODMxODMzZmZmMWMxMDhRBcIc; npii=btguid/92d9dfe51670a93d12831833fff1c1085ad49dd7^trm/svid%3D1136038334911271815ad49dd7^cguid/47a11c671620a93c91006917fffa2a915d116016^|Proxy-Connection:keep-alive|Upgrade-Insecure-Requests:1|X-EBAY-CLIENT-IP:10.108.159.177|User-Agent:Shuang-UP.Browser-baiduspider-ebaywinphocore|x-ebay-c-tracking: adguid=b004dd4317d0a4e84c852ac2fc2014d4,guid=b004d75e17d0ab8e087280c8ffcf5152,guidList=b004d75e17d0ab8e087280c8ffcf5151&b004d75e17d0ab8e087280c8ffcf5152"
+    val guidList = epnNrtCommon.getGuidList(requestHeaders)
+    assert(guidList.equals("b004d75e17d0ab8e087280c8ffcf5151&b004d75e17d0ab8e087280c8ffcf5152"))
+  }
 }

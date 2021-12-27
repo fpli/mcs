@@ -1592,16 +1592,15 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     */
   def getHeaderValue(header: String, key: String): String = {
     try {
-      var value = ""
       if (header != null) {
         val headerMultiValue = new HeaderMultiValue(header, "utf-8")
-        value = headerMultiValue.get(key)
+        return headerMultiValue.get(key)
       }
     } catch {
       case e: UnsupportedEncodingException =>
-        logger.warn("Failed to parse header {}", header, e)
+        logger.error("Failed to parse header " + header, e)
     }
 
-    ""
+    null
   }
 }
