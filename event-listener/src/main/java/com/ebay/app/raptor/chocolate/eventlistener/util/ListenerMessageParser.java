@@ -98,13 +98,13 @@ public class ListenerMessageParser {
 
     String trackingHeader = baseEvent.getRequestHeaders().get(TRACKING_HEADER);
     // guid, cguid from tracking header
-    if (StringUtils.isEmpty(trackingHeader)) {
+    if (!StringUtils.isEmpty(trackingHeader)) {
       String guid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID);
-      if (StringUtils.isEmpty(guid)) {
+      if (!StringUtils.isEmpty(guid)) {
         record.setGuid(guid);
       }
       String cguid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.CGUID);
-      if (StringUtils.isEmpty(cguid)) {
+      if (!StringUtils.isEmpty(cguid)) {
         record.setCguid(cguid);
       }
     }

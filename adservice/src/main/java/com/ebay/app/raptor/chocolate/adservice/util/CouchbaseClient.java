@@ -223,14 +223,14 @@ public class CouchbaseClient {
     String key = mapPrefix + idKey;
     Map<String, String> map = new HashMap<>();
     map.put(mapName, idValue);
-    if (!StringUtils.isNullOrEmpty(idKey) && !StringUtils.isNullOrEmpty(idValue)
-        && !getBucket(cacheClient).exists(key)) {
-      getBucket(cacheClient).upsert(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
-      logger.debug("Add new mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
-    } else if (!StringUtils.isNullOrEmpty(idKey) && !StringUtils.isNullOrEmpty(idValue)
-        && getBucket(cacheClient).exists(key)) {
-      getBucket(cacheClient).replace(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
-      logger.debug("Replace existed mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
+    if (!StringUtils.isNullOrEmpty(idKey) && !StringUtils.isNullOrEmpty(idValue)) {
+      if (!getBucket(cacheClient).exists(key)) {
+        getBucket(cacheClient).upsert(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
+        logger.debug("Add new mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
+      } else {
+        getBucket(cacheClient).replace(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
+        logger.debug("Replace existed mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
+      }
     }
   }
 

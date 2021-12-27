@@ -214,7 +214,7 @@ public class UnifiedTrackingMessageParser {
     // guid
     String trackingHeader = baseEvent.getRequestHeaders().get("X-EBAY-C-TRACKING");
     String guid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID);
-    if (StringUtils.isEmpty(guid)) {
+    if (!StringUtils.isEmpty(guid)) {
       record.setGuid(guid);
     }
 
@@ -607,7 +607,7 @@ public class UnifiedTrackingMessageParser {
     // add guid list
     if (!ChannelAction.CLICK.equals(channelAction)) {
       String guidList = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID_LIST);
-      if (StringUtils.isEmpty(guidList)) {
+      if (!StringUtils.isEmpty(guidList)) {
         payload.put(Constants.GUID_LIST, guidList);
       }
     }
