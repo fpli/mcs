@@ -804,6 +804,26 @@ public class UnifiedTrackingMessageParser {
    * Only Email Open and Email 3rd party Clicks need fake guid
    */
   private static boolean needFakeGuid(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
+    return isEmailOpenOrThirdPartyClick(channelType, channelAction, isThirdParty);
+  }
+
+  /**
+   * Email Open, Email 3rd party Click, EPN Impression, Display AR need guidList tag
+   */
+  private static boolean needGuidList(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
+    boolean isEPNImpression = ChannelAction.IMPRESSION.equals(channelAction) && ChannelType.EPN.equals(channelType);
+
+    boolean isDisplayServe = ChannelAction.SERVE.equals(channelAction) && ChannelType.DISPLAY.equals(channelType);
+
+    return isEmailOpenOrThirdPartyClick(channelType, channelAction, isThirdParty) || isEPNImpression
+        || isDisplayServe;
+  }
+
+  /**
+   * Identify Email Open and Email 3rd party Clicks
+   */
+  private static boolean isEmailOpenOrThirdPartyClick(ChannelType channelType, ChannelAction channelAction,
+                                                      boolean isThirdParty) {
     boolean isEmailOpen = ChannelAction.EMAIL_OPEN.equals(channelAction) && (
         ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType) ||
             ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) ||
@@ -814,25 +834,5 @@ public class UnifiedTrackingMessageParser {
             ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType));
 
     return isEmailOpen || isThirdPartyClick;
-  }
-
-  /**
-   * Email Open, Email 3rd party Click, EPN Impression, Display AR need guidList tag
-   */
-  private static boolean needGuidList(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
-    boolean isEmailOpen = ChannelAction.EMAIL_OPEN.equals(channelAction) && (
-        ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType) ||
-            ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) ||
-            ChannelType.GCX_EMAIL.equals(channelType) ||  ChannelType.GCX_MESSAGE_CENTER.equals(channelType));
-
-    boolean isThirdPartyClick = isThirdParty && ChannelAction.CLICK.equals(channelAction) && (
-        ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType) ||
-            ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType));
-
-    boolean isEPNImpression = ChannelAction.IMPRESSION.equals(channelAction) && ChannelType.EPN.equals(channelType);
-
-    boolean isDisplayServe = ChannelAction.SERVE.equals(channelAction) && ChannelType.DISPLAY.equals(channelType);
-
-    return isEmailOpen || isThirdPartyClick || isEPNImpression || isDisplayServe;
   }
 }

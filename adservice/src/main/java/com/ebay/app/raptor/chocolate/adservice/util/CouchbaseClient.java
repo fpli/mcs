@@ -221,9 +221,9 @@ public class CouchbaseClient {
   private void addSingleMapping(String idKey, String idValue, String mapPrefix, String mapName) {
     CacheClient cacheClient = factory.getClient(datasourceName);
     String key = mapPrefix + idKey;
-    Map<String, String> map = new HashMap<>();
-    map.put(mapName, idValue);
     if (!StringUtils.isNullOrEmpty(idKey) && !StringUtils.isNullOrEmpty(idValue)) {
+      Map<String, String> map = new HashMap<>();
+      map.put(mapName, idValue);
       if (!getBucket(cacheClient).exists(key)) {
         getBucket(cacheClient).upsert(JsonDocument.create(key, EXPIRY, JsonObject.from(map)));
         logger.debug("Add new mapping. Map type:" + mapPrefix + ", key: " + idKey + ", value: " + idValue);
