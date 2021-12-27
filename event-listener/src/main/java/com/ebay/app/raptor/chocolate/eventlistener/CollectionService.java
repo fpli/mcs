@@ -537,6 +537,7 @@ public class CollectionService {
     baseEvent.setCheckoutApi(isRoiFromCheckoutAPI);
     baseEvent.setRoiEvent(roiEvent);
     baseEvent.setPlaceOfferApi(isRoiFromPlaceOfferAPI);
+    baseEvent.setUuid(UUID.randomUUID().toString());
 
     // fire roi events
     fireROIEvent(baseEvent, requestContext);
@@ -722,7 +723,7 @@ public class CollectionService {
 
     // 3. fire utp event
     submitChocolateUtpEvent(baseEvent, containerRequestContext,
-        message.getSnapshotId(), message.getShortSnapshotId(), null);
+        message.getSnapshotId(), message.getShortSnapshotId());
 
     // Mock click for the ROI which has valid mppid
     // in the payload (ROI generated from pre-install app on Android) XC-3464
@@ -753,7 +754,7 @@ public class CollectionService {
 
       // submit utp event
       submitChocolateUtpEvent(baseEvent, containerRequestContext, mockClickListenerMessage.getSnapshotId(),
-          mockClickListenerMessage.getShortSnapshotId(), null);
+          mockClickListenerMessage.getShortSnapshotId());
 
       // Log mock click for pre-install ROI by transaction type
       MonitorUtil.info("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
@@ -867,13 +868,10 @@ public class CollectionService {
    * @param eventId         utp event id
    */
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
-                                       long shortSnapshotId, String eventId) {
+                                       long shortSnapshotId) {
     try {
       UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
           shortSnapshotId);
-      if (!StringUtils.isEmpty(eventId)) {
-        utpMessage.setEventId(eventId);
-      }
       if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType())
           && utpMessage.getIsBot()) {
         MonitorUtil.info("CollectionServiceSkipFreeListingBot");
@@ -925,7 +923,7 @@ public class CollectionService {
 
     // 3. submit utp event
     submitChocolateUtpEvent(baseEvent, requestContext,
-        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId(), baseEvent.getUuid());
+        listenerMessage.getSnapshotId(), listenerMessage.getShortSnapshotId());
   }
 
 
@@ -947,13 +945,12 @@ public class CollectionService {
     }
 
     // 3. fire utp event
-    submitChocolateUtpEvent(baseEvent, requestContext, 0L,
-        0L, baseEvent.getUuid());
+    submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L);
   }
 
   private void fireGCXEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
     // fire utp event
-    submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L, baseEvent.getUuid());
+    submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L);
   }
 
   /**

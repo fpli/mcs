@@ -75,6 +75,7 @@ public class UnifiedTrackingMessageParser {
         new UserAgentParser().parse(event.getUserAgent()), eventTs);
 
     // event id
+    record.setEventId(UUID.randomUUID().toString());
     record.setProducerEventId(coalesce(event.getProducerEventId(), ""));
 
     // event timestamp
@@ -185,6 +186,7 @@ public class UnifiedTrackingMessageParser {
         (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
 
     // event id
+    record.setEventId(baseEvent.getUuid());
     record.setProducerEventId(getProducerEventId(baseEvent.getUrlParameters(),
         baseEvent.getChannelType().getLogicalChannel().getAvro()));
 
@@ -297,6 +299,23 @@ public class UnifiedTrackingMessageParser {
       fullPayload.put("clientData", formatClientData(clientHints));
     }
 
+    // append guidList
+    boolean isEmailOpen = ActionTypeEnum.OPEN.getValue().equals(actionType) && (
+            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.GCX_EMAIL.equals(channelTypeEnum) ||  ChannelTypeEnum.GCX_MESSAGE_CENTER.equals(channelTypeEnum));
+
+    boolean isThirdClick = baseEvent.isThirdParty() && ActionTypeEnum.CLICK.getValue().equals(actionType) && (
+            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
+            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum));
+
+    if (isEmailOpen || isThirdClick) {
+      record.setGuid(baseEvent.getUuid().replace(Constants.HYPHEN, ""));
+      if (StringUtils.isNotEmpty(guid)) {
+        fullPayload.put(Constants.GUID_LIST, guid);
+      }
+    }
+
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
 
     // data governance
@@ -349,9 +368,6 @@ public class UnifiedTrackingMessageParser {
         null, null, null, null, null, null, null,
         null, null, null, null, null, null, 0, 0,
         false, payload);
-
-    // event id
-    record.setEventId(UUID.randomUUID().toString());
 
     // event timestamp
     record.setEventTs(eventTs);
