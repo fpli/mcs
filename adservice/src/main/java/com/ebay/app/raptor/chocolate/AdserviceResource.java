@@ -3,10 +3,7 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
 import com.ebay.app.raptor.chocolate.adservice.component.GdprConsentHandler;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
-import com.ebay.app.raptor.chocolate.adservice.constant.EmailPartnerIdEnum;
-import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
-import com.ebay.app.raptor.chocolate.adservice.constant.MKEVT;
+import com.ebay.app.raptor.chocolate.adservice.constant.*;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
@@ -31,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -101,6 +98,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
+  private static final int GUID_LIST_MAX_SIZE = 20;
 
   // get the adobe service info from application.properties in resources dir
   private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
@@ -112,6 +110,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
   private static final Client mktClient = GingerClientBuilder.newClient(config);
   private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+
   /**
    * Initialize function
    */
@@ -214,8 +213,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       // construct X-EBAY-C-TRACKING header
       String guid = adserviceCookie.getGuid(request);
+      String guidList = adserviceCookie.getGuidList(request);
       builder = builder.header(Constants.TRACKING_HEADER,
-          HttpUtil.constructTrackingHeader(guid, adguid));
+          HttpUtil.constructTrackingHeader(guid, guidList, adguid));
 
       // add parameters separately to handle special characters
       URIBuilder uri = new URIBuilder(request.getRequestURL().toString());
@@ -333,39 +333,62 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
 
-    // add all headers except Cookie
-    Builder builder = mktClient.target(endpoint).path("/sync/").request();
-    final Enumeration<String> headers = request.getHeaderNames();
-    while (headers.hasMoreElements()) {
-      String header = headers.nextElement();
-      if ("Cookie".equalsIgnoreCase(header)) {
-        continue;
-      }
-      String values = request.getHeader(header);
-      builder = builder.header(header, values);
-    }
-    // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
-    // construct X-EBAY-C-TRACKING header
-    builder = builder.header(Constants.TRACKING_HEADER,
-        HttpUtil.constructTrackingHeader(guid, adguid));
-
-    // add uri and referer to marketing event body
-    MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
-    // append adguid into the url so that the mcs can parse it
-    mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString() + "&adguid=" + adguid);
-    mktEvent.setReferrer(request.getHeader("Referer"));
+//    // add all headers except Cookie
+//    Builder builder = mktClient.target(endpoint).path("/sync/").request();
+//    final Enumeration<String> headers = request.getHeaderNames();
+//    while (headers.hasMoreElements()) {
+//      String header = headers.nextElement();
+//      if ("Cookie".equalsIgnoreCase(header)) {
+//        continue;
+//      }
+//      String values = request.getHeader(header);
+//      builder = builder.header(header, values);
+//    }
+//    // forward to mcs for writing ubi. The adguid in ubi is to help XID team build adguid into the linking system.
+//    // construct X-EBAY-C-TRACKING header
+//    builder = builder.header(Constants.TRACKING_HEADER,
+//        HttpUtil.constructTrackingHeader(guid, adguid));
+//
+//    // add uri and referer to marketing event body
+//    MarketingTrackingEvent mktEvent = new MarketingTrackingEvent();
+//    // append adguid into the url so that the mcs can parse it
+//    mktEvent.setTargetUrl(new ServletServerHttpRequest(request).getURI().toString() + "&adguid=" + adguid);
+//    mktEvent.setReferrer(request.getHeader("Referer"));
 
     // call marketing collection service to send ubi event async
     // Stop writing to Soj per site tracking's ask. It's external.
     // builder.async().post(Entity.json(mktEvent), new MCSCallback());
 
+    // build guid list <=> adguid <=> user id mapping
     try {
-      boolean isAddMappingSuccess = idMapping.addMapping(adguid, guid, uid);
-      if (isAddMappingSuccess) {
-        MonitorUtil.info(METRIC_ADD_MAPPING_SUCCESS);
-      } else {
-        MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+      if (StringUtils.isNotEmpty(guid)) {
+        String guidList = idMapping.getGuidListByAdguid(adguid);
+        String newGuidList;
+        if (StringUtils.isNotEmpty(guidList)) {
+          List<String> guids = new ArrayList<>(Arrays.asList(guidList.split(StringConstants.AND)));
+          if (!guids.contains(guid)) {
+            guids.add(guid);
+            // limit the number of guid to 20
+            if (guids.size() > GUID_LIST_MAX_SIZE) {
+              guids = guids.subList(guids.size()-GUID_LIST_MAX_SIZE, guids.size());
+            }
+            newGuidList = StringUtils.join(guids, StringConstants.AND);
+          } else {
+            newGuidList = guidList;
+          }
+        } else {
+          newGuidList = guid;
+        }
 
+        // If the guid is already existed in the mapping, no need to update mapping
+        if (!guidList.equals(newGuidList)) {
+          boolean isAddMappingSuccess = idMapping.addMapping(adguid, newGuidList, guid, uid);
+          if (isAddMappingSuccess) {
+            MonitorUtil.info(METRIC_ADD_MAPPING_SUCCESS);
+          } else {
+            MonitorUtil.info(METRIC_ADD_MAPPING_FAIL);
+          }
+        }
       }
     } catch (Exception e) {
       try {

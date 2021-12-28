@@ -1,7 +1,9 @@
 package com.ebay.app.raptor.chocolate.adservice.util.idmapping;
 
 import com.couchbase.client.deps.io.netty.util.internal.StringUtil;
+import com.ebay.app.raptor.chocolate.adservice.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,16 +13,29 @@ import org.springframework.stereotype.Service;
 @Service("cb")
 public class CouchbaseIdMapping implements IdMapable {
   @Override
-  public boolean addMapping(String adguid, String guid, String uid) {
-    CouchbaseClient.getInstance().addMappingRecord(adguid, guid, uid);
+  public boolean addMapping(String adguid, String guidList, String guid, String uid) {
+    CouchbaseClient.getInstance().addMappingRecord(adguid, guidList, guid, uid);
     return true;
+  }
+
+  @Override
+  public String getGuidListByAdguid(String id) {
+    if(!StringUtil.isNullOrEmpty(id)) {
+      return CouchbaseClient.getInstance().getGuidListByAdguid(id);
+    }
+    return "";
   }
 
   @Override
   public String getGuidByAdguid(String id) {
     if(!StringUtil.isNullOrEmpty(id)) {
-      return CouchbaseClient.getInstance().getGuidByAdguid(id);
+      String guidList = CouchbaseClient.getInstance().getGuidListByAdguid(id);
+      if (!StringUtils.isEmpty(guidList)) {
+        String[] guids = guidList.split(StringConstants.AND);
+        return guids[guids.length - 1];
+      }
     }
+
     return "";
   }
 

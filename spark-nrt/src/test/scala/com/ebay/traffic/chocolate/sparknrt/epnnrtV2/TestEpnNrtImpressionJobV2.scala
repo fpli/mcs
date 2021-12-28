@@ -69,6 +69,7 @@ class TestEpnNrtImpressionJobV2 extends BaseFunSuite{
     // validate impression df
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("CRLTN_GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("GUID_TXT").first().getString(0) == "56cbd9iqoiwjddwswdwdwa33fff1c1065ad49dd7^")
+    assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("GUID_LIST").first().getString(0) == "b004d75e17d0ab8e087280c8ffcf5151&b004d75e17d0ab8e087280c8ffcf5152")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("USER_ID").first().getDecimal(0).longValue() == 1L)
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("CLNT_RMT_IP").first().getString(0) == "127.0.0.1")
     assert(impressionDf.filter(col("IMPRSN_CNTNR_ID") === 7453984045429249L).select("RFR_URL_NAME").first().getString(0) == "http://rover.ebay.com/rover/1/1185-53479-19255-0/1?ff3=4&pub=5575118796&toolid=10001&campid=5337725402&customid=&mpre=http://www.ebay.es/itm/Etude-House-Drawing-Eye-Brow-Pencil-/191616582622%3Fpt%3DLH_DefaultDomain_0%26var%3D%26hash%3Ditem2c9d3d03de")

@@ -23,6 +23,7 @@ class ImpressionDataFrameV2(df: DataFrame, common: EpnNrtCommonV2) extends Seria
       .withColumn("CHNL_ID", common.getChannelIdUdf(col("channel_type")).cast(IntegerType))
       .withColumn("CRLTN_GUID_TXT", col("cguid"))
       .withColumn("GUID_TXT", col("guid"))
+      .withColumn("GUID_LIST", common.getGuidListUdf(col("request_headers")))
       .withColumn("USER_ID", common.getUserIdUdf(col("user_id"), col("guid")).cast(DecimalType(18,0)))
       .withColumn("CLNT_RMT_IP", col("remote_ip"))
       .withColumn("BRWSR_TYPE_NUM", common.get_browser_type_udf(col("user_agent")))

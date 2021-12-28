@@ -184,14 +184,15 @@ public class UnifiedTrackingMessageParser {
     DomainRequestData domainRequest = (DomainRequestData) requestContext.getProperty(DomainRequestData.NAME);
     RequestTracingContext tracingContext =
         (RequestTracingContext) requestContext.getProperty(RequestTracingContext.NAME);
+    ChannelType channelType = baseEvent.getChannelType().getLogicalChannel().getAvro();
+    ChannelAction channelAction = baseEvent.getActionType().getAvro();
 
     // event id
     record.setEventId(baseEvent.getUuid());
-    record.setProducerEventId(getProducerEventId(baseEvent.getUrlParameters(),
-        baseEvent.getChannelType().getLogicalChannel().getAvro()));
+    record.setProducerEventId(getProducerEventId(baseEvent.getUrlParameters(), channelType));
 
     // event timestamp
-    record.setProducerEventTs(getProducerEventTs(baseEvent.getActionType().getAvro(), baseEvent.getRoiEvent(),
+    record.setProducerEventTs(getProducerEventTs(channelAction, baseEvent.getRoiEvent(),
         baseEvent.getTimestamp()));
 
     // rlog id
@@ -209,15 +210,18 @@ public class UnifiedTrackingMessageParser {
       record.setEncryptedUserId(Long.parseLong(bu));
     }
 
-    long userId = getUserId(baseEvent.getEndUserContext(), bu,
-        baseEvent.getChannelType().getLogicalChannel().getAvro());
+    long userId = getUserId(baseEvent.getEndUserContext(), bu, channelType);
     record.setUserId(userId);
 
     // guid
     String trackingHeader = baseEvent.getRequestHeaders().get("X-EBAY-C-TRACKING");
     String guid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID);
-    if (guid != null) {
+    if (!StringUtils.isEmpty(guid)) {
       record.setGuid(guid);
+    }
+    // Email open and 3rd party clicks need eventId to be the fake guid
+    if (needFakeGuid(channelType, channelAction, baseEvent.isThirdParty())) {
+      record.setGuid(baseEvent.getUuid().replace(Constants.HYPHEN, ""));
     }
 
     // device info
@@ -228,18 +232,18 @@ public class UnifiedTrackingMessageParser {
     record.setUserAgent(userAgent);
 
     // channel type
-    ChannelTypeEnum channelTypeEnum = getChannelType(baseEvent.getChannelType().getLogicalChannel().getAvro());
+    ChannelTypeEnum channelTypeEnum = getChannelType(channelType);
     record.setChannelType(channelTypeEnum.getValue());
 
     // action type
-    String actionType = getActionType(baseEvent.getActionType().getAvro());
+    String actionType = getActionType(channelAction);
     record.setActionType(actionType);
 
     // partner id
-    record.setPartner(getPartner(parameters, baseEvent.getChannelType().getLogicalChannel().getAvro()));
+    record.setPartner(getPartner(parameters, channelType));
 
     // campaign id
-    record.setCampaignId(getCampaignId(parameters, baseEvent.getChannelType().getLogicalChannel().getAvro()));
+    record.setCampaignId(getCampaignId(parameters, channelType));
 
     // rotation id
     String rotationId = getRotationId(parameters);
@@ -269,7 +273,7 @@ public class UnifiedTrackingMessageParser {
     record.setRemoteIp(baseEvent.getRemoteIp());
 
     // page id
-    int pageId = PageIdEnum.getPageIdByAction(baseEvent.getActionType().getAvro());
+    int pageId = PageIdEnum.getPageIdByAction(channelAction);
     record.setPageId(pageId);
 
     // user geo id
@@ -282,38 +286,15 @@ public class UnifiedTrackingMessageParser {
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(baseEvent.getUserAgentInfo());
     // format UEP payload
     Map<String, String> uepPayload =
-            UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType), channelTypeEnum);
+            UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType),
+                channelTypeEnum);
     Map<String, String> fullPayload =
-        getPayload(payload, baseEvent, parameters, appId,
-            baseEvent.getChannelType().getLogicalChannel().getAvro(), baseEvent.getActionType().getAvro(), snapshotId,
+        getPayload(payload, baseEvent, parameters, appId, channelType, channelAction, snapshotId,
             shortSnapshotId, baseEvent.getRoiEvent(), userId, trackingHeader);
 
     // append UEP payload
     if (uepPayload != null && uepPayload.size() > 0) {
       fullPayload.putAll(uepPayload);
-    }
-
-    // append clientdata
-    Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
-    if (MapUtils.isNotEmpty(clientHints)) {
-      fullPayload.put("clientData", formatClientData(clientHints));
-    }
-
-    // append guidList
-    boolean isEmailOpen = ActionTypeEnum.OPEN.getValue().equals(actionType) && (
-            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
-            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum) ||
-            ChannelTypeEnum.GCX_EMAIL.equals(channelTypeEnum) ||  ChannelTypeEnum.GCX_MESSAGE_CENTER.equals(channelTypeEnum));
-
-    boolean isThirdClick = baseEvent.isThirdParty() && ActionTypeEnum.CLICK.getValue().equals(actionType) && (
-            ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.SITE_MESSAGE_CENTER.equals(channelTypeEnum) ||
-            ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) || ChannelTypeEnum.MRKT_MESSAGE_CENTER.equals(channelTypeEnum));
-
-    if (isEmailOpen || isThirdClick) {
-      record.setGuid(baseEvent.getUuid().replace(Constants.HYPHEN, ""));
-      if (StringUtils.isNotEmpty(guid)) {
-        fullPayload.put(Constants.GUID_LIST, guid);
-      }
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
@@ -588,7 +569,6 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.XT, xt);
     }
 
-
     // is from ufes
     String isUfes = baseEvent.getRequestHeaders().get(Constants.IS_FROM_UFES_HEADER);
     if (StringUtils.isEmpty(isUfes)) {
@@ -619,6 +599,20 @@ public class UnifiedTrackingMessageParser {
     if (ChannelAction.CLICK.equals(channelAction)
         && baseEvent.isThirdParty()) {
       payload.put(Constants.TAG_IS_THIRD_PARTY, "true");
+    }
+
+    // append clientdata
+    Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
+    if (MapUtils.isNotEmpty(clientHints)) {
+      payload.put("clientData", formatClientData(clientHints));
+    }
+
+    // add guid list
+    if (needGuidList(channelType, channelAction, baseEvent.isThirdParty())) {
+      String guidList = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID_LIST);
+      if (!StringUtils.isEmpty(guidList)) {
+        payload.put(Constants.GUID_LIST, guidList);
+      }
     }
 
     return encodeTags(payload);
@@ -794,7 +788,7 @@ public class UnifiedTrackingMessageParser {
    * @param map
    * @return
    */
-  public static String formatClientData(Map<String, String> map) {
+  private static String formatClientData(Map<String, String> map) {
     if(MapUtils.isNotEmpty(map)){
       try {
         return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
@@ -804,5 +798,41 @@ public class UnifiedTrackingMessageParser {
       }
     }
     return "";
+  }
+
+  /**
+   * Only Email Open and Email 3rd party Clicks need fake guid
+   */
+  private static boolean needFakeGuid(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
+    return isEmailOpenOrThirdPartyClick(channelType, channelAction, isThirdParty);
+  }
+
+  /**
+   * Email Open, Email 3rd party Click, EPN Impression, Display AR need guidList tag
+   */
+  private static boolean needGuidList(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
+    boolean isEPNImpression = ChannelAction.IMPRESSION.equals(channelAction) && ChannelType.EPN.equals(channelType);
+
+    boolean isDisplayServe = ChannelAction.SERVE.equals(channelAction) && ChannelType.DISPLAY.equals(channelType);
+
+    return isEmailOpenOrThirdPartyClick(channelType, channelAction, isThirdParty) || isEPNImpression
+        || isDisplayServe;
+  }
+
+  /**
+   * Identify Email Open and Email 3rd party Clicks
+   */
+  private static boolean isEmailOpenOrThirdPartyClick(ChannelType channelType, ChannelAction channelAction,
+                                                      boolean isThirdParty) {
+    boolean isEmailOpen = ChannelAction.EMAIL_OPEN.equals(channelAction) && (
+        ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType) ||
+            ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) ||
+            ChannelType.GCX_EMAIL.equals(channelType) ||  ChannelType.GCX_MESSAGE_CENTER.equals(channelType));
+
+    boolean isThirdPartyClick = isThirdParty && ChannelAction.CLICK.equals(channelAction) && (
+        ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType) ||
+            ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType));
+
+    return isEmailOpen || isThirdPartyClick;
   }
 }

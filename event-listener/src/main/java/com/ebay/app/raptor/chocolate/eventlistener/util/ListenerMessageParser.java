@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.HttpMethod;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.common.ShortSnapshotId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
-import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
@@ -14,16 +13,11 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.util.StringUtils;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
-import com.ebay.raptor.geo.context.UserPrefsCtx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
@@ -104,17 +98,14 @@ public class ListenerMessageParser {
 
     String trackingHeader = baseEvent.getRequestHeaders().get(TRACKING_HEADER);
     // guid, cguid from tracking header
-    if (!org.springframework.util.StringUtils.isEmpty(trackingHeader)) {
-      for (String seg : trackingHeader.split(",")) {
-        String[] keyValue = seg.split("=");
-        if (keyValue.length == 2) {
-          if (keyValue[0].equalsIgnoreCase(Constants.GUID)) {
-            record.setGuid(keyValue[1]);
-          }
-          if (keyValue[0].equalsIgnoreCase(Constants.CGUID)) {
-            record.setCguid(keyValue[1]);
-          }
-        }
+    if (!StringUtils.isEmpty(trackingHeader)) {
+      String guid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID);
+      if (!StringUtils.isEmpty(guid)) {
+        record.setGuid(guid);
+      }
+      String cguid = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.CGUID);
+      if (!StringUtils.isEmpty(cguid)) {
+        record.setCguid(cguid);
       }
     }
     // Overwrite cguid using guid for ePN channel in mcs to avoid the impact on capping rules related to cguid  XC-2125

@@ -912,11 +912,12 @@ public class CollectionService {
 
     // 2. track ubi
     // Checkout click and placeoffer click events won't go to UBI
+    // Only track click to UBI
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.info("CheckoutAPIClick", 1);
     } else if (baseEvent.isPlaceOfferApi()) {
       MonitorUtil.info("PlaceOfferAPIClick", 1);
-    } else if (!baseEvent.getActionType().equals(ChannelActionEnum.SERVE)) {
+    } else if (baseEvent.getActionType().equals(ChannelActionEnum.CLICK)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
