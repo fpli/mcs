@@ -361,7 +361,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
     // build guid list <=> adguid <=> user id mapping
     try {
-      if (StringUtils.isNotEmpty(guid)) {
+      if (StringUtils.isNotEmpty(guid) && guid.length() >= Constants.GUID_LENGTH) {
+        guid = guid.substring(0, Constants.GUID_LENGTH);
         String guidList = idMapping.getGuidListByAdguid(adguid);
         String newGuidList;
         if (StringUtils.isNotEmpty(guidList)) {
