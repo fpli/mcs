@@ -179,7 +179,7 @@ public class RoverRheosTopicFilterTaskTest {
         roverRheosTopicFilterTask.processRecords(rheosConsumerWrapper, producer);
         Thread.sleep(5000);
         List<ProducerRecord<Long, ListenerMessage>> history = producer.history();
-        assertEquals(2, history.size());
+        assertEquals(1, history.size());
     }
 
     @Test

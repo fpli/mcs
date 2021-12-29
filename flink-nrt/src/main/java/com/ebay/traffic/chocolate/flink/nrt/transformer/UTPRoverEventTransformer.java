@@ -167,6 +167,11 @@ public class UTPRoverEventTransformer {
         return false;
       }
 
+      if (channelType == ChannelTypeEnum.EPN) {
+        SherlockioMetrics.getInstance().meter("EPNClick", 1, Field.of(TOPIC, sourceTopic));
+        return false;
+      }
+
       String pageName = parsePageName();
       if (pageName == null) {
         SherlockioMetrics.getInstance().meter("NoPageName", 1, Field.of(TOPIC, sourceTopic));
