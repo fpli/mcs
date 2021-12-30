@@ -6,6 +6,10 @@ import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Couchbase id mapping
  * @author xiangli4
@@ -21,7 +25,12 @@ public class CouchbaseIdMapping implements IdMapable {
   @Override
   public String getGuidListByAdguid(String id) {
     if(!StringUtil.isNullOrEmpty(id)) {
-      return CouchbaseClient.getInstance().getGuidListByAdguid(id);
+      String guidList = CouchbaseClient.getInstance().getGuidListByAdguid(id);
+      if ("[guid]".equals(guidList)) {
+        return "";
+      } else {
+        return guidList;
+      }
     }
     return "";
   }
@@ -29,7 +38,7 @@ public class CouchbaseIdMapping implements IdMapable {
   @Override
   public String getGuidByAdguid(String id) {
     if(!StringUtil.isNullOrEmpty(id)) {
-      String guidList = CouchbaseClient.getInstance().getGuidListByAdguid(id);
+      String guidList = getGuidListByAdguid(id);
       if (!StringUtils.isEmpty(guidList)) {
         String[] guids = guidList.split(StringConstants.AND);
         return guids[guids.length - 1];
