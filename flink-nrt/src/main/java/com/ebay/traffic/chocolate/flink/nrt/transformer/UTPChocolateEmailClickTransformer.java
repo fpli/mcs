@@ -501,6 +501,11 @@ public class UTPChocolateEmailClickTransformer {
 
     payload.put("cobrand", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.COBRAND));
     payload.put("seqNum", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SEQ_NUM));
+    Long sessionSkey = GenericRecordUtils.getLongFieldOrNull(sourceRecord, TransformerConstants.SESSION_SKEY);
+    if (sessionSkey != null) {
+      payload.put("sessionSkey", String.valueOf(sessionSkey));
+    }
+    payload.put("sessionId", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SESSION_ID));
     // Get xt from url as this tag hasn't been written to Pulsar
     String xt = queryParams.getFirst("xt");
     if (StringUtils.isNotEmpty(xt)) {

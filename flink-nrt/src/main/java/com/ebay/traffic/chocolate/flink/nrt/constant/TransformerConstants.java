@@ -39,6 +39,7 @@ public class TransformerConstants {
   public static final String EVENT_FAMILY = "eventFamily";
   public static final String EVENT_ACTION = "eventAction";
   public static final String SESSION_ID = "sessionId";
+  public static final String SESSION_SKEY = "sessionSkey";
   public static final String SEQ_NUM = "seqNum";
   public static final String RDT = "rdt";
   public static final String REFERER_HASH = "refererHash";
