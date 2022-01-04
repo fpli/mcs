@@ -50,14 +50,15 @@ public class CampaignPublisherMappingCache {
      * @param campaignId the campaignId key
      * @return null if there is no such campaignId
      */
-    public Long lookup(long campaignId) throws InterruptedException{
+    public Long lookup(long campaignId) throws InterruptedException {
         Long publisherId = cache.get(campaignId);
         if (publisherId == null) {
-            publisherId = CouchbaseClient.getInstance().getPublisherID(campaignId);
+            CouchbaseClientV2 couchbaseClientV2 = SpringUtils.getBean("CouchbaseClientV2", CouchbaseClientV2.class);
+            publisherId = couchbaseClientV2.getPublisherID(campaignId);
             if (publisherId != DEFAULT_PUBLISHER_ID)
-              cache.putIfAbsent(campaignId, publisherId);
+                cache.putIfAbsent(campaignId, publisherId);
         }
-      logger.debug("Get publisherID " + publisherId + " for campaignID " + campaignId);
+        logger.debug("Get publisherID " + publisherId + " for campaignID " + campaignId);
         return publisherId;
     }
 

@@ -4,22 +4,16 @@ import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.filter.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.filter.service.FilterContainer;
 import com.ebay.app.raptor.chocolate.filter.service.FilterWorker;
-import com.ebay.app.raptor.chocolate.filter.util.CouchbaseClient;
-import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
-import org.apache.log4j.BasicConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +93,6 @@ public class FilterService {
     }
     try {
       KafkaSink.close();
-      CouchbaseClient.close();
     } catch (IOException e) {
       logger.error("Shut down error", e);
     }

@@ -80,12 +80,15 @@ public class FilterZookeeperClient {
         return INSTANCE;
     }
 
-    /** Initialize the instance with a default callback. */
+    /**
+     * Initialize the instance with a default callback.
+     */
     public static synchronized void init(ApplicationOptions options) {
         final Consumer<PublisherCacheEntry> callback = t -> {
             logger.debug("Got new entry from Zookeeper=" + t.toString());
             CampaignPublisherMappingCache.getInstance().addMapping(t.getCampaignId(), t.getPublisherId());
-            CouchbaseClient.getInstance().addMappingRecord(t.getCampaignId(), t.getPublisherId());
+            CouchbaseClientV2 couchbaseClientV2 = SpringUtils.getBean("CouchbaseClientV2", CouchbaseClientV2.class);
+            couchbaseClientV2.addMappingRecord(t.getCampaignId(), t.getPublisherId());
         };
         init(callback, options.getPublisherCacheZkConnectString(), options.getPublisherCacheZkRoot(),
                 options.getZkDriverIdNode());

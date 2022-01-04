@@ -203,6 +203,43 @@
             <artifactId>dukes</artifactId>
             <version>${dukes.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-migration</artifactId>
+            <version>${dukes.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-nukv</artifactId>
+            <version>${dukes.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-failover</artifactId>
+            <version>${dukes.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-dal-starter</artifactId>
@@ -231,8 +268,8 @@
         </dependency>
 
         <!--<dependency>-->
-            <!--<groupId>com.google.code.gson</groupId>-->
-            <!--<artifactId>gson</artifactId>-->
+        <!--<groupId>com.google.code.gson</groupId>-->
+        <!--<artifactId>gson</artifactId>-->
         <!--</dependency>-->
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
@@ -286,24 +323,24 @@
             <artifactId>raptor-cos-usercontext-starter</artifactId>
         </dependency>
         <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-traffic-mirror-starter</artifactId>
-    </dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-traffic-mirror-starter</artifactId>
+        </dependency>
         <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-trustfabric-handler-starter</artifactId>
-    </dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-trustfabric-handler-starter</artifactId>
+        </dependency>
         <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-dal-metrics-starter</artifactId>
-    </dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-dal-metrics-starter</artifactId>
+        </dependency>
         <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-featureconfig-starter</artifactId>
-    </dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-featureconfig-starter</artifactId>
+        </dependency>
         <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>raptor-envoyhealth-status-starter</artifactId>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-envoyhealth-status-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
@@ -315,7 +352,12 @@
                     <groupId>org.hamcrest</groupId>
                 </exclusion>
             </exclusions>
-    </dependency>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.dukes.component</groupId>
+            <artifactId>raptor-dukes-starter</artifactId>
+            <version>0.10.2-RELEASE</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -342,7 +384,7 @@
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
             </plugin>
-            
+
         </plugins>
     </build>
 </project>

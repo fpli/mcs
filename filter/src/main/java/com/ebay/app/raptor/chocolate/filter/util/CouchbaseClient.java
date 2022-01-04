@@ -25,64 +25,64 @@ import java.util.concurrent.LinkedBlockingDeque;
  * @author huiclu
  */
 public class CouchbaseClient {
-    /**Global logging instance*/
-    private static final Logger logger = LoggerFactory.getLogger(CouchbaseClient.class);
-    /**Singleton instance*/
-    private volatile static CouchbaseClient INSTANCE = null;
-    /**Dukes cacheFactory*/
-    private CacheFactory factory;
-    /**default publisherID*/
-    private static final long DEFAULT_PUBLISHER_ID = -1L;
+  /**Global logging instance*/
+  private static final Logger logger = LoggerFactory.getLogger(CouchbaseClient.class);
+  /**Singleton instance*/
+  private volatile static CouchbaseClient INSTANCE = null;
+  /**Dukes cacheFactory*/
+  private CacheFactory factory;
+  /**default publisherID*/
+  private static final long DEFAULT_PUBLISHER_ID = -1L;
   /**flush buffer to keep record when couchbase down*/
   private Queue<Map.Entry<Long,Long>> buffer;
   private String datasourceName;
 
 
-    /**Singleton */
-    private CouchbaseClient() {
-      this.datasourceName = ApplicationOptions.getInstance().getCouchbaseDatasource();
-      try {
-        factory = DefaultCacheFactoryBuilder
-          .newBuilder()
-          .cache(datasourceName)
-          .build();
-        // Throws an Exception if Datasource for CACHE_NAME could not be found.
-        factory.returnClient(factory.getClient(datasourceName));
-      } catch (Exception e) {
-        logger.error("Couchbase init error", e);
-        throw e;
+  /**Singleton */
+  private CouchbaseClient() {
+    this.datasourceName = ApplicationOptions.getInstance().getCouchbaseDatasource();
+    try {
+      factory = DefaultCacheFactoryBuilder
+              .newBuilder()
+              .cache(datasourceName)
+              .build();
+      // Throws an Exception if Datasource for CACHE_NAME could not be found.
+      factory.returnClient(factory.getClient(datasourceName));
+    } catch (Exception e) {
+      logger.error("Couchbase init error", e);
+      throw e;
+    }
+    this.buffer = new LinkedBlockingDeque<>();
+  }
+
+  public CouchbaseClient(CacheFactory factory) {
+    this.factory = factory;
+    this.buffer = new LinkedBlockingDeque<>();
+  }
+
+  /**init the instance*/
+  private static void init() {
+    Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
+    INSTANCE = new CouchbaseClient();
+    logger.info("Initial Couchbase cluster");
+  }
+
+  /**For unit test*/
+  public static void init(CouchbaseClient client) {
+    Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
+    INSTANCE = client;
+  }
+
+  /**Singleton */
+  public static CouchbaseClient getInstance() {
+    if (INSTANCE == null) {
+      synchronized (CouchbaseClient.class) {
+        if (INSTANCE == null)
+          init();
       }
-      this.buffer = new LinkedBlockingDeque<>();
     }
-
-    public CouchbaseClient(CacheFactory factory) {
-      this.factory = factory;
-      this.buffer = new LinkedBlockingDeque<>();
-    }
-
-    /**init the instance*/
-    private static void init() {
-        Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
-        INSTANCE = new CouchbaseClient();
-        logger.info("Initial Couchbase cluster");
-    }
-
-    /**For unit test*/
-    public static void init(CouchbaseClient client) {
-        Validate.isTrue(INSTANCE == null, "Instance should be initialized only once");
-        INSTANCE = client;
-    }
-
-    /**Singleton */
-    public static CouchbaseClient getInstance() {
-        if (INSTANCE == null) {
-            synchronized (CouchbaseClient.class) {
-                if (INSTANCE == null)
-                    init();
-            }
-        }
-        return INSTANCE;
-    }
+    return INSTANCE;
+  }
 
   /**add mapping pair into couchbase */
   public void addMappingRecord(long campaignId, long publisherId) {
@@ -143,7 +143,7 @@ public class CouchbaseClient {
         return Long.parseLong(document.content().toString());
       } catch (NumberFormatException ne) {
         logger.warn("Error in converting publishID " + getBucket(factory.getClient(datasourceName)).get(String.valueOf(campaignId),
-            StringDocument.class).toString() + " to Long", ne);
+                StringDocument.class).toString() + " to Long", ne);
         MonitorUtil.info("ErrorPublishID");
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
