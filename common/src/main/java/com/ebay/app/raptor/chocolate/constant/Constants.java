@@ -42,6 +42,16 @@ public class Constants {
   public static final String TAG_IS_UFES_REDIRECT = "isUFESRedirect";
   public static final String TAG_IS_THIRD_PARTY = "isThirdParty";
 
+  // Session relatives
+  public static final String SESSION_ID = "sessionId";
+  public static final String SESSION_SKEY = "sessionSkey";
+  public static final String SEQ_NUM = "seqNum";
+  public static final int MILLI2MICRO = 1000;
+  // The offset align with UTC-7
+  // 25567L *24 * 3600 * 1000 * 1000 - 7 * 3600 * 1000 * 1000;
+  public static final long OFFSET = 2208963600000000L;
+  public static final int SESSION_KEY_DIVISION = 100;
+
   // Request headers
   public static final String TRACKING_HEADER = "X-EBAY-C-TRACKING";
   public static final String ENDUSERCTX_HEADER = "X-EBAY-C-ENDUSERCTX";

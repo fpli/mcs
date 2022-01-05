@@ -587,7 +587,7 @@ public class UnifiedTrackingMessageParser {
     parseItmTag(payload, baseEvent.getUrl());
 
     // session sequence number
-    payload.put("seqNum", "1");
+    payload.put(Constants.SEQ_NUM, "1");
 
     // add isUFESRedirect if the click traffic is converted from Rover to Chocolate by UFES
     if (parameters.containsKey(Constants.UFES_REDIRECT)
@@ -595,24 +595,32 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.TAG_IS_UFES_REDIRECT, "true");
     }
 
-    // add 3rd party tag
+    // 3rd party tag
     if (ChannelAction.CLICK.equals(channelAction)
         && baseEvent.isThirdParty()) {
       payload.put(Constants.TAG_IS_THIRD_PARTY, "true");
     }
 
-    // append clientdata
+    // clientdata
     Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
     if (MapUtils.isNotEmpty(clientHints)) {
       payload.put("clientData", formatClientData(clientHints));
     }
 
-    // add guid list
+    // guid list
     if (needGuidList(channelType, channelAction, baseEvent.isThirdParty())) {
       String guidList = HttpRequestUtil.getHeaderValue(trackingHeader, Constants.GUID_LIST);
       if (!StringUtils.isEmpty(guidList)) {
         payload.put(Constants.GUID_LIST, guidList);
       }
+    }
+
+    // sessionId, sessionSkey
+    if (isEmailOpenOrThirdPartyClick(channelType, channelAction, baseEvent.isThirdParty())) {
+      payload.put(Constants.SESSION_ID, baseEvent.getUuid().replace(Constants.HYPHEN, ""));
+      long sessionSkey = ((baseEvent.getTimestamp() * Constants.MILLI2MICRO) + Constants.OFFSET) /
+          Constants.SESSION_KEY_DIVISION;
+      payload.put(Constants.SESSION_SKEY, String.valueOf(sessionSkey));
     }
 
     return encodeTags(payload);
