@@ -59,7 +59,7 @@ public class UTPPathfinderEventTransformer {
     // 2050535 is only first launch after a download/install
     private static final int PAGE_ID_FIRST_LAUNCH = 2050535;
 
-    private static final String PAGE_NAME_BATCH_TRACK = "Ginger.v1.batchtrack.POST";
+    private static final String PAGE_NAME_BATCH_TRACK = "Ginger.tracking.v1.batchtrack.POST";
 
     public static final String BEHAVIOR_PULSAR_TRACKING_INSTALL_BOT = "behavior.pulsar.customized.tracking.install.bot";
     public static final String TOPIC = "topic";
