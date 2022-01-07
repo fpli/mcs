@@ -54,7 +54,7 @@ public class UTPPathfinderEventTransformerTest {
         genericRecord = new GenericData.Record(schema);
         rheosEvent = new RheosEvent(schema);
         genericRecord.put("pageId", 2050535);
-        genericRecord.put("pageName", new Utf8("Ginger.v1.batchtrack.POST"));
+        genericRecord.put("pageName", new Utf8("Ginger.tracking.v1.batchtrack.POST"));
         genericRecord.put("applicationPayload", applicationMap);
         genericRecord.put("clientData", clientData);
         genericRecord.put("urlQueryString", new Utf8(URL_QUERY_STRING));

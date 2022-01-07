@@ -59,7 +59,7 @@ public class UTPPathfinderEventTransformAppTest {
     public void getConsumerProperties() throws IOException {
         utpPathfinderEventTransformApp.loadProperty();
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "rhs-nbrvkiaa-kfk-lvs-1.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-2.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-3.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-4.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-5.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-6.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-7.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-8.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-9.rheos-streaming-qa.svc.32.tess.io:9092,rhs-nbrvkiaa-kfk-lvs-10.rheos-streaming-qa.svc.32.tess.io:9092");
+        properties.setProperty("bootstrap.servers", "rhs-rbrvkiaa-kfk-1.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-2.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-3.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-4.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-5.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-6.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-7.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-8.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-9.rheos-streaming-qa.stratus.qa.ebay.com:9092,rhs-rbrvkiaa-kfk-10.rheos-streaming-qa.stratus.qa.ebay.com:9092");
         properties.setProperty("group.id", "marketing-tracking-consumer-utp-install-event-transform");
         properties.setProperty("session.timeout.ms", "30000");
         properties.setProperty("auto.offset.reset", "earliest");
@@ -96,7 +96,7 @@ public class UTPPathfinderEventTransformAppTest {
     public void getProducerProperties() throws IOException {
         utpPathfinderEventTransformApp.loadProperty();
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "rhs-gvrvkiaa-kfk-slc-1.rheos-streaming-qa.svc.33.tess.io:9092,rhs-gvrvkiaa-kfk-slc-2.rheos-streaming-qa.svc.33.tess.io:9092,rhs-gvrvkiaa-kfk-slc-3.rheos-streaming-qa.svc.33.tess.io:9092,rhs-gvrvkiaa-kfk-slc-4.rheos-streaming-qa.svc.33.tess.io:9092");
+        properties.setProperty("bootstrap.servers", "rhs-nbnaniaa-kfk-lvs-1.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-2.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-3.rheos-streaming-qa.svc.130.tess.io:9092,rhs-nbnaniaa-kfk-lvs-4.rheos-streaming-qa.svc.130.tess.io:9092");
         properties.setProperty("acks", "-1");
         properties.setProperty("buffer.memory", "33554432");
         properties.setProperty("retries", "3");
@@ -176,7 +176,7 @@ public class UTPPathfinderEventTransformAppTest {
         RheosEvent rheosEvent2 = createRheosEvent();
         rheosEvent2.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
         rheosEvent2.put("pageId", 3203626);
-        rheosEvent2.put("pageName", "Ginger.v1.batchtrack.POST");
+        rheosEvent2.put("pageName", "Ginger.tracking.v1.batchtrack.POST");
         Map<Utf8, Utf8> map2 = new HashMap<>();
         map2.put(new Utf8("mppid"), new Utf8("1"));
         rheosEvent2.put("applicationPayload", map2);
@@ -185,7 +185,7 @@ public class UTPPathfinderEventTransformAppTest {
         RheosEvent rheosEvent3 = createRheosEvent();
         rheosEvent3.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
         rheosEvent3.put("pageId", 3203764);
-        rheosEvent3.put("pageName", "Ginger.v1.batchtrack.POST");
+        rheosEvent3.put("pageName", "Ginger.tracking.v1.batchtrack.POST");
         Map<Utf8, Utf8> map3 = new HashMap<>();
         map3.put(new Utf8("mppid"), new Utf8("777"));
         rheosEvent3.put("applicationPayload", map3);
@@ -194,7 +194,7 @@ public class UTPPathfinderEventTransformAppTest {
         RheosEvent rheosEvent4 = createRheosEvent();
         rheosEvent4.put("urlQueryString", new Utf8(String.format("test-value-%d", currentTimeMillis)));
         rheosEvent4.put("pageId", 2050535);
-        rheosEvent4.put("pageName", "Ginger.v1.batchtrack.POST");
+        rheosEvent4.put("pageName", "Ginger.tracking.v1.batchtrack.POST");
         Map<Utf8, Utf8> map4 = new HashMap<>();
         map4.put(new Utf8("mppid"), new Utf8("7"));
         rheosEvent4.put("applicationPayload", map4);
