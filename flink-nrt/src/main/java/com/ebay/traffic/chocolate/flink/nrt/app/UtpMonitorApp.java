@@ -376,7 +376,6 @@ public class UtpMonitorApp {
                         .distinct()
                         .map(e -> {
                             if (!e.matches(parameterPattern)) {
-                                System.out.println("wrong url format " + url);
                                 LOGGER.info("wrong url format " + url);
                                 return "ERROR";
                             }
