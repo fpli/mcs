@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.*;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
-import com.ebay.traffic.chocolate.flink.nrt.util.MetricsUtil;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.ebay.traffic.chocolate.utp.common.model.Message;
 import com.ebay.traffic.monitoring.Field;
@@ -35,9 +34,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -62,7 +63,6 @@ public class UtpMonitorApp {
     protected Map<String, Object> config;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
-
 
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
@@ -146,6 +146,7 @@ public class UtpMonitorApp {
             counters = new ConcurrentHashMap<>();
             Properties properties = PropertyMgr.getInstance()
                     .loadProperty(PropertyConstants.APPLICATION_PROPERTIES);
+            /*
             Timer timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() {
                 @Override
@@ -153,6 +154,7 @@ public class UtpMonitorApp {
                     MetricsUtil.updateCache(properties.getProperty(PropertyConstants.FIDELIUS_URL));
                 }
             }, 0, 10000);
+             */
             SherlockioMetrics.init(properties.getProperty(PropertyConstants.MONITOR_SHERLOCKIO_NAMESPACE),
                     properties.getProperty(PropertyConstants.SHERLOCKIO_ENDPOINT), properties.getProperty(PropertyConstants.SHERLOCKIO_USER));
             sherlockioMetrics = SherlockioMetrics.getInstance();
@@ -186,6 +188,7 @@ public class UtpMonitorApp {
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
             try {
+                /*
                 getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -194,8 +197,8 @@ public class UtpMonitorApp {
                         Field.of("isUEP", isUep),
                         Field.of("platform", platform),
                         Field.of("site", site)).inc();
-
-                sherlockioMetrics.meterByGauge("unified_tracking_incoming_v3", 1,
+*/
+                sherlockioMetrics.meterByGauge("unified_tracking_incoming_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer),
@@ -205,7 +208,7 @@ public class UtpMonitorApp {
                         Field.of("site", site)
                 );
 
-                sherlockioMetrics.meterByGauge("unified_tracking_latency_v3",
+                sherlockioMetrics.meterByGauge("unified_tracking_latency_total",
                         message.getEventTs() - message.getProducerEventTs(),
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
@@ -217,8 +220,7 @@ public class UtpMonitorApp {
                 String mkrid = getDuplicateValue(url, "mkrid");
                 String mkpid = getDuplicateValue(url, "mkpid");
                 String mksid = getDuplicateValue(url, "mksid");
-
-                sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_v3", 1,
+                sherlockioMetrics.meterByGauge("unified_tracking_duplicate_incoming_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer),
@@ -234,7 +236,7 @@ public class UtpMonitorApp {
                         List<String> messageId = getMessageId(message.getPayload());
                         String cnvId = nullVerifier(getCnvId(message.getPayload()));
                         for (int i = 0; i < messageId.size(); i++) {
-                            sherlockioMetrics.meterByGauge("unified_tracking_payload_v3", 1,
+                            sherlockioMetrics.meterByGauge("unified_tracking_payload_total", 1,
                                     Field.of("channel", channelType),
                                     Field.of("action", actionType),
                                     Field.of("producer", producer),
@@ -247,7 +249,7 @@ public class UtpMonitorApp {
                             );
                         }
                     } catch (Exception e) {
-                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error", 1,
+                        sherlockioMetrics.meterByGauge("unified_tracking_payload_parsing_error_total", 1,
                                 Field.of("channel", channelType),
                                 Field.of("action", actionType),
                                 Field.of("producer", producer)
@@ -255,12 +257,12 @@ public class UtpMonitorApp {
                     }
                 }
             } catch (Exception e) {
-                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error", 1,
+                sherlockioMetrics.meterByGauge("unified_tracking_metrics_error_total", 1,
                         Field.of("channel", channelType),
                         Field.of("action", actionType),
                         Field.of("producer", producer)
                 );
-                LOGGER.error("error fields of message "+message.getUrl());
+                LOGGER.error("error fields of message " + message.getUrl() + " and error is" + e.toString());
             }
             return "";
         }
@@ -358,8 +360,13 @@ public class UtpMonitorApp {
     }
 
     public static String getDuplicateValue(String url, String duplicateItemName) {
+        String parameterPattern = "\\d+\\-\\d+\\-\\d+\\-\\d+|\\d+";
         try {
-            UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
+            String decodeUrl = url;
+            for (int i = 0; i < 3; i++) {
+                decodeUrl = URLDecoder.decode(decodeUrl, "UTF-8");
+            }
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(decodeUrl).build();
             MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
             if (parameters.containsKey(duplicateItemName)) {
                 List<String> items = parameters
@@ -368,6 +375,10 @@ public class UtpMonitorApp {
                         .map(String::trim)
                         .distinct()
                         .map(e -> {
+                            if (!e.matches(parameterPattern)) {
+                                LOGGER.info("wrong url format " + url);
+                                return "ERROR";
+                            }
                             if (e.length() == 0) {
                                 return "EMPTY";
                             }
@@ -377,6 +388,9 @@ public class UtpMonitorApp {
                             if (e.contains("|")) {
                                 e = e.replaceAll("\\|", "");
                             }
+                            if (e.contains("=")) {
+                                e = e.replaceAll("=", "");
+                            }
                             return e;
                         })
                         .sorted(StringUtils::compare)
@@ -384,8 +398,7 @@ public class UtpMonitorApp {
 
                 boolean duplicateOrNonExist = (items.size() > 1) || (items.size() == 1 && "EMPTY".equals(items.get(0)));
                 if (duplicateOrNonExist) {
-                    String value = StringUtils.join(items, '+').replaceAll(";", "").replaceAll("\\|", "").replaceAll("=", "");
-                    return value;
+                    return StringUtils.join(items, '+');
                 } else {
                     return "DEFAULT";
                 }
