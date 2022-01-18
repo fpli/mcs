@@ -865,7 +865,6 @@ public class CollectionService {
    * @param requestContext  request context
    * @param snapshotId      snapshot id
    * @param shortSnapshotId short snapshot id
-   * @param eventId         utp event id
    */
   private void submitChocolateUtpEvent(BaseEvent baseEvent, ContainerRequestContext requestContext, long snapshotId,
                                        long shortSnapshotId) {

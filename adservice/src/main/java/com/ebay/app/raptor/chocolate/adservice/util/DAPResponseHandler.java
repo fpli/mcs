@@ -95,6 +95,7 @@ public class DAPResponseHandler {
     MonitorUtil.info("AdtypeTraffic", 1, Field.of(Constants.ADTYPE, adtype));
 
     String guid = adserviceCookie.getGuid(request);
+    String guidList = adserviceCookie.getGuidList(request);
     String adguid = adserviceCookie.readAdguid(request, response);
     String accountId = adserviceCookie.getUserId(request);
     // obtain userId from ersxid.
@@ -151,7 +152,7 @@ public class DAPResponseHandler {
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
 
-    sendToMCS(request, dapRvrId, guid, adguid, trackingId, dapResponseHeaders);
+    sendToMCS(request, dapRvrId, guid, guidList, adguid, trackingId, dapResponseHeaders);
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -402,8 +403,8 @@ public class DAPResponseHandler {
    * Send to MCS to track this request
    */
   @SuppressWarnings("unchecked")
-  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String adguid, String trackingId,
-                         MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
+  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String guidList, String adguid,
+                         String trackingId, MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
     MonitorUtil.info("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
     Client mktClient = GingerClientBuilder.newClient(config);
@@ -422,7 +423,7 @@ public class DAPResponseHandler {
     }
 
     // construct X-EBAY-C-TRACKING header
-    String trackingHeader = HttpUtil.constructTrackingHeader(guid, adguid);
+    String trackingHeader = HttpUtil.constructTrackingHeader(guid, guidList, adguid);
     builder = builder.header(Constants.TRACKING_HEADER, trackingHeader);
     LOGGER.debug("set MCS X-EBAY-C-TRACKING {}", trackingHeader);
 
