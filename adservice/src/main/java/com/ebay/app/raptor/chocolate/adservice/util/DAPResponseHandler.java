@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.common.DAPRvrId;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
@@ -122,6 +123,9 @@ public class DAPResponseHandler {
     // another siteid is always available in tag, so we don't need set siteId here.
     setRequestParameters(dapUriBuilder, params);
     setRvrId(dapUriBuilder, dapRvrId);
+    // generate a trackingId to build the linkage from impression to click
+    String trackingId = UUID.randomUUID().toString();
+    setTrackingId(dapUriBuilder, trackingId);
     // Contextual parameters
     if (consentDomain.isAllowedUseContextualInfo()) {
       setReferrer(dapUriBuilder, referrer);
@@ -147,7 +151,7 @@ public class DAPResponseHandler {
     // call dap to get response
     MultivaluedMap<String, Object> dapResponseHeaders = callDAPResponse(dapUriBuilder.build().toString(), request, response);
 
-    sendToMCS(request, dapRvrId, guid, adguid, dapResponseHeaders);
+    sendToMCS(request, dapRvrId, guid, adguid, trackingId, dapResponseHeaders);
   }
 
   private String getUaPrime(Map<String, String[]> params) {
@@ -247,6 +251,9 @@ public class DAPResponseHandler {
     dapuUriBuilder.addParameter(key, FastURLEncoder.encode(value.trim(), KernelConstants.UTF8_ENCODING));
   }
 
+  private void setTrackingId(URIBuilder dapUriBuilder, String trackingId) {
+    addParameter(dapUriBuilder, UepPayloadHelper.TRACKING_ID, trackingId);
+  }
   /**
    * Set rover_useid, DAP uses this id to get user attributes from Bullseye model 630
    * @param dapUriBuilder dapUrlBuilder
@@ -395,7 +402,7 @@ public class DAPResponseHandler {
    * Send to MCS to track this request
    */
   @SuppressWarnings("unchecked")
-  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String adguid,
+  private void sendToMCS(HttpServletRequest request, long dapRvrId, String guid, String adguid, String trackingId,
                          MultivaluedMap<String, Object> dapResponseHeaders) throws URISyntaxException {
     MonitorUtil.info("StartSendToMCS");
     Configuration config = ConfigurationBuilder.newConfig("mktCollectionSvc.mktCollectionClient", "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
@@ -431,6 +438,7 @@ public class DAPResponseHandler {
     // set mkevt as 6, overriding existing value if set
     targetUrlBuilder.setParameter(Constants.MKEVT, MKEVT.AD_REQUEST.getId());
     targetUrlBuilder.addParameter(Constants.MKRVRID, String.valueOf(dapRvrId));
+    targetUrlBuilder.addParameter(UepPayloadHelper.TRACKING_ID, trackingId);
     if (dapResponseHeaders != null) {
       // add flex fields of dap response headers, these fields start with "ff"
       dapResponseHeaders.forEach((key, values) -> {
