@@ -472,7 +472,7 @@ public class DAPResponseHandlerTest {
     MultivaluedHashMap<String, Object> dapResponseHeaders = new MultivaluedHashMap<>();
     dapResponseHeaders.put("ff1", Collections.singletonList("ff1"));
 
-    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", "", "", dapResponseHeaders);
+    Whitebox.invokeMethod(dapResponseHandler, "sendToMCS", httpServletRequest, 1L, "", "", "", "", dapResponseHeaders);
 
     Mockito.verify(asyncInvoker).post(anyObject(), any(InvocationCallback.class));
   }
