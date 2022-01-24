@@ -13,7 +13,7 @@
     <name>chocolate flink-nrt</name>
 
     <properties>
-        <flink.version>1.14.2</flink.version>
+        <flink.version>1.10.0</flink.version>
         <iaf.version>0.0.8-RELEASE</iaf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
