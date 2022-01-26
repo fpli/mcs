@@ -1,9 +1,0 @@
-- name: EP
-  doneFilePrefix: utp_event_hourly.ep.done.
-  condition: channelType in ('MRKT_EMAIL', 'SITE_EMAIL', 'MOBILE_NOTIF', 'HUB_NOTIF')
-- name: XX
-  doneFilePrefix: utp_event_hourly.xx.done.
-  condition: 1=1
-- name: all
-  doneFilePrefix: utp_event_hourly.done.
-  condition: 1=1
