@@ -1656,4 +1656,18 @@ public class EventListenerServiceTest {
 
     return listenerMessageMapExcludeRover;
   }
+
+  @Test
+  public void testNonSojTag() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("https://www.qa.ebay.com/?mkevt=1&mkcid=8&mkpid=12&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=8878");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setPlaceOfferAPIClickTs("1604566345000");
+    event.setPayload(eventPayload);
+
+    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(201, response.getStatus());
+
+  }
 }

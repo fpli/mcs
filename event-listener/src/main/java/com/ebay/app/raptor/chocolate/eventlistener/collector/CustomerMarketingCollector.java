@@ -9,14 +9,15 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
+import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.primitives.Longs;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.springframework.util.StringUtils;
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
@@ -41,7 +43,6 @@ public abstract class CustomerMarketingCollector {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomerMarketingCollector.class);
 
-
   public void postInit() {
   }
 
@@ -51,28 +52,26 @@ public abstract class CustomerMarketingCollector {
    * @param baseEvent base event
    */
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent) {
+    // Ubi tracking
+    IRequestScopeTracker requestTracker
+            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
     // add common tags
-    addCommonTags(requestContext, baseEvent, PageIdEnum.CLICK.getId());
+    addCommonTags(requestTracker, baseEvent, PageIdEnum.CLICK.getId());
 
     // add tags in url param "sojTags"
-    if (baseEvent.getUrlParameters().containsKey(Constants.SOJ_TAGS)
-        && baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0) != null) {
+    /*if (baseEvent.getUrlParameters().containsKey(Constants.SOJ_TAGS) && baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0) != null) {
       addGenericSojTags(requestContext, baseEvent);
-    }
+    }*/
+    //
   }
 
   /**
    * Add common soj tags all channels in common
    *
-   * @param requestContext wrapped raptor request context
    * @param baseEvent      base event
    * @param pageId         soj page id
    */
-  private void addCommonTags(ContainerRequestContext requestContext, BaseEvent baseEvent, int pageId) {
-    // Ubi tracking
-    IRequestScopeTracker requestTracker
-        = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
-
+  private void addCommonTags(IRequestScopeTracker requestTracker, BaseEvent baseEvent, int pageId) {
     // page id
     requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
@@ -107,6 +106,7 @@ public abstract class CustomerMarketingCollector {
    * @param requestContext wrapped raptor request context
    * @param baseEvent base event
    */
+  @Deprecated
   void addGenericSojTags(ContainerRequestContext requestContext, BaseEvent baseEvent) {
 
     // Ubi tracking
@@ -177,5 +177,11 @@ public abstract class CustomerMarketingCollector {
       }
     }
     return partner;
+  }
+
+  protected void addUbiTag(ImmutableMultimap<String, String> ubiParamTagMap, BaseEvent baseEvent, IRequestScopeTracker requestTracker) {
+    for (Map.Entry<String, String> entry : ubiParamTagMap.entries()) {
+      addTagFromUrlQuery(baseEvent.getUrlParameters(), requestTracker, entry.getValue(), entry.getKey(), String.class);
+    }
   }
 }

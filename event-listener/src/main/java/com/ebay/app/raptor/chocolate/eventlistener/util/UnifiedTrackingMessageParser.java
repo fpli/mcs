@@ -2,16 +2,15 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
+import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
-import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
@@ -24,17 +23,20 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
-import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
+import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.traffic.chocolate.utp.lib.UnifiedTrackerFactory;
 import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
 import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.primitives.Longs;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
-import org.apache.commons.lang.StringUtils;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +46,7 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
 /**
@@ -288,9 +291,8 @@ public class UnifiedTrackingMessageParser {
     Map<String, String> uepPayload =
             UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType),
                 channelTypeEnum);
-    Map<String, String> fullPayload =
-        getPayload(payload, baseEvent, parameters, appId, channelType, channelAction, snapshotId,
-            shortSnapshotId, baseEvent.getRoiEvent(), userId, trackingHeader);
+    Map<String, String> fullPayload = getPayload(payload, baseEvent, parameters, appId, channelType, channelAction,
+            snapshotId, shortSnapshotId, baseEvent.getRoiEvent(), userId, trackingHeader);
 
     // append UEP payload
     if (uepPayload != null && uepPayload.size() > 0) {
@@ -512,15 +514,13 @@ public class UnifiedTrackingMessageParser {
                                                 String appId, ChannelType channelType, ChannelAction channelAction,
                                                 long snapshotId, long shortSnapshotId, ROIEvent roiEvent, long userId,
                                                 String trackingHeader) {
-    // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
-      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
-      }
-    }
     if (channelAction != ChannelAction.ROI) {
       // add tags in url param "sojTags" into applicationPayload
-      addSojTags(payload, parameters, channelType, channelAction);
+      if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.SITE_EMAIL.equals(channelType)) {
+        parseTagFromParamByChannel(payload, baseEvent, parameters, channelType);
+      } else {
+        addSojTags(payload, parameters, channelType, channelAction);
+      }
       addTags(payload, parameters, snapshotId, shortSnapshotId);
     }
 
@@ -664,6 +664,7 @@ public class UnifiedTrackingMessageParser {
   /**
    * Add tags in param sojTags
    */
+  @Deprecated
   private static Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters,
                                                 ChannelType channelType, ChannelAction channelAction) {
     if (parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
@@ -692,6 +693,40 @@ public class UnifiedTrackingMessageParser {
 
     return applicationPayload;
   }
+
+  private static void parseTagFromParamByChannel(Map<String, String> payload, BaseEvent baseEvent,
+                                                 MultiValueMap<String, String> parameters, ChannelType channelType) {
+    //for debugging
+    payload.put("nonSojTag", "1");
+    // add tags from parameters
+    for (Map.Entry<String, String> entry : Constants.channelParamTagMap
+            .getOrDefault(channelType, ImmutableMultimap.<String, String>builder().build()).entries()) {
+      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
+        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
+      }
+    }
+
+    if (parameters.containsKey(Constants.BEST_GUESS_USER)) {
+      String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
+      Long encryptedUserId = Longs.tryParse(bu);
+      if (encryptedUserId != null) {
+        payload.put("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)));
+      }
+    }
+
+    if (ChannelType.MRKT_EMAIL.equals(channelType)) {
+      try {
+        if (parameters.containsKey(REDIRECT_URL_SOJ_TAG) && parameters.get(REDIRECT_URL_SOJ_TAG).get(0) != null) {
+          payload.put("adcamp_landingpage", URLDecoder.decode(parameters.get(REDIRECT_URL_SOJ_TAG).get(0), "UTF-8"));
+        }
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("adcamp_landingpage is wrongly encoded", e);
+        MonitorUtil.info("ErrorEncoded_adcamp_landingpage", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+                Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
+      }
+    }
+  }
+
 
   private static void addRoiSojTags(Map<String, String> payloadMap, ROIEvent roiEvent, String userId, long snapshotId, long shortSnapshotId) {
     payloadMap.put("rvrid", String.valueOf(shortSnapshotId));

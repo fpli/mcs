@@ -1,13 +1,14 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
+import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.HeaderMultiValue;
@@ -19,6 +20,9 @@ import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.tracking.common.util.UrlProcessHelper;
+import com.ebay.traffic.monitoring.Field;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -32,7 +36,8 @@ import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
+import static com.ebay.app.raptor.chocolate.constant.Constants.*;
+import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
 
 /**
  * Created by jialili1 on 7/29/20
@@ -158,9 +163,8 @@ public class BehaviorMessageParser {
     record.setEnrichedOsVersion(deviceInfo.getDeviceOSVersion());
 
     // applicationPayload
-    record.setApplicationPayload(getApplicationPayload(applicationPayload, baseEvent.getUrlParameters(),
-        baseEvent.getUserAgentInfo(), requestContext, baseEvent.getUrl(), domainRequest, deviceInfo,
-        baseEvent.getChannelType().getLogicalChannel().getAvro(), baseEvent.getActionType().getAvro(), guid, pageId));
+    record.setApplicationPayload(getApplicationPayload(applicationPayload,baseEvent, requestContext, baseEvent.getUrl(),
+            domainRequest, deviceInfo, guid, pageId));
 
     // cobrand
     record.setCobrand(cobrandParser.parse(appId, baseEvent.getEndUserContext().getUserAgent()));
@@ -248,22 +252,20 @@ public class BehaviorMessageParser {
   /**
    * Get application payload
    */
-  private Map<String, String> getApplicationPayload(Map<String, String> applicationPayload,
-                                                    MultiValueMap<String, String> parameters, UserAgentInfo agentInfo,
+  private Map<String, String> getApplicationPayload(Map<String, String> applicationPayload, BaseEvent baseEvent,
                                                     ContainerRequestContext requestContext, String uri,
-                                                    DomainRequestData domainRequest, DDSResponse deviceInfo,
-                                                    ChannelType channelType, ChannelAction channelAction, String guid,
+                                                    DomainRequestData domainRequest, DDSResponse deviceInfo, String guid,
                                                     int pageId) {
-    // add tags from parameters
-    for (Map.Entry<String, String> entry : Constants.emailTagParamMap.entries()) {
-      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-        applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
-      }
+    MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
+    UserAgentInfo agentInfo = baseEvent.getUserAgentInfo();
+    ChannelType channelType = baseEvent.getChannelType().getLogicalChannel().getAvro();
+    ChannelAction channelAction = baseEvent.getActionType().getAvro();
+
+    if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.SITE_EMAIL.equals(channelType)) {
+      parseTagFromParamByChannel(applicationPayload, baseEvent, parameters, channelType);
+    } else {
+      addSojTags(applicationPayload, parameters);
     }
-
-    // add tags in url param "sojTags" into applicationPayload
-    applicationPayload = addSojTags(applicationPayload, parameters);
-
     // add other tags
     // app id
     applicationPayload.put("app", CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
@@ -324,6 +326,7 @@ public class BehaviorMessageParser {
   /**
    * Add tags in param sojTags
    */
+  @Deprecated
   Map<String, String> addSojTags(Map<String, String> applicationPayload, MultiValueMap<String, String> parameters) {
     if(parameters.containsKey(Constants.SOJ_TAGS) && parameters.get(Constants.SOJ_TAGS).get(0) != null) {
       String sojTags = parameters.get(Constants.SOJ_TAGS).get(0);
@@ -350,6 +353,30 @@ public class BehaviorMessageParser {
     return applicationPayload;
   }
 
+  private void parseTagFromParamByChannel(Map<String, String> payload, BaseEvent baseEvent, MultiValueMap<String, String> parameters,
+                                          ChannelType channelType) {
+    //for debugging
+    payload.put("nonSojTag", "1");
+    // add tags from parameters
+    for (Map.Entry<String, String> entry : Constants.channelParamTagMap
+            .getOrDefault(channelType, ImmutableMultimap.<String, String>builder().build()).entries()) {
+      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
+        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
+      }
+    }
+
+    if (ChannelType.MRKT_EMAIL.equals(channelType)) {
+      try {
+        if (parameters.containsKey(REDIRECT_URL_SOJ_TAG) && parameters.get(REDIRECT_URL_SOJ_TAG).get(0) != null) {
+          payload.put("adcamp_landingpage", URLDecoder.decode(parameters.get(REDIRECT_URL_SOJ_TAG).get(0), "UTF-8"));
+        }
+      } catch (UnsupportedEncodingException e) {
+        logger.warn("adcamp_landingpage is wrongly encoded", e);
+        MonitorUtil.info("ErrorEncoded_adcamp_landingpage", 1, Field.of(CHANNEL_ACTION, baseEvent.getActionType()),
+                Field.of(CHANNEL_TYPE, baseEvent.getChannelType()));
+      }
+    }
+  }
   /**
    * Get decrypted user id
    */

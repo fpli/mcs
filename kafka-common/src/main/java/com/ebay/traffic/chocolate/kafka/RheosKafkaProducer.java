@@ -141,7 +141,6 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
     ProducerFencedException {
 
   }
-
   @Override
   public void commitTransaction() throws ProducerFencedException {
 

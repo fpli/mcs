@@ -4,12 +4,11 @@
 
 package com.ebay.app.raptor.chocolate.constant;
 
+import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMap;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author xiangli4
@@ -163,37 +162,83 @@ public class Constants {
   );
 
   /**
-   * Email tag - param map
+   * mkt email soj tags
    */
-  public static final ImmutableMultimap<String, String> emailTagParamMap = new ImmutableMultimap.Builder<String, String>()
-      .put("adcamp_landingpage", "adcamp_landingpage")
-      .put("adcamp_locationsrc", "adcamp_locationsrc")
-      .put("adcamppu", "pu")
-      .put("bu", "bu")
-      .put("cbtrack", "cbtrack")
-      .put("chnl", "mkcid")
-      .put("crd", "crd")
-      .put("cs", "cs")
-      .put("ec", "ec")
-      .put("emid", "bu")
-      .put("emsid", "emsid")
-      .put("es", "es")
-      .put("euid", "euid")
-      .put("exe", "exe")
-      .put("ext", "ext")
-      .put("nqc", "nqc")
-      .put("nqt", "nqt")
-      .put("osub", "osub")
-      .put("placement-type", "placement-type")
-      .put("placement-type", "pt")
-      .put("rank", "rank")
-      .put("rpp_cid", "rpp_cid")
-      .put("segname", "segname")
-      .put("segname", "seg")
-      .put("yminstc", "yminstc")
-      .put("ymmmid", "ymmmid")
-      .put("ymsid", "ymsid")
-      .build();
+  public static final ImmutableMultimap<String, String> mktEmailParamTags = new ImmutableMultimap.Builder<String, String>()
+          .put("adcampid", ID)
+          .put("adcamppu", ADOBE_CAMP_PUBLIC_USER_ID)
+          .put("ch", "ch")
+          .put("crd", CAMP_RUN_DT)
+          .put("chnl", MKCID)
+          .put("du", "du")
+          .put("emid", BEST_GUESS_USER)
+          .put("emsid", SOURCE_ID)
+          .put("mesgId", "mesgId")
+          .put("mm", "mm")
+          .put("osub", "osub")
+          .put("plmtId", "plmtId")
+          .put("recoId", "recoId")
+          .put("recoPos", "recoPos")
+          .put("segname", SEGMENT_NAME)
+          .put("trkId", "trkId")
+          .put("url", "url")
+          .put("ut", "ut")
+          .put("ymuid", "ymuid")
+          .put("zz", "zz")
+          .put("rpp_cid", "rpp_cid")
+          .put("ymcb", "ymcb")
+          .put("ymdivid", "ymdivid")
+          .put("ymhid", "ymhid")
+          .put("ymmmid", YM_MSSG_MSTR_ID)
+          .put("ymsid", YM_MSSG_ID)
+          .put("yminstc", YM_INSTC)
+          .put("adcamp_locationsrc", REDIRECT_SRC_SOJ_SOURCE)
+          .put("cbtrack", "cbtrack")
+          .put("placement-type", "placement-type")
+          .put("placement-type", "pt")
+          .put("rank", "rank")
+          .build();
+
+  /**
+   * site email soj tags
+   */
+  public static final ImmutableMultimap<String, String> siteEmailParamTags = new ImmutableMultimap.Builder<String, String>()
+          .put("adg", "adg")
+          .put("bu", "bu")
+          .put("chnl", MKCID)
+          .put("ch", "ch")
+          .put("crd", "crd")
+          .put("du", "du")
+          .put("ec", "ec")
+          .put("emid", "bu")
+          .put("emsid", SOURCE_ID)
+          .put("eprlogid", "eprlogid")
+          .put("es", "es")
+          .put("exe", "exe")
+          .put("ext", EXPRCD_TRTMT)
+          .put("euid", EMAIL_UNIQUE_ID)
+          .put("mdbreftime", "mdbreftime")
+          .put("nqc", "nqc")
+          .put("nqt", "nqt")
+          .put("os", "os")
+          .put("osub", "osub")
+          .put("ot", "ot")
+          .put("segname", "segname")
+          .put("url", "loc")
+          .put("ut", "ut")
+          .put("cbtrack", "cbtrack")
+          .put("placement-type", "placement-type")
+          .put("placement-type", "pt")
+          .put("rank", "rank")
+          .build();
+
+  public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
+          = new HashMap<ChannelType, ImmutableMultimap<String, String>>() {{
+    put(ChannelType.MRKT_EMAIL, mktEmailParamTags);
+    put(ChannelType.SITE_EMAIL, siteEmailParamTags);
+  }};
+
+
 
   /**
    * client id - host map
