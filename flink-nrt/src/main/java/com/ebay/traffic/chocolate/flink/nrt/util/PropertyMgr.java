@@ -2,6 +2,7 @@ package com.ebay.traffic.chocolate.flink.nrt.util;
 
 import com.ebay.traffic.chocolate.flink.nrt.constant.RheosConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
+import org.apache.commons.io.IOUtils;
 import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.slf4j.Logger;
@@ -12,6 +13,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -23,6 +30,13 @@ import java.util.*;
  */
 public class PropertyMgr {
   private static final Logger LOGGER = LoggerFactory.getLogger(PropertyMgr.class);
+
+  private static final String LOCAL_HOST = "localhost";
+  private static final String SUFFIX_EBAY_COM = ".ebay.com";
+  private static final String SUFFIX_EBAY_C3_COM = ".ebayc3.com";
+  private static final String COLO_CORP = "corp";
+  private static final String COLO_DEV = "dev";
+  private static final String COLO_STG = "stg";
 
   private PropertyEnv propertyEnv;
 
@@ -44,17 +58,81 @@ public class PropertyMgr {
    * For prod, the rheos-api-endpoint should be https://rhs-streaming-api.vip.ebay.com
    */
   private void initPropertyEnv() {
+    String hostName;
+
+    try {
+      hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      // can not get host name, set local by default.
+      propertyEnv = PropertyEnv.DEV;
+      return;
+    }
+
+    if ("rheos-streaming-prod".equals(System.getenv("MY_NAMESPACE"))) {
+      propertyEnv = PropertyEnv.PROD;
+      return;
+    }
+
     String rheosApiEndpoint = GlobalConfiguration.loadConfiguration().getString(ConfigOptions
             .key(RheosConstants.RHEOS_API_ENDPOINT).stringType().defaultValue(StringConstants.EMPTY));
     if (rheosApiEndpoint.isEmpty()) {
       propertyEnv = PropertyEnv.DEV;
       return;
     }
-    if (rheosApiEndpoint.contains(PropertyEnv.STAGING.getName().toLowerCase())) {
+    if (rheosApiEndpoint.endsWith("qa.ebay.com") || rheosApiEndpoint.endsWith("staging.ebay.com")) {
       propertyEnv = PropertyEnv.STAGING;
       return;
     }
-    propertyEnv = PropertyEnv.PROD;
+
+    final String osName = discoverOs();
+    if (LOCAL_HOST.equals(hostName)
+            || hostName.toUpperCase().startsWith("D-")
+            || hostName.toUpperCase().startsWith("LM-")
+            || hostName.toUpperCase().startsWith("L-SHC-")
+            || osName.contains("mac")
+            || osName.contains("windows")) {
+      propertyEnv = PropertyEnv.DEV;
+      return;
+    }
+
+    // Found suffix.
+    String colo = checkColo(hostName, SUFFIX_EBAY_COM);
+    if (colo == null) {
+      colo = checkColo(hostName, SUFFIX_EBAY_C3_COM);
+    }
+
+    // PROD VM starts with phx/slc/lvs, hostname doesn't have suffix.
+    if (colo == null) {
+      if (hostName.startsWith("slc")) {
+        colo = "slc";
+      } else if (hostName.startsWith("phx")) {
+        colo = "phx";
+      } else if (hostName.startsWith("lvs")) {
+        colo = "lvs";
+      }
+    }
+
+    if (colo == null) {
+      // Still not recognized, return dev by default.
+      propertyEnv = PropertyEnv.DEV;
+      return;
+    }
+
+    switch (colo) {
+      case COLO_CORP:
+        propertyEnv = PropertyEnv.DEV;
+        break;
+      case COLO_DEV:
+        propertyEnv = PropertyEnv.STAGING;
+        break;
+      case COLO_STG:
+        propertyEnv = PropertyEnv.STAGING;
+        break;
+      // Other cases, such as 'phx', 'lvs01', 'stratus', 'vip' etc.
+      default:
+        propertyEnv = PropertyEnv.PROD;
+    }
+
   }
 
   /**
@@ -126,5 +204,27 @@ public class PropertyMgr {
     } catch (IOException e) {
       throw new IllegalArgumentException(e);
     }
+  }
+
+  public byte[] loadBytes(String propertyName) throws IOException {
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
+      return IOUtils.toByteArray(Objects.requireNonNull(in));
+    }
+  }
+
+  public static String discoverOs() {
+    Properties props = System.getProperties();
+    return props.getProperty("os.name").toLowerCase();
+  }
+
+  private static String checkColo(String hostName, String suffix) {
+    if (hostName.endsWith(suffix) && hostName.length() > suffix.length()) {
+      String prePart = hostName.substring(0, hostName.length() - suffix.length());
+      int idx = prePart.lastIndexOf('.') + 1;
+
+      return prePart.substring(idx);
+    }
+
+    return null;
   }
 }
