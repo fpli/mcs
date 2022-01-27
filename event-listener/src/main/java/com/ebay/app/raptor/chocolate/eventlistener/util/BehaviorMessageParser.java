@@ -261,11 +261,20 @@ public class BehaviorMessageParser {
     ChannelType channelType = baseEvent.getChannelType().getLogicalChannel().getAvro();
     ChannelAction channelAction = baseEvent.getActionType().getAvro();
 
-    if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.SITE_EMAIL.equals(channelType)) {
+    // sid for DSS, just in tracking_event
+    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
+            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
       parseTagFromParamByChannel(applicationPayload, baseEvent, parameters, channelType);
     } else {
       addSojTags(applicationPayload, parameters);
+      // add tags for non-email
+      for (Map.Entry<String, String> entry : nonEmailTagParamMap.entries()) {
+        if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
+          applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
+        }
+      }
     }
+
     // add other tags
     // app id
     applicationPayload.put("app", CollectionServiceUtil.getAppIdFromUserAgent(agentInfo));
@@ -309,12 +318,6 @@ public class BehaviorMessageParser {
 
     // landing page and tracking url
     applicationPayload.put("url_mpre", uri);
-
-    // sid for DSS, just in tracking_event
-    if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.MRKT_EMAIL.equals(channelType) ||
-            ChannelType.SITE_MESSAGE_CENTER.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
-      applicationPayload.put("sid", parseTagFromParams(parameters, Constants.SOURCE_ID));
-    }
 
     // agent and payload
     applicationPayload.put(AGENT_TAG, agentInfo.getUserAgentRawData());
