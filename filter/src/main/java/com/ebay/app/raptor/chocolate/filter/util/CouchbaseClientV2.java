@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Queue;
@@ -38,8 +36,7 @@ public class CouchbaseClientV2 {
      */
     private Queue<Map.Entry<Long, Long>> buffer = new LinkedBlockingDeque<>();
 
-    @Inject
-    @Named("chocofilCacheFactory")
+    @Autowired
     private CacheFactory factory;
 
     @Autowired
@@ -106,6 +103,7 @@ public class CouchbaseClientV2 {
                     MonitorUtil.info("ErrorPublishID");
                     return DEFAULT_PUBLISHER_ID;
                 }
+                MonitorUtil.info("GetNukvSuccess",1);
                 return Long.parseLong(o.toString());
             } catch (NumberFormatException ne) {
                 logger.warn("Error in converting publishID " + factory.getClient(cacheProperties.getDatasource()).get(String.valueOf(campaignId),
@@ -121,7 +119,6 @@ public class CouchbaseClientV2 {
                 factory.returnClient(cacheClient);
             }
         }
-
         return DEFAULT_PUBLISHER_ID;
     }
 
