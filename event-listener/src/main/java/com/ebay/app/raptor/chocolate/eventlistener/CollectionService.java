@@ -743,6 +743,7 @@ public class CollectionService {
       baseEvent.setChannelType(ChannelIdEnum.DAP);
       baseEvent.setUriComponents(clickUriComponents);
       baseEvent.setUrlParameters(clickParameters);
+      baseEvent.setUuid(UUID.randomUUID().toString());
 
       ListenerMessage mockClickListenerMessage = listenerMessageParser.parse(baseEvent);
       // switch to display channel topic
