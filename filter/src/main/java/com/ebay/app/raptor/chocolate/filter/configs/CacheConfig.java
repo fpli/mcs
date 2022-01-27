@@ -1,7 +1,7 @@
 package com.ebay.app.raptor.chocolate.filter.configs;
 
 import com.ebay.dukes.CacheFactory;
-import com.ebay.dukes.builder.FountCacheFactoryBuilder;
+import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,13 +16,6 @@ public class CacheConfig {
 
     @Bean
     public CacheFactory cacheFactory() {
-        return FountCacheFactoryBuilder.newBuilder()
-                .appName("chocofil")
-                .cache(cacheProperties.getDatasource())
-                .dbEnv(cacheProperties.getDbEnv())
-                .dnsRegion(cacheProperties.getDnsRegion())
-                .poolType(cacheProperties.getPoolType())
-                .forceClearTextPasswords(true)
-                .build();
+        return DefaultCacheFactoryBuilder.newBuilder().cache(cacheProperties.getDatasource()).build();
     }
 }
