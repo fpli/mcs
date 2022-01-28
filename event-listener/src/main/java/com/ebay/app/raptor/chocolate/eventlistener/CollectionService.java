@@ -743,6 +743,7 @@ public class CollectionService {
       baseEvent.setChannelType(ChannelIdEnum.DAP);
       baseEvent.setUriComponents(clickUriComponents);
       baseEvent.setUrlParameters(clickParameters);
+      baseEvent.setUuid(UUID.randomUUID().toString());
 
       ListenerMessage mockClickListenerMessage = listenerMessageParser.parse(baseEvent);
       // switch to display channel topic
@@ -875,7 +876,9 @@ public class CollectionService {
           && utpMessage.getIsBot()) {
         MonitorUtil.info("CollectionServiceSkipFreeListingBot");
       } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(utpMessage.getChannelType())
-          || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType()))
+          || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType())
+          || ChannelTypeEnum.SITE_MESSAGE_CENTER.getValue().equals(utpMessage.getChannelType())
+          || ChannelTypeEnum.MRKT_MESSAGE_CENTER.getValue().equals(utpMessage.getChannelType()))
           && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType())
           && !baseEvent.isThirdParty()) {
         MonitorUtil.info("UTPSkipChocolateEmailClick");
