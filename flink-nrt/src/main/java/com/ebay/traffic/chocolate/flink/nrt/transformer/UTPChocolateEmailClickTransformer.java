@@ -102,6 +102,7 @@ public class UTPChocolateEmailClickTransformer {
           .put("isUFESRedirect", "isUFESRedirect")
           .put("isUfes", "isUfes")
           .put("statusCode","statusCode")
+          .put("xt", "xt")
           .build();
 
   private static final String GET_METHOD_PREFIX = "get";
@@ -515,11 +516,6 @@ public class UTPChocolateEmailClickTransformer {
     }
     payload.put("sessionId", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SESSION_ID));
     // Get xt from url as this tag hasn't been written to Pulsar
-    String xt = queryParams.getFirst("xt");
-    if (StringUtils.isNotEmpty(xt)) {
-      payload.put("xt", xt);
-    }
-
     return payload;
   }
 

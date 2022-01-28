@@ -228,6 +228,7 @@ public class Constants {
           .put("placement-type", "pt")
           .put("rank", "rank")
           .put("sid", SOURCE_ID)
+          .put("xt", XT)
           .build();
 
   /**
@@ -262,6 +263,7 @@ public class Constants {
           .put("placement-type", "pt")
           .put("rank", "rank")
           .put("sid", SOURCE_ID)
+          .put("xt", XT)
           .build();
 
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
