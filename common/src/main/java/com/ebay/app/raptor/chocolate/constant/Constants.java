@@ -267,7 +267,9 @@ public class Constants {
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
           = new HashMap<ChannelType, ImmutableMultimap<String, String>>() {{
     put(ChannelType.MRKT_EMAIL, mktEmailParamTags);
+    put(ChannelType.MRKT_MESSAGE_CENTER, mktEmailParamTags);
     put(ChannelType.SITE_EMAIL, siteEmailParamTags);
+    put(ChannelType.SITE_MESSAGE_CENTER, siteEmailParamTags);
   }};
 
 
