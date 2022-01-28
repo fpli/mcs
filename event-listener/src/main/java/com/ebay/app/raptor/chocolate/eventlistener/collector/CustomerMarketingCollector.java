@@ -5,7 +5,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
@@ -19,11 +18,11 @@ import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.primitives.Longs;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import java.io.UnsupportedEncodingException;
@@ -57,12 +56,20 @@ public abstract class CustomerMarketingCollector {
             = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
     // add common tags
     addCommonTags(requestTracker, baseEvent, PageIdEnum.CLICK.getId());
-
-    // add tags in url param "sojTags"
-    /*if (baseEvent.getUrlParameters().containsKey(Constants.SOJ_TAGS) && baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0) != null) {
-      addGenericSojTags(requestContext, baseEvent);
-    }*/
-    //
+    MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
+    // add isUFESRedirect if the click traffic is converted from Rover to Chocolate by UFES
+    if (parameters.containsKey(UFES_REDIRECT)
+            && Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT))) {
+      requestTracker.addTag(TAG_IS_UFES_REDIRECT, true, Boolean.class);
+    }
+    // status code
+    String statusCode = baseEvent.getRequestHeaders().get(NODE_REDIRECTION_HEADER_NAME);
+    if (StringUtils.isNotBlank(statusCode)) {
+      requestTracker.addTag(TAG_STATUS_CODE, statusCode, String.class);
+    }
+    // is from ufes
+    requestTracker.addTag(TAG_IS_UFES,
+            StringUtils.isNotBlank(baseEvent.getRequestHeaders().get(IS_FROM_UFES_HEADER)), Boolean.class);
   }
 
   /**
@@ -76,10 +83,10 @@ public abstract class CustomerMarketingCollector {
     requestTracker.addTag(TrackerTagValueUtil.PageIdTag, pageId, Integer.class);
 
     // event family
-    requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, Constants.EVENT_FAMILY_CRM, String.class);
+    requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, EVENT_FAMILY_CRM, String.class);
 
     // event action
-    requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+    requestTracker.addTag(TrackerTagValueUtil.EventActionTag, EVENT_ACTION, String.class);
 
     // target url
     if (!StringUtils.isEmpty(baseEvent.getUrl())) {
@@ -113,7 +120,7 @@ public abstract class CustomerMarketingCollector {
     IRequestScopeTracker requestTracker
         = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
-    String sojTags = baseEvent.getUrlParameters().get(Constants.SOJ_TAGS).get(0);
+    String sojTags = baseEvent.getUrlParameters().get(SOJ_TAGS).get(0);
     try {
       sojTags = URLDecoder.decode(sojTags, "UTF-8");
     } catch (UnsupportedEncodingException e) {
@@ -148,8 +155,8 @@ public abstract class CustomerMarketingCollector {
 
   static void addDecrytpedUserIDFromBu(MultiValueMap<String, String> parameters,
                                        IRequestScopeTracker requestTracker) {
-    if (parameters.containsKey(Constants.BEST_GUESS_USER)) {
-      String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
+    if (parameters.containsKey(BEST_GUESS_USER)) {
+      String bu = parameters.get(BEST_GUESS_USER).get(0);
       Long encryptedUserId = Longs.tryParse(bu);
       if (encryptedUserId != null) {
         requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
@@ -164,12 +171,12 @@ public abstract class CustomerMarketingCollector {
     if (ChannelIdEnum.SITE_EMAIL.equals(channelType) || ChannelIdEnum.MRKT_EMAIL.equals(channelType) ||
             ChannelIdEnum.SITE_MESSAGE_CENTER.equals(channelType) || ChannelIdEnum.MRKT_MESSAGE_CENTER.equals(channelType)) {
       // no mkpid, accepted
-      if (!parameters.containsKey(Constants.MKPID) || parameters.get(Constants.MKPID).get(0) == null) {
+      if (!parameters.containsKey(MKPID) || parameters.get(MKPID).get(0) == null) {
         LOGGER.warn(Errors.ERROR_NO_MKPID);
         MonitorUtil.info("NoMkpidParameter");
       } else {
         // invalid mkpid, accepted
-        partner = EmailPartnerIdEnum.parse(parameters.get(Constants.MKPID).get(0));
+        partner = EmailPartnerIdEnum.parse(parameters.get(MKPID).get(0));
         if (StringUtils.isEmpty(partner)) {
           LOGGER.warn(Errors.ERROR_INVALID_MKPID);
           MonitorUtil.info("InvalidMkpid");

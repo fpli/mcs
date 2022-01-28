@@ -99,6 +99,9 @@ public class UTPChocolateEmailClickTransformer {
           .put("yminstc", "yminstc")
           .put("ymmmid", "ymmmid")
           .put("ymsid", "ymsid")
+          .put("isUFESRedirect", "isUFESRedirect")
+          .put("isUfes", "isUfes")
+          .put("statusCode","statusCode")
           .build();
 
   private static final String GET_METHOD_PREFIX = "get";

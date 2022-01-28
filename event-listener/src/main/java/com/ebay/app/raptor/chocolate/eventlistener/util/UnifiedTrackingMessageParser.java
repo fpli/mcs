@@ -602,7 +602,7 @@ public class UnifiedTrackingMessageParser {
 
     // add isUFESRedirect if the click traffic is converted from Rover to Chocolate by UFES
     if (parameters.containsKey(Constants.UFES_REDIRECT)
-        && Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT))) {
+            && Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT))) {
       payload.put(Constants.TAG_IS_UFES_REDIRECT, "true");
     }
 
