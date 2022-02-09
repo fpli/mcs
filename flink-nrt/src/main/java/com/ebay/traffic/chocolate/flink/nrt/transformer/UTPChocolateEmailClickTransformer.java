@@ -32,9 +32,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
+
+import static com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum.*;
 
 public class UTPChocolateEmailClickTransformer {
   private final String sourceTopic;
@@ -64,6 +68,8 @@ public class UTPChocolateEmailClickTransformer {
   private static final String SITE_MESSAGE_CENTER_CHANNEL_ID = "26";
   private static final String MRKT_EMAIL_CHANNEL_ID = "8";
   private static final String MRKT_MESSAGE_CENTER_CHANNEL_ID = "27";
+  private static final String GCX_EMAIL_CHANNEL_ID = "29";
+  private static final String GCX_MESSAGE_CENTER_CHANNEL_ID = "30";
   public static final String BEHAVIOR_PULSAR_MISC_BOT = "behavior.pulsar.customized.marketing-tracking.bot";
   public static final String REFERER = "Referer";
   public static final String TOPIC = "topic";
@@ -197,16 +203,22 @@ public class UTPChocolateEmailClickTransformer {
       return null;
     }
     if (SITE_EMAIL_CHANNEL_ID.equals(channelId)) {
-      return ChannelTypeEnum.SITE_EMAIL;
+      return SITE_EMAIL;
     }
     if (MRKT_EMAIL_CHANNEL_ID.equals(channelId)) {
-      return ChannelTypeEnum.MRKT_EMAIL;
+      return MRKT_EMAIL;
     }
     if (SITE_MESSAGE_CENTER_CHANNEL_ID.equals(channelId)) {
-      return ChannelTypeEnum.SITE_MESSAGE_CENTER;
+      return SITE_MESSAGE_CENTER;
     }
     if (MRKT_MESSAGE_CENTER_CHANNEL_ID.equals(channelId)) {
-      return ChannelTypeEnum.MRKT_MESSAGE_CENTER;
+      return MRKT_MESSAGE_CENTER;
+    }
+    if (GCX_EMAIL_CHANNEL_ID.equals(channelId)) {
+      return GCX_EMAIL;
+    }
+    if (GCX_MESSAGE_CENTER_CHANNEL_ID.equals(channelId)) {
+      return GCX_MESSAGE_CENTER;
     }
     return null;
   }
@@ -283,10 +295,7 @@ public class UTPChocolateEmailClickTransformer {
   }
 
   protected String getProducerEventId() {
-    if (channelType == ChannelTypeEnum.SITE_EMAIL || channelType == ChannelTypeEnum.SITE_MESSAGE_CENTER) {
-      return applicationPayload.getOrDefault(TransformerConstants.EUID, StringConstants.EMPTY);
-    }
-    return StringConstants.EMPTY;
+    return getEventId();
   }
 
   protected long getEventTs() {
@@ -368,8 +377,11 @@ public class UTPChocolateEmailClickTransformer {
   }
 
   protected String getCampaignId() {
-    if (channelType == ChannelTypeEnum.MRKT_EMAIL || channelType == ChannelTypeEnum.MRKT_MESSAGE_CENTER) {
+    if (channelType == MRKT_EMAIL || channelType == MRKT_MESSAGE_CENTER) {
       return applicationPayload.get(TransformerConstants.SEGNAME);
+    }
+    if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
+      return StringConstants.EMPTY;
     }
     return PulsarParseUtils.substring(applicationPayload.get("emsid"), "e", ".mle");
   }
