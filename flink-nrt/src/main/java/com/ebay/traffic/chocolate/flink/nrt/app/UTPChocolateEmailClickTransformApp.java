@@ -217,6 +217,7 @@ public class UTPChocolateEmailClickTransformApp
           break;
         case "GCX_MESSAGE_CENTER":
           numChocolateGcxMCClickInRate.markEvent();
+          break;
         default:
           throw new IllegalArgumentException(String.format("Unknown channel of %s", message));
       }
