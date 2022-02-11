@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2020-11-13T18:13:47.457+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partner","campaignId","siteId","url","referer","userAgent","service","server","remoteIp","pageId","geoId","payload" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2022-02-11T13:35:36.205+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "producerEventId","producerEventTs","rlogId","trackingId","userId","publicUserId","encryptedUserId","guid","idfa","gadid","deviceId","channelType","actionType","partner","campaignId","siteId","url","referer","userAgent","appVersion","deviceType","service","server","remoteIp","pageId","geoId","payload" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -96,6 +96,12 @@ public class UnifiedTrackingEvent implements Serializable {
   @JsonProperty("userAgent")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String userAgent = null;
+  @JsonProperty("appVersion")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String appVersion = null;
+  @JsonProperty("deviceType")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String deviceType = null;
   @JsonProperty("service")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String service = null;
@@ -344,6 +350,30 @@ public class UnifiedTrackingEvent implements Serializable {
     this.userAgent = userAgent;
   }
   /**
+   * eBay app version
+   * @return appVersion
+   **/
+  @ApiModelProperty(example = "5.7.0", value = "eBay app version")
+  public String getAppVersion() {
+    return appVersion;
+  }
+
+  public void setAppVersion(String appVersion) {
+    this.appVersion = appVersion;
+  }
+  /**
+   * Operating system of the device
+   * @return deviceType
+   **/
+  @ApiModelProperty(example = "iOS", value = "Operating system of the device")
+  public String getDeviceType() {
+    return deviceType;
+  }
+
+  public void setDeviceType(String deviceType) {
+    this.deviceType = deviceType;
+  }
+  /**
    * Service name of the producer
    * @return service
    **/
@@ -443,6 +473,8 @@ public class UnifiedTrackingEvent implements Serializable {
         Objects.equals(this.url, unifiedTrackingEvent.url) &&
         Objects.equals(this.referer, unifiedTrackingEvent.referer) &&
         Objects.equals(this.userAgent, unifiedTrackingEvent.userAgent) &&
+        Objects.equals(this.appVersion, unifiedTrackingEvent.appVersion) &&
+        Objects.equals(this.deviceType, unifiedTrackingEvent.deviceType) &&
         Objects.equals(this.service, unifiedTrackingEvent.service) &&
         Objects.equals(this.server, unifiedTrackingEvent.server) &&
         Objects.equals(this.remoteIp, unifiedTrackingEvent.remoteIp) &&
@@ -453,7 +485,7 @@ public class UnifiedTrackingEvent implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(producerEventId, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId, guid, idfa, gadid, deviceId, channelType, actionType, partner, campaignId, siteId, url, referer, userAgent, service, server, remoteIp, pageId, geoId, payload);
+    return Objects.hash(producerEventId, producerEventTs, rlogId, trackingId, userId, publicUserId, encryptedUserId, guid, idfa, gadid, deviceId, channelType, actionType, partner, campaignId, siteId, url, referer, userAgent, appVersion, deviceType, service, server, remoteIp, pageId, geoId, payload);
   }
 
   @Override
@@ -480,6 +512,8 @@ public class UnifiedTrackingEvent implements Serializable {
     sb.append("    url: ").append(toIndentedString(url)).append("\n");
     sb.append("    referer: ").append(toIndentedString(referer)).append("\n");
     sb.append("    userAgent: ").append(toIndentedString(userAgent)).append("\n");
+    sb.append("    appVersion: ").append(toIndentedString(appVersion)).append("\n");
+    sb.append("    deviceType: ").append(toIndentedString(deviceType)).append("\n");
     sb.append("    service: ").append(toIndentedString(service)).append("\n");
     sb.append("    server: ").append(toIndentedString(server)).append("\n");
     sb.append("    remoteIp: ").append(toIndentedString(remoteIp)).append("\n");

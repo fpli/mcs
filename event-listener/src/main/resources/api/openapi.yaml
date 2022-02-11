@@ -275,6 +275,14 @@ components:
           type: string
           description: 'Client full user agent name'
           example: 'Chrome: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+        appVersion:
+          type: string
+          description: 'eBay app version'
+          example: '5.7.0'
+        deviceType:
+          type: string
+          description: 'Operating system of the device'
+          example: 'iOS'
         service:
           type: string
           description: 'Service name of the producer'
