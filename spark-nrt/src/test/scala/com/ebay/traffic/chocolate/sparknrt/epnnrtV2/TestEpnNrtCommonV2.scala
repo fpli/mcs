@@ -519,4 +519,15 @@ class TestEpnNrtCommonV2 extends BaseFunSuite{
     val guidList = epnNrtCommon.getGuidList(requestHeaders)
     assert(guidList.equals("b004d75e17d0ab8e087280c8ffcf5151&b004d75e17d0ab8e087280c8ffcf5152"))
   }
+
+  test("test get client data from the request header") {
+    val userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+    val requestHeaders = "accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8|sec-ch-ua-model: vmodel|sec-ch-ua-full-version: v97|sec-ch-ua-platform-version: v98"
+    val clientData = epnNrtCommon.getClientData(userAgent,requestHeaders)
+    assert("Agent=Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)&chUaModel=vmodel&chUaPlatformVersion=v98&chUaFullVersion=v97".equals(clientData))
+
+    val requestHeaders2 = "accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8|sec-ch-ua-model: vmodel|sec-ch-ua-full-version: v97"
+    val clientData2 = epnNrtCommon.getClientData(userAgent,requestHeaders2)
+    assert("Agent=Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)&chUaModel=vmodel&chUaFullVersion=v97".equals(clientData2))
+  }
 }

@@ -34,6 +34,7 @@ class ImpressionDataFrameV2(df: DataFrame, common: EpnNrtCommonV2) extends Seria
       .withColumn("AMS_PBLSHR_CMPGN_ID", col("campaign_id").cast(DecimalType(18,0)))
       .withColumn("AMS_TOOL_ID", common.getToolIdUdf(col("uri")).cast(DecimalType(18,0)))
       .withColumn("CSTM_ID", common.filterTab(common.getCustomIdUdf(col("uri"))))
+      .withColumn("CLIENT_DATA", common.filterTab(common.getClientDataUdf(col("user_agent"),col("request_headers"))))
       .withColumn("FLEX_FLD_1_TXT",  common.filterTab(common.getFFValueUdf(col("uri"), lit(1))))
       .withColumn("FLEX_FLD_2_TXT",  common.getFFValueUdf(col("uri"), lit(2)))
       .withColumn("FLEX_FLD_3_TXT",  common.getFFValueNotEmptyUdf(col("uri"), lit(3)))

@@ -108,6 +108,11 @@
       "default": ""
     },
     {
+      "name": "CLIENT_DATA",
+      "dataType": "string",
+      "default": ""
+    },
+    {
       "name": "FLEX_FLD_VRSN_NUM",
       "dataType": "integer",
       "default": 0

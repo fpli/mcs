@@ -123,6 +123,8 @@ public class UTPChocolateEmailClickTransformApp
     private transient Meter numChocolateSiteMCClickInRate;
     private transient Meter numChocolateMrktEmailClickInRate;
     private transient Meter numChocolateMrktMCClickInRate;
+    private transient Meter numChocolateGcxEmailClickInRate;
+    private transient Meter numChocolateGcxMCClickInRate;
     private transient Meter numNoPageIdInRate;
     private transient Meter numNoChnlInRate;
     private transient Meter numNotChocolateClickInRate;
@@ -164,6 +166,8 @@ public class UTPChocolateEmailClickTransformApp
       numChocolateSiteMCClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateSiteMCClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numChocolateMrktEmailClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateMrktEmailClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numChocolateMrktMCClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateMrktMCClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
+      numChocolateGcxEmailClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateGcxEmailClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
+      numChocolateGcxMCClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateGcxMCClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
 
       numNoPageIdInRate = getRuntimeContext().getMetricGroup().meter("numNoPageIdInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numNoChnlInRate = getRuntimeContext().getMetricGroup().meter("numNoChnlInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
@@ -207,6 +211,12 @@ public class UTPChocolateEmailClickTransformApp
           break;
         case "MRKT_MESSAGE_CENTER":
           numChocolateMrktMCClickInRate.markEvent();
+          break;
+        case "GCX_EMAIL":
+          numChocolateGcxEmailClickInRate.markEvent();
+          break;
+        case "GCX_MESSAGE_CENTER":
+          numChocolateGcxMCClickInRate.markEvent();
           break;
         default:
           throw new IllegalArgumentException(String.format("Unknown channel of %s", message));

@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
+import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -142,6 +143,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       if (gdprConsentDomain.isAllowedSetCookie()) {
         adserviceCookie.setAdguid(request, response);
       }
+      response.addHeader(Headers.ACCEPT_CH, ClientDataEnum.getClientHintHeaders());
       collectionService.collectAr(request, response, gdprConsentDomain);
       if (HttpServletResponse.SC_MOVED_PERMANENTLY == response.getStatus()) {
         Response.ResponseBuilder responseBuilder = Response.status(Response.Status.MOVED_PERMANENTLY);
@@ -179,6 +181,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     Response res = null;
     try {
       String adguid = adserviceCookie.setAdguid(request, response);
+      response.addHeader(Headers.ACCEPT_CH, ClientDataEnum.getClientHintHeaders());
+
       res = Response.status(Response.Status.OK).build();
 
       // get channel
@@ -280,6 +284,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response redirect(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
     MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "redirect"));
     adserviceCookie.setAdguid(request, response);
+    response.addHeader(Headers.ACCEPT_CH, ClientDataEnum.getClientHintHeaders());
     URI redirectUri = null;
     try {
       // assign home page as default redirect url
@@ -330,6 +335,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   public Response sync(String guid, String uid) {
     MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "sync"));
     String adguid = adserviceCookie.setAdguid(request, response);
+    response.addHeader(Headers.ACCEPT_CH, ClientDataEnum.getClientHintHeaders());
     Response res = Response.status(Response.Status.OK).build();
     ImageResponseHandler.sendImageResponse(response);
 
@@ -439,6 +445,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
     try {
       adserviceCookie.setAdguid(request, response);
+      response.addHeader(Headers.ACCEPT_CH, ClientDataEnum.getClientHintHeaders());
       res = collectionService.collectEpntPlacementRedirect(request, response);
       } catch (Exception e) {
       logger.warn(e.getMessage(), e);

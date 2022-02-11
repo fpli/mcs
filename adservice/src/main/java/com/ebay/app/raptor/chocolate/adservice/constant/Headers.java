@@ -17,4 +17,5 @@ public class Headers {
   public static final String X_FRAME_OPTIONS = "x-frame-options";
   public static final String VARY = "Vary";
   public static final char SEMICOLON = ';';
+  public static final String ACCEPT_CH = "accept-ch";
 }
