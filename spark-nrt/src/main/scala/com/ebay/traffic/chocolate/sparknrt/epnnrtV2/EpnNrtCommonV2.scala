@@ -3,10 +3,11 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 import java.io.UnsupportedEncodingException
 import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
-import java.util.Properties
 import java.util.regex.Pattern
+import java.util.{Properties, StringJoiner}
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
+import com.ebay.app.raptor.chocolate.constant.ClientDataEnum
 import com.ebay.kernel.util.HeaderMultiValue
 import com.ebay.traffic.chocolate.sparknrt.couchbaseV2.CorpCouchbaseClientV2
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
@@ -287,6 +288,9 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
   val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
   val getGuidListUdf = udf((requestHeaders: String) => getGuidList(requestHeaders))
+  //  val getClientData
+  val getClientDataUdf = udf((user_agent: String,requestHeaders: String) => getClientData(user_agent, requestHeaders))
+
   def filterTab(e: org.apache.spark.sql.Column): org.apache.spark.sql.Column = {
     regexp_replace(functions.trim(e), "\\r|\\n|\\r\\n", "")
   }
@@ -1602,5 +1606,29 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     }
 
     null
+  }
+
+  /**
+    * Get cliet data from enduserctx header
+    *
+    * @param requestHeaders request headers
+    * @return client data
+    */
+  def getClientData(userAgent: String, requestHeaders: String): String = {
+    val clientData = new StringJoiner("&");
+    for (dataEnum <- ClientDataEnum.values) {
+      val clientDataHeader = new StringJoiner("=")
+      var headerVal = ""
+      if (dataEnum == ClientDataEnum.USER_AGENT) {
+        headerVal = userAgent
+      } else {
+        headerVal = getValueFromRequest(requestHeaders, dataEnum.getHeaderName)
+      }
+      if (StringUtils.isNoneEmpty(headerVal)) {
+        clientDataHeader.add(dataEnum.getHeaderAliasName).add(headerVal)
+        clientData.add(clientDataHeader.toString)
+      }
+    }
+    clientData.toString()
   }
 }

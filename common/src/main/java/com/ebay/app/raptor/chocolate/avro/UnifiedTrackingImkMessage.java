@@ -5,16 +5,16 @@
  */
 package com.ebay.app.raptor.chocolate.avro;
 
-import org.apache.avro.message.BinaryMessageDecoder;
-import org.apache.avro.message.BinaryMessageEncoder;
-import org.apache.avro.message.SchemaStore;
 import org.apache.avro.specific.SpecificData;
+import org.apache.avro.message.BinaryMessageEncoder;
+import org.apache.avro.message.BinaryMessageDecoder;
+import org.apache.avro.message.SchemaStore;
 
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class UnifiedTrackingImkMessage extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 3760261514435995617L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingImkMessage\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"fields\":[{\"name\":\"rheosHeader\",\"type\":{\"type\":\"record\",\"name\":\"RheosHeader\",\"fields\":[{\"name\":\"eventCreateTimestamp\",\"type\":\"long\"},{\"name\":\"eventSentTimestamp\",\"type\":\"long\"},{\"name\":\"schemaId\",\"type\":\"int\"},{\"name\":\"eventId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"producerId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]},\"doc\":\"Rheos header - This is  mandatory for every schema in Rheos \"},{\"name\":\"batch_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"file_id\",\"type\":\"int\"},{\"name\":\"file_schm_vrsn\",\"type\":\"int\"},{\"name\":\"rvr_id\",\"type\":\"long\"},{\"name\":\"event_dt\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"srvd_pstn\",\"type\":\"int\"},{\"name\":\"rvr_cmnd_type_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rvr_chnl_type_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cntry_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"trckng_prtnr_id\",\"type\":\"int\"},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"clnt_remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"brwsr_type_id\",\"type\":\"int\"},{\"name\":\"brwsr_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rfrr_dmn_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rfrr_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"url_encrptd_yn_ind\",\"type\":\"int\"},{\"name\":\"pblshr_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lndng_page_dmn_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lndng_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_query\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rule_bit_flag_strng\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"event_ts\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"dflt_bhrv_id\",\"type\":\"int\"},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"user_map_ind\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"dst_client_id\",\"type\":\"int\"},{\"name\":\"creative_id\",\"type\":\"long\"},{\"name\":\"test_ctrl_flag\",\"type\":\"int\"},{\"name\":\"mfe_id\",\"type\":\"int\"},{\"name\":\"kw_id\",\"type\":\"long\"},{\"name\":\"keyword\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"mt_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"crlp\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"geo_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"item_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transaction_type\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transaction_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cart_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"extrnl_cookie\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"ebay_site_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rvr_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_vrsn_num\",\"type\":\"int\"},{\"name\":\"flex_field_1\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_2\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_3\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_4\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_5\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_6\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_7\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_8\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_9\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_10\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_11\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_12\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_13\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_14\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_15\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_16\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_17\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_18\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_19\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_20\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"perf_track_name_value\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"mgvalue\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"mgvalue_rsn_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"cre_date\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cre_user\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"upd_date\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"upd_user\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}],\"pk\":[\"rvr_id\"]}");
+  private static final long serialVersionUID = -2381323088642544921L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UnifiedTrackingImkMessage\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"fields\":[{\"name\":\"rheosHeader\",\"type\":{\"type\":\"record\",\"name\":\"RheosHeader\",\"fields\":[{\"name\":\"eventCreateTimestamp\",\"type\":\"long\"},{\"name\":\"eventSentTimestamp\",\"type\":\"long\"},{\"name\":\"schemaId\",\"type\":\"int\"},{\"name\":\"eventId\",\"type\":[\"null\",{\"type\":\"string\",\"avro.java.string\":\"String\"}]},{\"name\":\"producerId\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]},\"doc\":\"Rheos header - This is  mandatory for every schema in Rheos \"},{\"name\":\"batch_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"file_id\",\"type\":\"int\"},{\"name\":\"file_schm_vrsn\",\"type\":\"int\"},{\"name\":\"rvr_id\",\"type\":\"long\"},{\"name\":\"event_dt\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"srvd_pstn\",\"type\":\"int\"},{\"name\":\"rvr_cmnd_type_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rvr_chnl_type_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cntry_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"trckng_prtnr_id\",\"type\":\"int\"},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"clnt_remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"brwsr_type_id\",\"type\":\"int\"},{\"name\":\"brwsr_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rfrr_dmn_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rfrr_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"url_encrptd_yn_ind\",\"type\":\"int\"},{\"name\":\"pblshr_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lndng_page_dmn_name\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lndng_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_query\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rule_bit_flag_strng\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"event_ts\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"dflt_bhrv_id\",\"type\":\"int\"},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"user_map_ind\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"dst_client_id\",\"type\":\"int\"},{\"name\":\"creative_id\",\"type\":\"long\"},{\"name\":\"test_ctrl_flag\",\"type\":\"int\"},{\"name\":\"mfe_id\",\"type\":\"int\"},{\"name\":\"kw_id\",\"type\":\"long\"},{\"name\":\"keyword\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"mt_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"crlp\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"geo_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"item_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transaction_type\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"transaction_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cart_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"extrnl_cookie\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"ebay_site_id\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"rvr_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"client_data\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_vrsn_num\",\"type\":\"int\"},{\"name\":\"flex_field_1\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_2\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_3\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_4\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_5\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_6\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_7\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_8\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_9\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_10\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_11\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_12\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_13\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_14\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_15\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_16\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_17\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_18\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_19\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"flex_field_20\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"perf_track_name_value\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"mgvalue\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"mgvalue_rsn_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"cre_date\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cre_user\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"upd_date\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"upd_user\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}],\"pk\":[\"rvr_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -52,81 +52,82 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
   }
 
   /** Rheos header - This is  mandatory for every schema in Rheos  */
-   private RheosHeader rheosHeader;
-   private String batch_id;
+   private com.ebay.app.raptor.chocolate.avro.RheosHeader rheosHeader;
+   private java.lang.String batch_id;
    private int file_id;
    private int file_schm_vrsn;
    private long rvr_id;
-   private String event_dt;
+   private java.lang.String event_dt;
    private int srvd_pstn;
-   private String rvr_cmnd_type_cd;
-   private String rvr_chnl_type_cd;
-   private String cntry_cd;
-   private String lang_cd;
+   private java.lang.String rvr_cmnd_type_cd;
+   private java.lang.String rvr_chnl_type_cd;
+   private java.lang.String cntry_cd;
+   private java.lang.String lang_cd;
    private int trckng_prtnr_id;
-   private String cguid;
-   private String guid;
+   private java.lang.String cguid;
+   private java.lang.String guid;
    private long user_id;
-   private String clnt_remote_ip;
+   private java.lang.String clnt_remote_ip;
    private int brwsr_type_id;
-   private String brwsr_name;
-   private String rfrr_dmn_name;
-   private String rfrr_url;
+   private java.lang.String brwsr_name;
+   private java.lang.String rfrr_dmn_name;
+   private java.lang.String rfrr_url;
    private int url_encrptd_yn_ind;
-   private String pblshr_id;
-   private String lndng_page_dmn_name;
-   private String lndng_page_url;
-   private String user_query;
-   private String rule_bit_flag_strng;
-   private String event_ts;
+   private java.lang.String pblshr_id;
+   private java.lang.String lndng_page_dmn_name;
+   private java.lang.String lndng_page_url;
+   private java.lang.String user_query;
+   private java.lang.String rule_bit_flag_strng;
+   private java.lang.String event_ts;
    private int dflt_bhrv_id;
    private long src_rotation_id;
    private long dst_rotation_id;
-   private String user_map_ind;
+   private java.lang.String user_map_ind;
    private int dst_client_id;
    private long creative_id;
    private int test_ctrl_flag;
    private int mfe_id;
    private long kw_id;
-   private String keyword;
-   private String mt_id;
-   private String crlp;
-   private String geo_id;
-   private String item_id;
-   private String transaction_type;
-   private String transaction_id;
-   private String cart_id;
-   private String extrnl_cookie;
-   private String ebay_site_id;
-   private String rvr_url;
+   private java.lang.String keyword;
+   private java.lang.String mt_id;
+   private java.lang.String crlp;
+   private java.lang.String geo_id;
+   private java.lang.String item_id;
+   private java.lang.String transaction_type;
+   private java.lang.String transaction_id;
+   private java.lang.String cart_id;
+   private java.lang.String extrnl_cookie;
+   private java.lang.String ebay_site_id;
+   private java.lang.String rvr_url;
+   private java.lang.String client_data;
    private int flex_field_vrsn_num;
-   private String flex_field_1;
-   private String flex_field_2;
-   private String flex_field_3;
-   private String flex_field_4;
-   private String flex_field_5;
-   private String flex_field_6;
-   private String flex_field_7;
-   private String flex_field_8;
-   private String flex_field_9;
-   private String flex_field_10;
-   private String flex_field_11;
-   private String flex_field_12;
-   private String flex_field_13;
-   private String flex_field_14;
-   private String flex_field_15;
-   private String flex_field_16;
-   private String flex_field_17;
-   private String flex_field_18;
-   private String flex_field_19;
-   private String flex_field_20;
-   private String perf_track_name_value;
-   private String mgvalue;
-   private String mgvalue_rsn_cd;
-   private String cre_date;
-   private String cre_user;
-   private String upd_date;
-   private String upd_user;
+   private java.lang.String flex_field_1;
+   private java.lang.String flex_field_2;
+   private java.lang.String flex_field_3;
+   private java.lang.String flex_field_4;
+   private java.lang.String flex_field_5;
+   private java.lang.String flex_field_6;
+   private java.lang.String flex_field_7;
+   private java.lang.String flex_field_8;
+   private java.lang.String flex_field_9;
+   private java.lang.String flex_field_10;
+   private java.lang.String flex_field_11;
+   private java.lang.String flex_field_12;
+   private java.lang.String flex_field_13;
+   private java.lang.String flex_field_14;
+   private java.lang.String flex_field_15;
+   private java.lang.String flex_field_16;
+   private java.lang.String flex_field_17;
+   private java.lang.String flex_field_18;
+   private java.lang.String flex_field_19;
+   private java.lang.String flex_field_20;
+   private java.lang.String perf_track_name_value;
+   private java.lang.String mgvalue;
+   private java.lang.String mgvalue_rsn_cd;
+   private java.lang.String cre_date;
+   private java.lang.String cre_user;
+   private java.lang.String upd_date;
+   private java.lang.String upd_user;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -184,6 +185,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * @param extrnl_cookie The new value for extrnl_cookie
    * @param ebay_site_id The new value for ebay_site_id
    * @param rvr_url The new value for rvr_url
+   * @param client_data The new value for client_data
    * @param flex_field_vrsn_num The new value for flex_field_vrsn_num
    * @param flex_field_1 The new value for flex_field_1
    * @param flex_field_2 The new value for flex_field_2
@@ -213,7 +215,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * @param upd_date The new value for upd_date
    * @param upd_user The new value for upd_user
    */
-  public UnifiedTrackingImkMessage(RheosHeader rheosHeader, String batch_id, Integer file_id, Integer file_schm_vrsn, Long rvr_id, String event_dt, Integer srvd_pstn, String rvr_cmnd_type_cd, String rvr_chnl_type_cd, String cntry_cd, String lang_cd, Integer trckng_prtnr_id, String cguid, String guid, Long user_id, String clnt_remote_ip, Integer brwsr_type_id, String brwsr_name, String rfrr_dmn_name, String rfrr_url, Integer url_encrptd_yn_ind, String pblshr_id, String lndng_page_dmn_name, String lndng_page_url, String user_query, String rule_bit_flag_strng, String event_ts, Integer dflt_bhrv_id, Long src_rotation_id, Long dst_rotation_id, String user_map_ind, Integer dst_client_id, Long creative_id, Integer test_ctrl_flag, Integer mfe_id, Long kw_id, String keyword, String mt_id, String crlp, String geo_id, String item_id, String transaction_type, String transaction_id, String cart_id, String extrnl_cookie, String ebay_site_id, String rvr_url, Integer flex_field_vrsn_num, String flex_field_1, String flex_field_2, String flex_field_3, String flex_field_4, String flex_field_5, String flex_field_6, String flex_field_7, String flex_field_8, String flex_field_9, String flex_field_10, String flex_field_11, String flex_field_12, String flex_field_13, String flex_field_14, String flex_field_15, String flex_field_16, String flex_field_17, String flex_field_18, String flex_field_19, String flex_field_20, String perf_track_name_value, String mgvalue, String mgvalue_rsn_cd, String cre_date, String cre_user, String upd_date, String upd_user) {
+  public UnifiedTrackingImkMessage(com.ebay.app.raptor.chocolate.avro.RheosHeader rheosHeader, java.lang.String batch_id, java.lang.Integer file_id, java.lang.Integer file_schm_vrsn, java.lang.Long rvr_id, java.lang.String event_dt, java.lang.Integer srvd_pstn, java.lang.String rvr_cmnd_type_cd, java.lang.String rvr_chnl_type_cd, java.lang.String cntry_cd, java.lang.String lang_cd, java.lang.Integer trckng_prtnr_id, java.lang.String cguid, java.lang.String guid, java.lang.Long user_id, java.lang.String clnt_remote_ip, java.lang.Integer brwsr_type_id, java.lang.String brwsr_name, java.lang.String rfrr_dmn_name, java.lang.String rfrr_url, java.lang.Integer url_encrptd_yn_ind, java.lang.String pblshr_id, java.lang.String lndng_page_dmn_name, java.lang.String lndng_page_url, java.lang.String user_query, java.lang.String rule_bit_flag_strng, java.lang.String event_ts, java.lang.Integer dflt_bhrv_id, java.lang.Long src_rotation_id, java.lang.Long dst_rotation_id, java.lang.String user_map_ind, java.lang.Integer dst_client_id, java.lang.Long creative_id, java.lang.Integer test_ctrl_flag, java.lang.Integer mfe_id, java.lang.Long kw_id, java.lang.String keyword, java.lang.String mt_id, java.lang.String crlp, java.lang.String geo_id, java.lang.String item_id, java.lang.String transaction_type, java.lang.String transaction_id, java.lang.String cart_id, java.lang.String extrnl_cookie, java.lang.String ebay_site_id, java.lang.String rvr_url, java.lang.String client_data, java.lang.Integer flex_field_vrsn_num, java.lang.String flex_field_1, java.lang.String flex_field_2, java.lang.String flex_field_3, java.lang.String flex_field_4, java.lang.String flex_field_5, java.lang.String flex_field_6, java.lang.String flex_field_7, java.lang.String flex_field_8, java.lang.String flex_field_9, java.lang.String flex_field_10, java.lang.String flex_field_11, java.lang.String flex_field_12, java.lang.String flex_field_13, java.lang.String flex_field_14, java.lang.String flex_field_15, java.lang.String flex_field_16, java.lang.String flex_field_17, java.lang.String flex_field_18, java.lang.String flex_field_19, java.lang.String flex_field_20, java.lang.String perf_track_name_value, java.lang.String mgvalue, java.lang.String mgvalue_rsn_cd, java.lang.String cre_date, java.lang.String cre_user, java.lang.String upd_date, java.lang.String upd_user) {
     this.rheosHeader = rheosHeader;
     this.batch_id = batch_id;
     this.file_id = file_id;
@@ -261,6 +263,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
     this.extrnl_cookie = extrnl_cookie;
     this.ebay_site_id = ebay_site_id;
     this.rvr_url = rvr_url;
+    this.client_data = client_data;
     this.flex_field_vrsn_num = flex_field_vrsn_num;
     this.flex_field_1 = flex_field_1;
     this.flex_field_2 = flex_field_2;
@@ -293,7 +296,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
 
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
   // Used by DatumWriter.  Applications should not call.
-  public Object get(int field$) {
+  public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return rheosHeader;
     case 1: return batch_id;
@@ -342,117 +345,119 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
     case 44: return extrnl_cookie;
     case 45: return ebay_site_id;
     case 46: return rvr_url;
-    case 47: return flex_field_vrsn_num;
-    case 48: return flex_field_1;
-    case 49: return flex_field_2;
-    case 50: return flex_field_3;
-    case 51: return flex_field_4;
-    case 52: return flex_field_5;
-    case 53: return flex_field_6;
-    case 54: return flex_field_7;
-    case 55: return flex_field_8;
-    case 56: return flex_field_9;
-    case 57: return flex_field_10;
-    case 58: return flex_field_11;
-    case 59: return flex_field_12;
-    case 60: return flex_field_13;
-    case 61: return flex_field_14;
-    case 62: return flex_field_15;
-    case 63: return flex_field_16;
-    case 64: return flex_field_17;
-    case 65: return flex_field_18;
-    case 66: return flex_field_19;
-    case 67: return flex_field_20;
-    case 68: return perf_track_name_value;
-    case 69: return mgvalue;
-    case 70: return mgvalue_rsn_cd;
-    case 71: return cre_date;
-    case 72: return cre_user;
-    case 73: return upd_date;
-    case 74: return upd_user;
+    case 47: return client_data;
+    case 48: return flex_field_vrsn_num;
+    case 49: return flex_field_1;
+    case 50: return flex_field_2;
+    case 51: return flex_field_3;
+    case 52: return flex_field_4;
+    case 53: return flex_field_5;
+    case 54: return flex_field_6;
+    case 55: return flex_field_7;
+    case 56: return flex_field_8;
+    case 57: return flex_field_9;
+    case 58: return flex_field_10;
+    case 59: return flex_field_11;
+    case 60: return flex_field_12;
+    case 61: return flex_field_13;
+    case 62: return flex_field_14;
+    case 63: return flex_field_15;
+    case 64: return flex_field_16;
+    case 65: return flex_field_17;
+    case 66: return flex_field_18;
+    case 67: return flex_field_19;
+    case 68: return flex_field_20;
+    case 69: return perf_track_name_value;
+    case 70: return mgvalue;
+    case 71: return mgvalue_rsn_cd;
+    case 72: return cre_date;
+    case 73: return cre_user;
+    case 74: return upd_date;
+    case 75: return upd_user;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
 
   // Used by DatumReader.  Applications should not call.
   @SuppressWarnings(value="unchecked")
-  public void put(int field$, Object value$) {
+  public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: rheosHeader = (RheosHeader)value$; break;
-    case 1: batch_id = (String)value$; break;
-    case 2: file_id = (Integer)value$; break;
-    case 3: file_schm_vrsn = (Integer)value$; break;
-    case 4: rvr_id = (Long)value$; break;
-    case 5: event_dt = (String)value$; break;
-    case 6: srvd_pstn = (Integer)value$; break;
-    case 7: rvr_cmnd_type_cd = (String)value$; break;
-    case 8: rvr_chnl_type_cd = (String)value$; break;
-    case 9: cntry_cd = (String)value$; break;
-    case 10: lang_cd = (String)value$; break;
-    case 11: trckng_prtnr_id = (Integer)value$; break;
-    case 12: cguid = (String)value$; break;
-    case 13: guid = (String)value$; break;
-    case 14: user_id = (Long)value$; break;
-    case 15: clnt_remote_ip = (String)value$; break;
-    case 16: brwsr_type_id = (Integer)value$; break;
-    case 17: brwsr_name = (String)value$; break;
-    case 18: rfrr_dmn_name = (String)value$; break;
-    case 19: rfrr_url = (String)value$; break;
-    case 20: url_encrptd_yn_ind = (Integer)value$; break;
-    case 21: pblshr_id = (String)value$; break;
-    case 22: lndng_page_dmn_name = (String)value$; break;
-    case 23: lndng_page_url = (String)value$; break;
-    case 24: user_query = (String)value$; break;
-    case 25: rule_bit_flag_strng = (String)value$; break;
-    case 26: event_ts = (String)value$; break;
-    case 27: dflt_bhrv_id = (Integer)value$; break;
-    case 28: src_rotation_id = (Long)value$; break;
-    case 29: dst_rotation_id = (Long)value$; break;
-    case 30: user_map_ind = (String)value$; break;
-    case 31: dst_client_id = (Integer)value$; break;
-    case 32: creative_id = (Long)value$; break;
-    case 33: test_ctrl_flag = (Integer)value$; break;
-    case 34: mfe_id = (Integer)value$; break;
-    case 35: kw_id = (Long)value$; break;
-    case 36: keyword = (String)value$; break;
-    case 37: mt_id = (String)value$; break;
-    case 38: crlp = (String)value$; break;
-    case 39: geo_id = (String)value$; break;
-    case 40: item_id = (String)value$; break;
-    case 41: transaction_type = (String)value$; break;
-    case 42: transaction_id = (String)value$; break;
-    case 43: cart_id = (String)value$; break;
-    case 44: extrnl_cookie = (String)value$; break;
-    case 45: ebay_site_id = (String)value$; break;
-    case 46: rvr_url = (String)value$; break;
-    case 47: flex_field_vrsn_num = (Integer)value$; break;
-    case 48: flex_field_1 = (String)value$; break;
-    case 49: flex_field_2 = (String)value$; break;
-    case 50: flex_field_3 = (String)value$; break;
-    case 51: flex_field_4 = (String)value$; break;
-    case 52: flex_field_5 = (String)value$; break;
-    case 53: flex_field_6 = (String)value$; break;
-    case 54: flex_field_7 = (String)value$; break;
-    case 55: flex_field_8 = (String)value$; break;
-    case 56: flex_field_9 = (String)value$; break;
-    case 57: flex_field_10 = (String)value$; break;
-    case 58: flex_field_11 = (String)value$; break;
-    case 59: flex_field_12 = (String)value$; break;
-    case 60: flex_field_13 = (String)value$; break;
-    case 61: flex_field_14 = (String)value$; break;
-    case 62: flex_field_15 = (String)value$; break;
-    case 63: flex_field_16 = (String)value$; break;
-    case 64: flex_field_17 = (String)value$; break;
-    case 65: flex_field_18 = (String)value$; break;
-    case 66: flex_field_19 = (String)value$; break;
-    case 67: flex_field_20 = (String)value$; break;
-    case 68: perf_track_name_value = (String)value$; break;
-    case 69: mgvalue = (String)value$; break;
-    case 70: mgvalue_rsn_cd = (String)value$; break;
-    case 71: cre_date = (String)value$; break;
-    case 72: cre_user = (String)value$; break;
-    case 73: upd_date = (String)value$; break;
-    case 74: upd_user = (String)value$; break;
+    case 0: rheosHeader = (com.ebay.app.raptor.chocolate.avro.RheosHeader)value$; break;
+    case 1: batch_id = (java.lang.String)value$; break;
+    case 2: file_id = (java.lang.Integer)value$; break;
+    case 3: file_schm_vrsn = (java.lang.Integer)value$; break;
+    case 4: rvr_id = (java.lang.Long)value$; break;
+    case 5: event_dt = (java.lang.String)value$; break;
+    case 6: srvd_pstn = (java.lang.Integer)value$; break;
+    case 7: rvr_cmnd_type_cd = (java.lang.String)value$; break;
+    case 8: rvr_chnl_type_cd = (java.lang.String)value$; break;
+    case 9: cntry_cd = (java.lang.String)value$; break;
+    case 10: lang_cd = (java.lang.String)value$; break;
+    case 11: trckng_prtnr_id = (java.lang.Integer)value$; break;
+    case 12: cguid = (java.lang.String)value$; break;
+    case 13: guid = (java.lang.String)value$; break;
+    case 14: user_id = (java.lang.Long)value$; break;
+    case 15: clnt_remote_ip = (java.lang.String)value$; break;
+    case 16: brwsr_type_id = (java.lang.Integer)value$; break;
+    case 17: brwsr_name = (java.lang.String)value$; break;
+    case 18: rfrr_dmn_name = (java.lang.String)value$; break;
+    case 19: rfrr_url = (java.lang.String)value$; break;
+    case 20: url_encrptd_yn_ind = (java.lang.Integer)value$; break;
+    case 21: pblshr_id = (java.lang.String)value$; break;
+    case 22: lndng_page_dmn_name = (java.lang.String)value$; break;
+    case 23: lndng_page_url = (java.lang.String)value$; break;
+    case 24: user_query = (java.lang.String)value$; break;
+    case 25: rule_bit_flag_strng = (java.lang.String)value$; break;
+    case 26: event_ts = (java.lang.String)value$; break;
+    case 27: dflt_bhrv_id = (java.lang.Integer)value$; break;
+    case 28: src_rotation_id = (java.lang.Long)value$; break;
+    case 29: dst_rotation_id = (java.lang.Long)value$; break;
+    case 30: user_map_ind = (java.lang.String)value$; break;
+    case 31: dst_client_id = (java.lang.Integer)value$; break;
+    case 32: creative_id = (java.lang.Long)value$; break;
+    case 33: test_ctrl_flag = (java.lang.Integer)value$; break;
+    case 34: mfe_id = (java.lang.Integer)value$; break;
+    case 35: kw_id = (java.lang.Long)value$; break;
+    case 36: keyword = (java.lang.String)value$; break;
+    case 37: mt_id = (java.lang.String)value$; break;
+    case 38: crlp = (java.lang.String)value$; break;
+    case 39: geo_id = (java.lang.String)value$; break;
+    case 40: item_id = (java.lang.String)value$; break;
+    case 41: transaction_type = (java.lang.String)value$; break;
+    case 42: transaction_id = (java.lang.String)value$; break;
+    case 43: cart_id = (java.lang.String)value$; break;
+    case 44: extrnl_cookie = (java.lang.String)value$; break;
+    case 45: ebay_site_id = (java.lang.String)value$; break;
+    case 46: rvr_url = (java.lang.String)value$; break;
+    case 47: client_data = (java.lang.String)value$; break;
+    case 48: flex_field_vrsn_num = (java.lang.Integer)value$; break;
+    case 49: flex_field_1 = (java.lang.String)value$; break;
+    case 50: flex_field_2 = (java.lang.String)value$; break;
+    case 51: flex_field_3 = (java.lang.String)value$; break;
+    case 52: flex_field_4 = (java.lang.String)value$; break;
+    case 53: flex_field_5 = (java.lang.String)value$; break;
+    case 54: flex_field_6 = (java.lang.String)value$; break;
+    case 55: flex_field_7 = (java.lang.String)value$; break;
+    case 56: flex_field_8 = (java.lang.String)value$; break;
+    case 57: flex_field_9 = (java.lang.String)value$; break;
+    case 58: flex_field_10 = (java.lang.String)value$; break;
+    case 59: flex_field_11 = (java.lang.String)value$; break;
+    case 60: flex_field_12 = (java.lang.String)value$; break;
+    case 61: flex_field_13 = (java.lang.String)value$; break;
+    case 62: flex_field_14 = (java.lang.String)value$; break;
+    case 63: flex_field_15 = (java.lang.String)value$; break;
+    case 64: flex_field_16 = (java.lang.String)value$; break;
+    case 65: flex_field_17 = (java.lang.String)value$; break;
+    case 66: flex_field_18 = (java.lang.String)value$; break;
+    case 67: flex_field_19 = (java.lang.String)value$; break;
+    case 68: flex_field_20 = (java.lang.String)value$; break;
+    case 69: perf_track_name_value = (java.lang.String)value$; break;
+    case 70: mgvalue = (java.lang.String)value$; break;
+    case 71: mgvalue_rsn_cd = (java.lang.String)value$; break;
+    case 72: cre_date = (java.lang.String)value$; break;
+    case 73: cre_user = (java.lang.String)value$; break;
+    case 74: upd_date = (java.lang.String)value$; break;
+    case 75: upd_user = (java.lang.String)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -461,7 +466,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rheosHeader' field.
    * @return Rheos header - This is  mandatory for every schema in Rheos 
    */
-  public RheosHeader getRheosHeader() {
+  public com.ebay.app.raptor.chocolate.avro.RheosHeader getRheosHeader() {
     return rheosHeader;
   }
 
@@ -470,7 +475,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Rheos header - This is  mandatory for every schema in Rheos 
    * @param value the value to set.
    */
-  public void setRheosHeader(RheosHeader value) {
+  public void setRheosHeader(com.ebay.app.raptor.chocolate.avro.RheosHeader value) {
     this.rheosHeader = value;
   }
 
@@ -478,7 +483,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'batch_id' field.
    * @return The value of the 'batch_id' field.
    */
-  public String getBatchId() {
+  public java.lang.String getBatchId() {
     return batch_id;
   }
 
@@ -486,7 +491,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'batch_id' field.
    * @param value the value to set.
    */
-  public void setBatchId(String value) {
+  public void setBatchId(java.lang.String value) {
     this.batch_id = value;
   }
 
@@ -494,7 +499,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'file_id' field.
    * @return The value of the 'file_id' field.
    */
-  public Integer getFileId() {
+  public java.lang.Integer getFileId() {
     return file_id;
   }
 
@@ -502,7 +507,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'file_id' field.
    * @param value the value to set.
    */
-  public void setFileId(Integer value) {
+  public void setFileId(java.lang.Integer value) {
     this.file_id = value;
   }
 
@@ -510,7 +515,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'file_schm_vrsn' field.
    * @return The value of the 'file_schm_vrsn' field.
    */
-  public Integer getFileSchmVrsn() {
+  public java.lang.Integer getFileSchmVrsn() {
     return file_schm_vrsn;
   }
 
@@ -518,7 +523,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'file_schm_vrsn' field.
    * @param value the value to set.
    */
-  public void setFileSchmVrsn(Integer value) {
+  public void setFileSchmVrsn(java.lang.Integer value) {
     this.file_schm_vrsn = value;
   }
 
@@ -526,7 +531,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rvr_id' field.
    * @return The value of the 'rvr_id' field.
    */
-  public Long getRvrId() {
+  public java.lang.Long getRvrId() {
     return rvr_id;
   }
 
@@ -534,7 +539,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rvr_id' field.
    * @param value the value to set.
    */
-  public void setRvrId(Long value) {
+  public void setRvrId(java.lang.Long value) {
     this.rvr_id = value;
   }
 
@@ -542,7 +547,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'event_dt' field.
    * @return The value of the 'event_dt' field.
    */
-  public String getEventDt() {
+  public java.lang.String getEventDt() {
     return event_dt;
   }
 
@@ -550,7 +555,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'event_dt' field.
    * @param value the value to set.
    */
-  public void setEventDt(String value) {
+  public void setEventDt(java.lang.String value) {
     this.event_dt = value;
   }
 
@@ -558,7 +563,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'srvd_pstn' field.
    * @return The value of the 'srvd_pstn' field.
    */
-  public Integer getSrvdPstn() {
+  public java.lang.Integer getSrvdPstn() {
     return srvd_pstn;
   }
 
@@ -566,7 +571,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'srvd_pstn' field.
    * @param value the value to set.
    */
-  public void setSrvdPstn(Integer value) {
+  public void setSrvdPstn(java.lang.Integer value) {
     this.srvd_pstn = value;
   }
 
@@ -574,7 +579,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rvr_cmnd_type_cd' field.
    * @return The value of the 'rvr_cmnd_type_cd' field.
    */
-  public String getRvrCmndTypeCd() {
+  public java.lang.String getRvrCmndTypeCd() {
     return rvr_cmnd_type_cd;
   }
 
@@ -582,7 +587,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rvr_cmnd_type_cd' field.
    * @param value the value to set.
    */
-  public void setRvrCmndTypeCd(String value) {
+  public void setRvrCmndTypeCd(java.lang.String value) {
     this.rvr_cmnd_type_cd = value;
   }
 
@@ -590,7 +595,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rvr_chnl_type_cd' field.
    * @return The value of the 'rvr_chnl_type_cd' field.
    */
-  public String getRvrChnlTypeCd() {
+  public java.lang.String getRvrChnlTypeCd() {
     return rvr_chnl_type_cd;
   }
 
@@ -598,7 +603,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rvr_chnl_type_cd' field.
    * @param value the value to set.
    */
-  public void setRvrChnlTypeCd(String value) {
+  public void setRvrChnlTypeCd(java.lang.String value) {
     this.rvr_chnl_type_cd = value;
   }
 
@@ -606,7 +611,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'cntry_cd' field.
    * @return The value of the 'cntry_cd' field.
    */
-  public String getCntryCd() {
+  public java.lang.String getCntryCd() {
     return cntry_cd;
   }
 
@@ -614,7 +619,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'cntry_cd' field.
    * @param value the value to set.
    */
-  public void setCntryCd(String value) {
+  public void setCntryCd(java.lang.String value) {
     this.cntry_cd = value;
   }
 
@@ -622,7 +627,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'lang_cd' field.
    * @return The value of the 'lang_cd' field.
    */
-  public String getLangCd() {
+  public java.lang.String getLangCd() {
     return lang_cd;
   }
 
@@ -630,7 +635,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'lang_cd' field.
    * @param value the value to set.
    */
-  public void setLangCd(String value) {
+  public void setLangCd(java.lang.String value) {
     this.lang_cd = value;
   }
 
@@ -638,7 +643,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'trckng_prtnr_id' field.
    * @return The value of the 'trckng_prtnr_id' field.
    */
-  public Integer getTrckngPrtnrId() {
+  public java.lang.Integer getTrckngPrtnrId() {
     return trckng_prtnr_id;
   }
 
@@ -646,7 +651,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'trckng_prtnr_id' field.
    * @param value the value to set.
    */
-  public void setTrckngPrtnrId(Integer value) {
+  public void setTrckngPrtnrId(java.lang.Integer value) {
     this.trckng_prtnr_id = value;
   }
 
@@ -654,7 +659,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'cguid' field.
    * @return The value of the 'cguid' field.
    */
-  public String getCguid() {
+  public java.lang.String getCguid() {
     return cguid;
   }
 
@@ -662,7 +667,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'cguid' field.
    * @param value the value to set.
    */
-  public void setCguid(String value) {
+  public void setCguid(java.lang.String value) {
     this.cguid = value;
   }
 
@@ -670,7 +675,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'guid' field.
    * @return The value of the 'guid' field.
    */
-  public String getGuid() {
+  public java.lang.String getGuid() {
     return guid;
   }
 
@@ -678,7 +683,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'guid' field.
    * @param value the value to set.
    */
-  public void setGuid(String value) {
+  public void setGuid(java.lang.String value) {
     this.guid = value;
   }
 
@@ -686,7 +691,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'user_id' field.
    * @return The value of the 'user_id' field.
    */
-  public Long getUserId() {
+  public java.lang.Long getUserId() {
     return user_id;
   }
 
@@ -694,7 +699,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'user_id' field.
    * @param value the value to set.
    */
-  public void setUserId(Long value) {
+  public void setUserId(java.lang.Long value) {
     this.user_id = value;
   }
 
@@ -702,7 +707,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'clnt_remote_ip' field.
    * @return The value of the 'clnt_remote_ip' field.
    */
-  public String getClntRemoteIp() {
+  public java.lang.String getClntRemoteIp() {
     return clnt_remote_ip;
   }
 
@@ -710,7 +715,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'clnt_remote_ip' field.
    * @param value the value to set.
    */
-  public void setClntRemoteIp(String value) {
+  public void setClntRemoteIp(java.lang.String value) {
     this.clnt_remote_ip = value;
   }
 
@@ -718,7 +723,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'brwsr_type_id' field.
    * @return The value of the 'brwsr_type_id' field.
    */
-  public Integer getBrwsrTypeId() {
+  public java.lang.Integer getBrwsrTypeId() {
     return brwsr_type_id;
   }
 
@@ -726,7 +731,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'brwsr_type_id' field.
    * @param value the value to set.
    */
-  public void setBrwsrTypeId(Integer value) {
+  public void setBrwsrTypeId(java.lang.Integer value) {
     this.brwsr_type_id = value;
   }
 
@@ -734,7 +739,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'brwsr_name' field.
    * @return The value of the 'brwsr_name' field.
    */
-  public String getBrwsrName() {
+  public java.lang.String getBrwsrName() {
     return brwsr_name;
   }
 
@@ -742,7 +747,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'brwsr_name' field.
    * @param value the value to set.
    */
-  public void setBrwsrName(String value) {
+  public void setBrwsrName(java.lang.String value) {
     this.brwsr_name = value;
   }
 
@@ -750,7 +755,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rfrr_dmn_name' field.
    * @return The value of the 'rfrr_dmn_name' field.
    */
-  public String getRfrrDmnName() {
+  public java.lang.String getRfrrDmnName() {
     return rfrr_dmn_name;
   }
 
@@ -758,7 +763,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rfrr_dmn_name' field.
    * @param value the value to set.
    */
-  public void setRfrrDmnName(String value) {
+  public void setRfrrDmnName(java.lang.String value) {
     this.rfrr_dmn_name = value;
   }
 
@@ -766,7 +771,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rfrr_url' field.
    * @return The value of the 'rfrr_url' field.
    */
-  public String getRfrrUrl() {
+  public java.lang.String getRfrrUrl() {
     return rfrr_url;
   }
 
@@ -774,7 +779,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rfrr_url' field.
    * @param value the value to set.
    */
-  public void setRfrrUrl(String value) {
+  public void setRfrrUrl(java.lang.String value) {
     this.rfrr_url = value;
   }
 
@@ -782,7 +787,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'url_encrptd_yn_ind' field.
    * @return The value of the 'url_encrptd_yn_ind' field.
    */
-  public Integer getUrlEncrptdYnInd() {
+  public java.lang.Integer getUrlEncrptdYnInd() {
     return url_encrptd_yn_ind;
   }
 
@@ -790,7 +795,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'url_encrptd_yn_ind' field.
    * @param value the value to set.
    */
-  public void setUrlEncrptdYnInd(Integer value) {
+  public void setUrlEncrptdYnInd(java.lang.Integer value) {
     this.url_encrptd_yn_ind = value;
   }
 
@@ -798,7 +803,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'pblshr_id' field.
    * @return The value of the 'pblshr_id' field.
    */
-  public String getPblshrId() {
+  public java.lang.String getPblshrId() {
     return pblshr_id;
   }
 
@@ -806,7 +811,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'pblshr_id' field.
    * @param value the value to set.
    */
-  public void setPblshrId(String value) {
+  public void setPblshrId(java.lang.String value) {
     this.pblshr_id = value;
   }
 
@@ -814,7 +819,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'lndng_page_dmn_name' field.
    * @return The value of the 'lndng_page_dmn_name' field.
    */
-  public String getLndngPageDmnName() {
+  public java.lang.String getLndngPageDmnName() {
     return lndng_page_dmn_name;
   }
 
@@ -822,7 +827,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'lndng_page_dmn_name' field.
    * @param value the value to set.
    */
-  public void setLndngPageDmnName(String value) {
+  public void setLndngPageDmnName(java.lang.String value) {
     this.lndng_page_dmn_name = value;
   }
 
@@ -830,7 +835,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'lndng_page_url' field.
    * @return The value of the 'lndng_page_url' field.
    */
-  public String getLndngPageUrl() {
+  public java.lang.String getLndngPageUrl() {
     return lndng_page_url;
   }
 
@@ -838,7 +843,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'lndng_page_url' field.
    * @param value the value to set.
    */
-  public void setLndngPageUrl(String value) {
+  public void setLndngPageUrl(java.lang.String value) {
     this.lndng_page_url = value;
   }
 
@@ -846,7 +851,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'user_query' field.
    * @return The value of the 'user_query' field.
    */
-  public String getUserQuery() {
+  public java.lang.String getUserQuery() {
     return user_query;
   }
 
@@ -854,7 +859,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'user_query' field.
    * @param value the value to set.
    */
-  public void setUserQuery(String value) {
+  public void setUserQuery(java.lang.String value) {
     this.user_query = value;
   }
 
@@ -862,7 +867,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rule_bit_flag_strng' field.
    * @return The value of the 'rule_bit_flag_strng' field.
    */
-  public String getRuleBitFlagStrng() {
+  public java.lang.String getRuleBitFlagStrng() {
     return rule_bit_flag_strng;
   }
 
@@ -870,7 +875,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rule_bit_flag_strng' field.
    * @param value the value to set.
    */
-  public void setRuleBitFlagStrng(String value) {
+  public void setRuleBitFlagStrng(java.lang.String value) {
     this.rule_bit_flag_strng = value;
   }
 
@@ -878,7 +883,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'event_ts' field.
    * @return The value of the 'event_ts' field.
    */
-  public String getEventTs() {
+  public java.lang.String getEventTs() {
     return event_ts;
   }
 
@@ -886,7 +891,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'event_ts' field.
    * @param value the value to set.
    */
-  public void setEventTs(String value) {
+  public void setEventTs(java.lang.String value) {
     this.event_ts = value;
   }
 
@@ -894,7 +899,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'dflt_bhrv_id' field.
    * @return The value of the 'dflt_bhrv_id' field.
    */
-  public Integer getDfltBhrvId() {
+  public java.lang.Integer getDfltBhrvId() {
     return dflt_bhrv_id;
   }
 
@@ -902,7 +907,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'dflt_bhrv_id' field.
    * @param value the value to set.
    */
-  public void setDfltBhrvId(Integer value) {
+  public void setDfltBhrvId(java.lang.Integer value) {
     this.dflt_bhrv_id = value;
   }
 
@@ -910,7 +915,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'src_rotation_id' field.
    * @return The value of the 'src_rotation_id' field.
    */
-  public Long getSrcRotationId() {
+  public java.lang.Long getSrcRotationId() {
     return src_rotation_id;
   }
 
@@ -918,7 +923,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'src_rotation_id' field.
    * @param value the value to set.
    */
-  public void setSrcRotationId(Long value) {
+  public void setSrcRotationId(java.lang.Long value) {
     this.src_rotation_id = value;
   }
 
@@ -926,7 +931,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'dst_rotation_id' field.
    * @return The value of the 'dst_rotation_id' field.
    */
-  public Long getDstRotationId() {
+  public java.lang.Long getDstRotationId() {
     return dst_rotation_id;
   }
 
@@ -934,7 +939,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'dst_rotation_id' field.
    * @param value the value to set.
    */
-  public void setDstRotationId(Long value) {
+  public void setDstRotationId(java.lang.Long value) {
     this.dst_rotation_id = value;
   }
 
@@ -942,7 +947,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'user_map_ind' field.
    * @return The value of the 'user_map_ind' field.
    */
-  public String getUserMapInd() {
+  public java.lang.String getUserMapInd() {
     return user_map_ind;
   }
 
@@ -950,7 +955,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'user_map_ind' field.
    * @param value the value to set.
    */
-  public void setUserMapInd(String value) {
+  public void setUserMapInd(java.lang.String value) {
     this.user_map_ind = value;
   }
 
@@ -958,7 +963,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'dst_client_id' field.
    * @return The value of the 'dst_client_id' field.
    */
-  public Integer getDstClientId() {
+  public java.lang.Integer getDstClientId() {
     return dst_client_id;
   }
 
@@ -966,7 +971,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'dst_client_id' field.
    * @param value the value to set.
    */
-  public void setDstClientId(Integer value) {
+  public void setDstClientId(java.lang.Integer value) {
     this.dst_client_id = value;
   }
 
@@ -974,7 +979,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'creative_id' field.
    * @return The value of the 'creative_id' field.
    */
-  public Long getCreativeId() {
+  public java.lang.Long getCreativeId() {
     return creative_id;
   }
 
@@ -982,7 +987,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'creative_id' field.
    * @param value the value to set.
    */
-  public void setCreativeId(Long value) {
+  public void setCreativeId(java.lang.Long value) {
     this.creative_id = value;
   }
 
@@ -990,7 +995,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'test_ctrl_flag' field.
    * @return The value of the 'test_ctrl_flag' field.
    */
-  public Integer getTestCtrlFlag() {
+  public java.lang.Integer getTestCtrlFlag() {
     return test_ctrl_flag;
   }
 
@@ -998,7 +1003,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'test_ctrl_flag' field.
    * @param value the value to set.
    */
-  public void setTestCtrlFlag(Integer value) {
+  public void setTestCtrlFlag(java.lang.Integer value) {
     this.test_ctrl_flag = value;
   }
 
@@ -1006,7 +1011,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'mfe_id' field.
    * @return The value of the 'mfe_id' field.
    */
-  public Integer getMfeId() {
+  public java.lang.Integer getMfeId() {
     return mfe_id;
   }
 
@@ -1014,7 +1019,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'mfe_id' field.
    * @param value the value to set.
    */
-  public void setMfeId(Integer value) {
+  public void setMfeId(java.lang.Integer value) {
     this.mfe_id = value;
   }
 
@@ -1022,7 +1027,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'kw_id' field.
    * @return The value of the 'kw_id' field.
    */
-  public Long getKwId() {
+  public java.lang.Long getKwId() {
     return kw_id;
   }
 
@@ -1030,7 +1035,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'kw_id' field.
    * @param value the value to set.
    */
-  public void setKwId(Long value) {
+  public void setKwId(java.lang.Long value) {
     this.kw_id = value;
   }
 
@@ -1038,7 +1043,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'keyword' field.
    * @return The value of the 'keyword' field.
    */
-  public String getKeyword() {
+  public java.lang.String getKeyword() {
     return keyword;
   }
 
@@ -1046,7 +1051,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'keyword' field.
    * @param value the value to set.
    */
-  public void setKeyword(String value) {
+  public void setKeyword(java.lang.String value) {
     this.keyword = value;
   }
 
@@ -1054,7 +1059,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'mt_id' field.
    * @return The value of the 'mt_id' field.
    */
-  public String getMtId() {
+  public java.lang.String getMtId() {
     return mt_id;
   }
 
@@ -1062,7 +1067,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'mt_id' field.
    * @param value the value to set.
    */
-  public void setMtId(String value) {
+  public void setMtId(java.lang.String value) {
     this.mt_id = value;
   }
 
@@ -1070,7 +1075,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'crlp' field.
    * @return The value of the 'crlp' field.
    */
-  public String getCrlp() {
+  public java.lang.String getCrlp() {
     return crlp;
   }
 
@@ -1078,7 +1083,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'crlp' field.
    * @param value the value to set.
    */
-  public void setCrlp(String value) {
+  public void setCrlp(java.lang.String value) {
     this.crlp = value;
   }
 
@@ -1086,7 +1091,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'geo_id' field.
    * @return The value of the 'geo_id' field.
    */
-  public String getGeoId() {
+  public java.lang.String getGeoId() {
     return geo_id;
   }
 
@@ -1094,7 +1099,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'geo_id' field.
    * @param value the value to set.
    */
-  public void setGeoId(String value) {
+  public void setGeoId(java.lang.String value) {
     this.geo_id = value;
   }
 
@@ -1102,7 +1107,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'item_id' field.
    * @return The value of the 'item_id' field.
    */
-  public String getItemId() {
+  public java.lang.String getItemId() {
     return item_id;
   }
 
@@ -1110,7 +1115,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'item_id' field.
    * @param value the value to set.
    */
-  public void setItemId(String value) {
+  public void setItemId(java.lang.String value) {
     this.item_id = value;
   }
 
@@ -1118,7 +1123,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'transaction_type' field.
    * @return The value of the 'transaction_type' field.
    */
-  public String getTransactionType() {
+  public java.lang.String getTransactionType() {
     return transaction_type;
   }
 
@@ -1126,7 +1131,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'transaction_type' field.
    * @param value the value to set.
    */
-  public void setTransactionType(String value) {
+  public void setTransactionType(java.lang.String value) {
     this.transaction_type = value;
   }
 
@@ -1134,7 +1139,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'transaction_id' field.
    * @return The value of the 'transaction_id' field.
    */
-  public String getTransactionId() {
+  public java.lang.String getTransactionId() {
     return transaction_id;
   }
 
@@ -1142,7 +1147,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'transaction_id' field.
    * @param value the value to set.
    */
-  public void setTransactionId(String value) {
+  public void setTransactionId(java.lang.String value) {
     this.transaction_id = value;
   }
 
@@ -1150,7 +1155,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'cart_id' field.
    * @return The value of the 'cart_id' field.
    */
-  public String getCartId() {
+  public java.lang.String getCartId() {
     return cart_id;
   }
 
@@ -1158,7 +1163,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'cart_id' field.
    * @param value the value to set.
    */
-  public void setCartId(String value) {
+  public void setCartId(java.lang.String value) {
     this.cart_id = value;
   }
 
@@ -1166,7 +1171,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'extrnl_cookie' field.
    * @return The value of the 'extrnl_cookie' field.
    */
-  public String getExtrnlCookie() {
+  public java.lang.String getExtrnlCookie() {
     return extrnl_cookie;
   }
 
@@ -1174,7 +1179,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'extrnl_cookie' field.
    * @param value the value to set.
    */
-  public void setExtrnlCookie(String value) {
+  public void setExtrnlCookie(java.lang.String value) {
     this.extrnl_cookie = value;
   }
 
@@ -1182,7 +1187,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'ebay_site_id' field.
    * @return The value of the 'ebay_site_id' field.
    */
-  public String getEbaySiteId() {
+  public java.lang.String getEbaySiteId() {
     return ebay_site_id;
   }
 
@@ -1190,7 +1195,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'ebay_site_id' field.
    * @param value the value to set.
    */
-  public void setEbaySiteId(String value) {
+  public void setEbaySiteId(java.lang.String value) {
     this.ebay_site_id = value;
   }
 
@@ -1198,7 +1203,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'rvr_url' field.
    * @return The value of the 'rvr_url' field.
    */
-  public String getRvrUrl() {
+  public java.lang.String getRvrUrl() {
     return rvr_url;
   }
 
@@ -1206,15 +1211,31 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'rvr_url' field.
    * @param value the value to set.
    */
-  public void setRvrUrl(String value) {
+  public void setRvrUrl(java.lang.String value) {
     this.rvr_url = value;
+  }
+
+  /**
+   * Gets the value of the 'client_data' field.
+   * @return The value of the 'client_data' field.
+   */
+  public java.lang.String getClientData() {
+    return client_data;
+  }
+
+  /**
+   * Sets the value of the 'client_data' field.
+   * @param value the value to set.
+   */
+  public void setClientData(java.lang.String value) {
+    this.client_data = value;
   }
 
   /**
    * Gets the value of the 'flex_field_vrsn_num' field.
    * @return The value of the 'flex_field_vrsn_num' field.
    */
-  public Integer getFlexFieldVrsnNum() {
+  public java.lang.Integer getFlexFieldVrsnNum() {
     return flex_field_vrsn_num;
   }
 
@@ -1222,7 +1243,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_vrsn_num' field.
    * @param value the value to set.
    */
-  public void setFlexFieldVrsnNum(Integer value) {
+  public void setFlexFieldVrsnNum(java.lang.Integer value) {
     this.flex_field_vrsn_num = value;
   }
 
@@ -1230,7 +1251,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_1' field.
    * @return The value of the 'flex_field_1' field.
    */
-  public String getFlexField1() {
+  public java.lang.String getFlexField1() {
     return flex_field_1;
   }
 
@@ -1238,7 +1259,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_1' field.
    * @param value the value to set.
    */
-  public void setFlexField1(String value) {
+  public void setFlexField1(java.lang.String value) {
     this.flex_field_1 = value;
   }
 
@@ -1246,7 +1267,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_2' field.
    * @return The value of the 'flex_field_2' field.
    */
-  public String getFlexField2() {
+  public java.lang.String getFlexField2() {
     return flex_field_2;
   }
 
@@ -1254,7 +1275,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_2' field.
    * @param value the value to set.
    */
-  public void setFlexField2(String value) {
+  public void setFlexField2(java.lang.String value) {
     this.flex_field_2 = value;
   }
 
@@ -1262,7 +1283,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_3' field.
    * @return The value of the 'flex_field_3' field.
    */
-  public String getFlexField3() {
+  public java.lang.String getFlexField3() {
     return flex_field_3;
   }
 
@@ -1270,7 +1291,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_3' field.
    * @param value the value to set.
    */
-  public void setFlexField3(String value) {
+  public void setFlexField3(java.lang.String value) {
     this.flex_field_3 = value;
   }
 
@@ -1278,7 +1299,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_4' field.
    * @return The value of the 'flex_field_4' field.
    */
-  public String getFlexField4() {
+  public java.lang.String getFlexField4() {
     return flex_field_4;
   }
 
@@ -1286,7 +1307,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_4' field.
    * @param value the value to set.
    */
-  public void setFlexField4(String value) {
+  public void setFlexField4(java.lang.String value) {
     this.flex_field_4 = value;
   }
 
@@ -1294,7 +1315,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_5' field.
    * @return The value of the 'flex_field_5' field.
    */
-  public String getFlexField5() {
+  public java.lang.String getFlexField5() {
     return flex_field_5;
   }
 
@@ -1302,7 +1323,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_5' field.
    * @param value the value to set.
    */
-  public void setFlexField5(String value) {
+  public void setFlexField5(java.lang.String value) {
     this.flex_field_5 = value;
   }
 
@@ -1310,7 +1331,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_6' field.
    * @return The value of the 'flex_field_6' field.
    */
-  public String getFlexField6() {
+  public java.lang.String getFlexField6() {
     return flex_field_6;
   }
 
@@ -1318,7 +1339,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_6' field.
    * @param value the value to set.
    */
-  public void setFlexField6(String value) {
+  public void setFlexField6(java.lang.String value) {
     this.flex_field_6 = value;
   }
 
@@ -1326,7 +1347,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_7' field.
    * @return The value of the 'flex_field_7' field.
    */
-  public String getFlexField7() {
+  public java.lang.String getFlexField7() {
     return flex_field_7;
   }
 
@@ -1334,7 +1355,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_7' field.
    * @param value the value to set.
    */
-  public void setFlexField7(String value) {
+  public void setFlexField7(java.lang.String value) {
     this.flex_field_7 = value;
   }
 
@@ -1342,7 +1363,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_8' field.
    * @return The value of the 'flex_field_8' field.
    */
-  public String getFlexField8() {
+  public java.lang.String getFlexField8() {
     return flex_field_8;
   }
 
@@ -1350,7 +1371,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_8' field.
    * @param value the value to set.
    */
-  public void setFlexField8(String value) {
+  public void setFlexField8(java.lang.String value) {
     this.flex_field_8 = value;
   }
 
@@ -1358,7 +1379,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_9' field.
    * @return The value of the 'flex_field_9' field.
    */
-  public String getFlexField9() {
+  public java.lang.String getFlexField9() {
     return flex_field_9;
   }
 
@@ -1366,7 +1387,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_9' field.
    * @param value the value to set.
    */
-  public void setFlexField9(String value) {
+  public void setFlexField9(java.lang.String value) {
     this.flex_field_9 = value;
   }
 
@@ -1374,7 +1395,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_10' field.
    * @return The value of the 'flex_field_10' field.
    */
-  public String getFlexField10() {
+  public java.lang.String getFlexField10() {
     return flex_field_10;
   }
 
@@ -1382,7 +1403,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_10' field.
    * @param value the value to set.
    */
-  public void setFlexField10(String value) {
+  public void setFlexField10(java.lang.String value) {
     this.flex_field_10 = value;
   }
 
@@ -1390,7 +1411,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_11' field.
    * @return The value of the 'flex_field_11' field.
    */
-  public String getFlexField11() {
+  public java.lang.String getFlexField11() {
     return flex_field_11;
   }
 
@@ -1398,7 +1419,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_11' field.
    * @param value the value to set.
    */
-  public void setFlexField11(String value) {
+  public void setFlexField11(java.lang.String value) {
     this.flex_field_11 = value;
   }
 
@@ -1406,7 +1427,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_12' field.
    * @return The value of the 'flex_field_12' field.
    */
-  public String getFlexField12() {
+  public java.lang.String getFlexField12() {
     return flex_field_12;
   }
 
@@ -1414,7 +1435,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_12' field.
    * @param value the value to set.
    */
-  public void setFlexField12(String value) {
+  public void setFlexField12(java.lang.String value) {
     this.flex_field_12 = value;
   }
 
@@ -1422,7 +1443,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_13' field.
    * @return The value of the 'flex_field_13' field.
    */
-  public String getFlexField13() {
+  public java.lang.String getFlexField13() {
     return flex_field_13;
   }
 
@@ -1430,7 +1451,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_13' field.
    * @param value the value to set.
    */
-  public void setFlexField13(String value) {
+  public void setFlexField13(java.lang.String value) {
     this.flex_field_13 = value;
   }
 
@@ -1438,7 +1459,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_14' field.
    * @return The value of the 'flex_field_14' field.
    */
-  public String getFlexField14() {
+  public java.lang.String getFlexField14() {
     return flex_field_14;
   }
 
@@ -1446,7 +1467,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_14' field.
    * @param value the value to set.
    */
-  public void setFlexField14(String value) {
+  public void setFlexField14(java.lang.String value) {
     this.flex_field_14 = value;
   }
 
@@ -1454,7 +1475,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_15' field.
    * @return The value of the 'flex_field_15' field.
    */
-  public String getFlexField15() {
+  public java.lang.String getFlexField15() {
     return flex_field_15;
   }
 
@@ -1462,7 +1483,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_15' field.
    * @param value the value to set.
    */
-  public void setFlexField15(String value) {
+  public void setFlexField15(java.lang.String value) {
     this.flex_field_15 = value;
   }
 
@@ -1470,7 +1491,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_16' field.
    * @return The value of the 'flex_field_16' field.
    */
-  public String getFlexField16() {
+  public java.lang.String getFlexField16() {
     return flex_field_16;
   }
 
@@ -1478,7 +1499,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_16' field.
    * @param value the value to set.
    */
-  public void setFlexField16(String value) {
+  public void setFlexField16(java.lang.String value) {
     this.flex_field_16 = value;
   }
 
@@ -1486,7 +1507,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_17' field.
    * @return The value of the 'flex_field_17' field.
    */
-  public String getFlexField17() {
+  public java.lang.String getFlexField17() {
     return flex_field_17;
   }
 
@@ -1494,7 +1515,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_17' field.
    * @param value the value to set.
    */
-  public void setFlexField17(String value) {
+  public void setFlexField17(java.lang.String value) {
     this.flex_field_17 = value;
   }
 
@@ -1502,7 +1523,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_18' field.
    * @return The value of the 'flex_field_18' field.
    */
-  public String getFlexField18() {
+  public java.lang.String getFlexField18() {
     return flex_field_18;
   }
 
@@ -1510,7 +1531,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_18' field.
    * @param value the value to set.
    */
-  public void setFlexField18(String value) {
+  public void setFlexField18(java.lang.String value) {
     this.flex_field_18 = value;
   }
 
@@ -1518,7 +1539,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_19' field.
    * @return The value of the 'flex_field_19' field.
    */
-  public String getFlexField19() {
+  public java.lang.String getFlexField19() {
     return flex_field_19;
   }
 
@@ -1526,7 +1547,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_19' field.
    * @param value the value to set.
    */
-  public void setFlexField19(String value) {
+  public void setFlexField19(java.lang.String value) {
     this.flex_field_19 = value;
   }
 
@@ -1534,7 +1555,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'flex_field_20' field.
    * @return The value of the 'flex_field_20' field.
    */
-  public String getFlexField20() {
+  public java.lang.String getFlexField20() {
     return flex_field_20;
   }
 
@@ -1542,7 +1563,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'flex_field_20' field.
    * @param value the value to set.
    */
-  public void setFlexField20(String value) {
+  public void setFlexField20(java.lang.String value) {
     this.flex_field_20 = value;
   }
 
@@ -1550,7 +1571,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'perf_track_name_value' field.
    * @return The value of the 'perf_track_name_value' field.
    */
-  public String getPerfTrackNameValue() {
+  public java.lang.String getPerfTrackNameValue() {
     return perf_track_name_value;
   }
 
@@ -1558,7 +1579,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'perf_track_name_value' field.
    * @param value the value to set.
    */
-  public void setPerfTrackNameValue(String value) {
+  public void setPerfTrackNameValue(java.lang.String value) {
     this.perf_track_name_value = value;
   }
 
@@ -1566,7 +1587,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'mgvalue' field.
    * @return The value of the 'mgvalue' field.
    */
-  public String getMgvalue() {
+  public java.lang.String getMgvalue() {
     return mgvalue;
   }
 
@@ -1574,7 +1595,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'mgvalue' field.
    * @param value the value to set.
    */
-  public void setMgvalue(String value) {
+  public void setMgvalue(java.lang.String value) {
     this.mgvalue = value;
   }
 
@@ -1582,7 +1603,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'mgvalue_rsn_cd' field.
    * @return The value of the 'mgvalue_rsn_cd' field.
    */
-  public String getMgvalueRsnCd() {
+  public java.lang.String getMgvalueRsnCd() {
     return mgvalue_rsn_cd;
   }
 
@@ -1590,7 +1611,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'mgvalue_rsn_cd' field.
    * @param value the value to set.
    */
-  public void setMgvalueRsnCd(String value) {
+  public void setMgvalueRsnCd(java.lang.String value) {
     this.mgvalue_rsn_cd = value;
   }
 
@@ -1598,7 +1619,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'cre_date' field.
    * @return The value of the 'cre_date' field.
    */
-  public String getCreDate() {
+  public java.lang.String getCreDate() {
     return cre_date;
   }
 
@@ -1606,7 +1627,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'cre_date' field.
    * @param value the value to set.
    */
-  public void setCreDate(String value) {
+  public void setCreDate(java.lang.String value) {
     this.cre_date = value;
   }
 
@@ -1614,7 +1635,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'cre_user' field.
    * @return The value of the 'cre_user' field.
    */
-  public String getCreUser() {
+  public java.lang.String getCreUser() {
     return cre_user;
   }
 
@@ -1622,7 +1643,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'cre_user' field.
    * @param value the value to set.
    */
-  public void setCreUser(String value) {
+  public void setCreUser(java.lang.String value) {
     this.cre_user = value;
   }
 
@@ -1630,7 +1651,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'upd_date' field.
    * @return The value of the 'upd_date' field.
    */
-  public String getUpdDate() {
+  public java.lang.String getUpdDate() {
     return upd_date;
   }
 
@@ -1638,7 +1659,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'upd_date' field.
    * @param value the value to set.
    */
-  public void setUpdDate(String value) {
+  public void setUpdDate(java.lang.String value) {
     this.upd_date = value;
   }
 
@@ -1646,7 +1667,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Gets the value of the 'upd_user' field.
    * @return The value of the 'upd_user' field.
    */
-  public String getUpdUser() {
+  public java.lang.String getUpdUser() {
     return upd_user;
   }
 
@@ -1654,7 +1675,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Sets the value of the 'upd_user' field.
    * @param value the value to set.
    */
-  public void setUpdUser(String value) {
+  public void setUpdUser(java.lang.String value) {
     this.upd_user = value;
   }
 
@@ -1662,8 +1683,8 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * Creates a new UnifiedTrackingImkMessage RecordBuilder.
    * @return A new UnifiedTrackingImkMessage RecordBuilder
    */
-  public static Builder newBuilder() {
-    return new Builder();
+  public static com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder newBuilder() {
+    return new com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder();
   }
 
   /**
@@ -1671,8 +1692,8 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * @param other The existing builder to copy.
    * @return A new UnifiedTrackingImkMessage RecordBuilder
    */
-  public static Builder newBuilder(Builder other) {
-    return new Builder(other);
+  public static com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder other) {
+    return new com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder(other);
   }
 
   /**
@@ -1680,8 +1701,8 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
    * @param other The existing instance to copy.
    * @return A new UnifiedTrackingImkMessage RecordBuilder
    */
-  public static Builder newBuilder(UnifiedTrackingImkMessage other) {
-    return new Builder(other);
+  public static com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage other) {
+    return new com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder(other);
   }
 
   /**
@@ -1691,82 +1712,83 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
     implements org.apache.avro.data.RecordBuilder<UnifiedTrackingImkMessage> {
 
     /** Rheos header - This is  mandatory for every schema in Rheos  */
-    private RheosHeader rheosHeader;
-    private RheosHeader.Builder rheosHeaderBuilder;
-    private String batch_id;
+    private com.ebay.app.raptor.chocolate.avro.RheosHeader rheosHeader;
+    private com.ebay.app.raptor.chocolate.avro.RheosHeader.Builder rheosHeaderBuilder;
+    private java.lang.String batch_id;
     private int file_id;
     private int file_schm_vrsn;
     private long rvr_id;
-    private String event_dt;
+    private java.lang.String event_dt;
     private int srvd_pstn;
-    private String rvr_cmnd_type_cd;
-    private String rvr_chnl_type_cd;
-    private String cntry_cd;
-    private String lang_cd;
+    private java.lang.String rvr_cmnd_type_cd;
+    private java.lang.String rvr_chnl_type_cd;
+    private java.lang.String cntry_cd;
+    private java.lang.String lang_cd;
     private int trckng_prtnr_id;
-    private String cguid;
-    private String guid;
+    private java.lang.String cguid;
+    private java.lang.String guid;
     private long user_id;
-    private String clnt_remote_ip;
+    private java.lang.String clnt_remote_ip;
     private int brwsr_type_id;
-    private String brwsr_name;
-    private String rfrr_dmn_name;
-    private String rfrr_url;
+    private java.lang.String brwsr_name;
+    private java.lang.String rfrr_dmn_name;
+    private java.lang.String rfrr_url;
     private int url_encrptd_yn_ind;
-    private String pblshr_id;
-    private String lndng_page_dmn_name;
-    private String lndng_page_url;
-    private String user_query;
-    private String rule_bit_flag_strng;
-    private String event_ts;
+    private java.lang.String pblshr_id;
+    private java.lang.String lndng_page_dmn_name;
+    private java.lang.String lndng_page_url;
+    private java.lang.String user_query;
+    private java.lang.String rule_bit_flag_strng;
+    private java.lang.String event_ts;
     private int dflt_bhrv_id;
     private long src_rotation_id;
     private long dst_rotation_id;
-    private String user_map_ind;
+    private java.lang.String user_map_ind;
     private int dst_client_id;
     private long creative_id;
     private int test_ctrl_flag;
     private int mfe_id;
     private long kw_id;
-    private String keyword;
-    private String mt_id;
-    private String crlp;
-    private String geo_id;
-    private String item_id;
-    private String transaction_type;
-    private String transaction_id;
-    private String cart_id;
-    private String extrnl_cookie;
-    private String ebay_site_id;
-    private String rvr_url;
+    private java.lang.String keyword;
+    private java.lang.String mt_id;
+    private java.lang.String crlp;
+    private java.lang.String geo_id;
+    private java.lang.String item_id;
+    private java.lang.String transaction_type;
+    private java.lang.String transaction_id;
+    private java.lang.String cart_id;
+    private java.lang.String extrnl_cookie;
+    private java.lang.String ebay_site_id;
+    private java.lang.String rvr_url;
+    private java.lang.String client_data;
     private int flex_field_vrsn_num;
-    private String flex_field_1;
-    private String flex_field_2;
-    private String flex_field_3;
-    private String flex_field_4;
-    private String flex_field_5;
-    private String flex_field_6;
-    private String flex_field_7;
-    private String flex_field_8;
-    private String flex_field_9;
-    private String flex_field_10;
-    private String flex_field_11;
-    private String flex_field_12;
-    private String flex_field_13;
-    private String flex_field_14;
-    private String flex_field_15;
-    private String flex_field_16;
-    private String flex_field_17;
-    private String flex_field_18;
-    private String flex_field_19;
-    private String flex_field_20;
-    private String perf_track_name_value;
-    private String mgvalue;
-    private String mgvalue_rsn_cd;
-    private String cre_date;
-    private String cre_user;
-    private String upd_date;
-    private String upd_user;
+    private java.lang.String flex_field_1;
+    private java.lang.String flex_field_2;
+    private java.lang.String flex_field_3;
+    private java.lang.String flex_field_4;
+    private java.lang.String flex_field_5;
+    private java.lang.String flex_field_6;
+    private java.lang.String flex_field_7;
+    private java.lang.String flex_field_8;
+    private java.lang.String flex_field_9;
+    private java.lang.String flex_field_10;
+    private java.lang.String flex_field_11;
+    private java.lang.String flex_field_12;
+    private java.lang.String flex_field_13;
+    private java.lang.String flex_field_14;
+    private java.lang.String flex_field_15;
+    private java.lang.String flex_field_16;
+    private java.lang.String flex_field_17;
+    private java.lang.String flex_field_18;
+    private java.lang.String flex_field_19;
+    private java.lang.String flex_field_20;
+    private java.lang.String perf_track_name_value;
+    private java.lang.String mgvalue;
+    private java.lang.String mgvalue_rsn_cd;
+    private java.lang.String cre_date;
+    private java.lang.String cre_user;
+    private java.lang.String upd_date;
+    private java.lang.String upd_user;
 
     /** Creates a new Builder */
     private Builder() {
@@ -1777,14 +1799,14 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(Builder other) {
+    private Builder(com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.rheosHeader)) {
         this.rheosHeader = data().deepCopy(fields()[0].schema(), other.rheosHeader);
         fieldSetFlags()[0] = true;
       }
       if (other.hasRheosHeaderBuilder()) {
-        this.rheosHeaderBuilder = RheosHeader.newBuilder(other.getRheosHeaderBuilder());
+        this.rheosHeaderBuilder = com.ebay.app.raptor.chocolate.avro.RheosHeader.newBuilder(other.getRheosHeaderBuilder());
       }
       if (isValidValue(fields()[1], other.batch_id)) {
         this.batch_id = data().deepCopy(fields()[1].schema(), other.batch_id);
@@ -1970,117 +1992,121 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
         this.rvr_url = data().deepCopy(fields()[46].schema(), other.rvr_url);
         fieldSetFlags()[46] = true;
       }
-      if (isValidValue(fields()[47], other.flex_field_vrsn_num)) {
-        this.flex_field_vrsn_num = data().deepCopy(fields()[47].schema(), other.flex_field_vrsn_num);
+      if (isValidValue(fields()[47], other.client_data)) {
+        this.client_data = data().deepCopy(fields()[47].schema(), other.client_data);
         fieldSetFlags()[47] = true;
       }
-      if (isValidValue(fields()[48], other.flex_field_1)) {
-        this.flex_field_1 = data().deepCopy(fields()[48].schema(), other.flex_field_1);
+      if (isValidValue(fields()[48], other.flex_field_vrsn_num)) {
+        this.flex_field_vrsn_num = data().deepCopy(fields()[48].schema(), other.flex_field_vrsn_num);
         fieldSetFlags()[48] = true;
       }
-      if (isValidValue(fields()[49], other.flex_field_2)) {
-        this.flex_field_2 = data().deepCopy(fields()[49].schema(), other.flex_field_2);
+      if (isValidValue(fields()[49], other.flex_field_1)) {
+        this.flex_field_1 = data().deepCopy(fields()[49].schema(), other.flex_field_1);
         fieldSetFlags()[49] = true;
       }
-      if (isValidValue(fields()[50], other.flex_field_3)) {
-        this.flex_field_3 = data().deepCopy(fields()[50].schema(), other.flex_field_3);
+      if (isValidValue(fields()[50], other.flex_field_2)) {
+        this.flex_field_2 = data().deepCopy(fields()[50].schema(), other.flex_field_2);
         fieldSetFlags()[50] = true;
       }
-      if (isValidValue(fields()[51], other.flex_field_4)) {
-        this.flex_field_4 = data().deepCopy(fields()[51].schema(), other.flex_field_4);
+      if (isValidValue(fields()[51], other.flex_field_3)) {
+        this.flex_field_3 = data().deepCopy(fields()[51].schema(), other.flex_field_3);
         fieldSetFlags()[51] = true;
       }
-      if (isValidValue(fields()[52], other.flex_field_5)) {
-        this.flex_field_5 = data().deepCopy(fields()[52].schema(), other.flex_field_5);
+      if (isValidValue(fields()[52], other.flex_field_4)) {
+        this.flex_field_4 = data().deepCopy(fields()[52].schema(), other.flex_field_4);
         fieldSetFlags()[52] = true;
       }
-      if (isValidValue(fields()[53], other.flex_field_6)) {
-        this.flex_field_6 = data().deepCopy(fields()[53].schema(), other.flex_field_6);
+      if (isValidValue(fields()[53], other.flex_field_5)) {
+        this.flex_field_5 = data().deepCopy(fields()[53].schema(), other.flex_field_5);
         fieldSetFlags()[53] = true;
       }
-      if (isValidValue(fields()[54], other.flex_field_7)) {
-        this.flex_field_7 = data().deepCopy(fields()[54].schema(), other.flex_field_7);
+      if (isValidValue(fields()[54], other.flex_field_6)) {
+        this.flex_field_6 = data().deepCopy(fields()[54].schema(), other.flex_field_6);
         fieldSetFlags()[54] = true;
       }
-      if (isValidValue(fields()[55], other.flex_field_8)) {
-        this.flex_field_8 = data().deepCopy(fields()[55].schema(), other.flex_field_8);
+      if (isValidValue(fields()[55], other.flex_field_7)) {
+        this.flex_field_7 = data().deepCopy(fields()[55].schema(), other.flex_field_7);
         fieldSetFlags()[55] = true;
       }
-      if (isValidValue(fields()[56], other.flex_field_9)) {
-        this.flex_field_9 = data().deepCopy(fields()[56].schema(), other.flex_field_9);
+      if (isValidValue(fields()[56], other.flex_field_8)) {
+        this.flex_field_8 = data().deepCopy(fields()[56].schema(), other.flex_field_8);
         fieldSetFlags()[56] = true;
       }
-      if (isValidValue(fields()[57], other.flex_field_10)) {
-        this.flex_field_10 = data().deepCopy(fields()[57].schema(), other.flex_field_10);
+      if (isValidValue(fields()[57], other.flex_field_9)) {
+        this.flex_field_9 = data().deepCopy(fields()[57].schema(), other.flex_field_9);
         fieldSetFlags()[57] = true;
       }
-      if (isValidValue(fields()[58], other.flex_field_11)) {
-        this.flex_field_11 = data().deepCopy(fields()[58].schema(), other.flex_field_11);
+      if (isValidValue(fields()[58], other.flex_field_10)) {
+        this.flex_field_10 = data().deepCopy(fields()[58].schema(), other.flex_field_10);
         fieldSetFlags()[58] = true;
       }
-      if (isValidValue(fields()[59], other.flex_field_12)) {
-        this.flex_field_12 = data().deepCopy(fields()[59].schema(), other.flex_field_12);
+      if (isValidValue(fields()[59], other.flex_field_11)) {
+        this.flex_field_11 = data().deepCopy(fields()[59].schema(), other.flex_field_11);
         fieldSetFlags()[59] = true;
       }
-      if (isValidValue(fields()[60], other.flex_field_13)) {
-        this.flex_field_13 = data().deepCopy(fields()[60].schema(), other.flex_field_13);
+      if (isValidValue(fields()[60], other.flex_field_12)) {
+        this.flex_field_12 = data().deepCopy(fields()[60].schema(), other.flex_field_12);
         fieldSetFlags()[60] = true;
       }
-      if (isValidValue(fields()[61], other.flex_field_14)) {
-        this.flex_field_14 = data().deepCopy(fields()[61].schema(), other.flex_field_14);
+      if (isValidValue(fields()[61], other.flex_field_13)) {
+        this.flex_field_13 = data().deepCopy(fields()[61].schema(), other.flex_field_13);
         fieldSetFlags()[61] = true;
       }
-      if (isValidValue(fields()[62], other.flex_field_15)) {
-        this.flex_field_15 = data().deepCopy(fields()[62].schema(), other.flex_field_15);
+      if (isValidValue(fields()[62], other.flex_field_14)) {
+        this.flex_field_14 = data().deepCopy(fields()[62].schema(), other.flex_field_14);
         fieldSetFlags()[62] = true;
       }
-      if (isValidValue(fields()[63], other.flex_field_16)) {
-        this.flex_field_16 = data().deepCopy(fields()[63].schema(), other.flex_field_16);
+      if (isValidValue(fields()[63], other.flex_field_15)) {
+        this.flex_field_15 = data().deepCopy(fields()[63].schema(), other.flex_field_15);
         fieldSetFlags()[63] = true;
       }
-      if (isValidValue(fields()[64], other.flex_field_17)) {
-        this.flex_field_17 = data().deepCopy(fields()[64].schema(), other.flex_field_17);
+      if (isValidValue(fields()[64], other.flex_field_16)) {
+        this.flex_field_16 = data().deepCopy(fields()[64].schema(), other.flex_field_16);
         fieldSetFlags()[64] = true;
       }
-      if (isValidValue(fields()[65], other.flex_field_18)) {
-        this.flex_field_18 = data().deepCopy(fields()[65].schema(), other.flex_field_18);
+      if (isValidValue(fields()[65], other.flex_field_17)) {
+        this.flex_field_17 = data().deepCopy(fields()[65].schema(), other.flex_field_17);
         fieldSetFlags()[65] = true;
       }
-      if (isValidValue(fields()[66], other.flex_field_19)) {
-        this.flex_field_19 = data().deepCopy(fields()[66].schema(), other.flex_field_19);
+      if (isValidValue(fields()[66], other.flex_field_18)) {
+        this.flex_field_18 = data().deepCopy(fields()[66].schema(), other.flex_field_18);
         fieldSetFlags()[66] = true;
       }
-      if (isValidValue(fields()[67], other.flex_field_20)) {
-        this.flex_field_20 = data().deepCopy(fields()[67].schema(), other.flex_field_20);
+      if (isValidValue(fields()[67], other.flex_field_19)) {
+        this.flex_field_19 = data().deepCopy(fields()[67].schema(), other.flex_field_19);
         fieldSetFlags()[67] = true;
       }
-      if (isValidValue(fields()[68], other.perf_track_name_value)) {
-        this.perf_track_name_value = data().deepCopy(fields()[68].schema(), other.perf_track_name_value);
+      if (isValidValue(fields()[68], other.flex_field_20)) {
+        this.flex_field_20 = data().deepCopy(fields()[68].schema(), other.flex_field_20);
         fieldSetFlags()[68] = true;
       }
-      if (isValidValue(fields()[69], other.mgvalue)) {
-        this.mgvalue = data().deepCopy(fields()[69].schema(), other.mgvalue);
+      if (isValidValue(fields()[69], other.perf_track_name_value)) {
+        this.perf_track_name_value = data().deepCopy(fields()[69].schema(), other.perf_track_name_value);
         fieldSetFlags()[69] = true;
       }
-      if (isValidValue(fields()[70], other.mgvalue_rsn_cd)) {
-        this.mgvalue_rsn_cd = data().deepCopy(fields()[70].schema(), other.mgvalue_rsn_cd);
+      if (isValidValue(fields()[70], other.mgvalue)) {
+        this.mgvalue = data().deepCopy(fields()[70].schema(), other.mgvalue);
         fieldSetFlags()[70] = true;
       }
-      if (isValidValue(fields()[71], other.cre_date)) {
-        this.cre_date = data().deepCopy(fields()[71].schema(), other.cre_date);
+      if (isValidValue(fields()[71], other.mgvalue_rsn_cd)) {
+        this.mgvalue_rsn_cd = data().deepCopy(fields()[71].schema(), other.mgvalue_rsn_cd);
         fieldSetFlags()[71] = true;
       }
-      if (isValidValue(fields()[72], other.cre_user)) {
-        this.cre_user = data().deepCopy(fields()[72].schema(), other.cre_user);
+      if (isValidValue(fields()[72], other.cre_date)) {
+        this.cre_date = data().deepCopy(fields()[72].schema(), other.cre_date);
         fieldSetFlags()[72] = true;
       }
-      if (isValidValue(fields()[73], other.upd_date)) {
-        this.upd_date = data().deepCopy(fields()[73].schema(), other.upd_date);
+      if (isValidValue(fields()[73], other.cre_user)) {
+        this.cre_user = data().deepCopy(fields()[73].schema(), other.cre_user);
         fieldSetFlags()[73] = true;
       }
-      if (isValidValue(fields()[74], other.upd_user)) {
-        this.upd_user = data().deepCopy(fields()[74].schema(), other.upd_user);
+      if (isValidValue(fields()[74], other.upd_date)) {
+        this.upd_date = data().deepCopy(fields()[74].schema(), other.upd_date);
         fieldSetFlags()[74] = true;
+      }
+      if (isValidValue(fields()[75], other.upd_user)) {
+        this.upd_user = data().deepCopy(fields()[75].schema(), other.upd_user);
+        fieldSetFlags()[75] = true;
       }
     }
 
@@ -2088,7 +2114,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
      * Creates a Builder by copying an existing UnifiedTrackingImkMessage instance
      * @param other The existing instance to copy.
      */
-    private Builder(UnifiedTrackingImkMessage other) {
+    private Builder(com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage other) {
             super(SCHEMA$);
       if (isValidValue(fields()[0], other.rheosHeader)) {
         this.rheosHeader = data().deepCopy(fields()[0].schema(), other.rheosHeader);
@@ -2279,117 +2305,121 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
         this.rvr_url = data().deepCopy(fields()[46].schema(), other.rvr_url);
         fieldSetFlags()[46] = true;
       }
-      if (isValidValue(fields()[47], other.flex_field_vrsn_num)) {
-        this.flex_field_vrsn_num = data().deepCopy(fields()[47].schema(), other.flex_field_vrsn_num);
+      if (isValidValue(fields()[47], other.client_data)) {
+        this.client_data = data().deepCopy(fields()[47].schema(), other.client_data);
         fieldSetFlags()[47] = true;
       }
-      if (isValidValue(fields()[48], other.flex_field_1)) {
-        this.flex_field_1 = data().deepCopy(fields()[48].schema(), other.flex_field_1);
+      if (isValidValue(fields()[48], other.flex_field_vrsn_num)) {
+        this.flex_field_vrsn_num = data().deepCopy(fields()[48].schema(), other.flex_field_vrsn_num);
         fieldSetFlags()[48] = true;
       }
-      if (isValidValue(fields()[49], other.flex_field_2)) {
-        this.flex_field_2 = data().deepCopy(fields()[49].schema(), other.flex_field_2);
+      if (isValidValue(fields()[49], other.flex_field_1)) {
+        this.flex_field_1 = data().deepCopy(fields()[49].schema(), other.flex_field_1);
         fieldSetFlags()[49] = true;
       }
-      if (isValidValue(fields()[50], other.flex_field_3)) {
-        this.flex_field_3 = data().deepCopy(fields()[50].schema(), other.flex_field_3);
+      if (isValidValue(fields()[50], other.flex_field_2)) {
+        this.flex_field_2 = data().deepCopy(fields()[50].schema(), other.flex_field_2);
         fieldSetFlags()[50] = true;
       }
-      if (isValidValue(fields()[51], other.flex_field_4)) {
-        this.flex_field_4 = data().deepCopy(fields()[51].schema(), other.flex_field_4);
+      if (isValidValue(fields()[51], other.flex_field_3)) {
+        this.flex_field_3 = data().deepCopy(fields()[51].schema(), other.flex_field_3);
         fieldSetFlags()[51] = true;
       }
-      if (isValidValue(fields()[52], other.flex_field_5)) {
-        this.flex_field_5 = data().deepCopy(fields()[52].schema(), other.flex_field_5);
+      if (isValidValue(fields()[52], other.flex_field_4)) {
+        this.flex_field_4 = data().deepCopy(fields()[52].schema(), other.flex_field_4);
         fieldSetFlags()[52] = true;
       }
-      if (isValidValue(fields()[53], other.flex_field_6)) {
-        this.flex_field_6 = data().deepCopy(fields()[53].schema(), other.flex_field_6);
+      if (isValidValue(fields()[53], other.flex_field_5)) {
+        this.flex_field_5 = data().deepCopy(fields()[53].schema(), other.flex_field_5);
         fieldSetFlags()[53] = true;
       }
-      if (isValidValue(fields()[54], other.flex_field_7)) {
-        this.flex_field_7 = data().deepCopy(fields()[54].schema(), other.flex_field_7);
+      if (isValidValue(fields()[54], other.flex_field_6)) {
+        this.flex_field_6 = data().deepCopy(fields()[54].schema(), other.flex_field_6);
         fieldSetFlags()[54] = true;
       }
-      if (isValidValue(fields()[55], other.flex_field_8)) {
-        this.flex_field_8 = data().deepCopy(fields()[55].schema(), other.flex_field_8);
+      if (isValidValue(fields()[55], other.flex_field_7)) {
+        this.flex_field_7 = data().deepCopy(fields()[55].schema(), other.flex_field_7);
         fieldSetFlags()[55] = true;
       }
-      if (isValidValue(fields()[56], other.flex_field_9)) {
-        this.flex_field_9 = data().deepCopy(fields()[56].schema(), other.flex_field_9);
+      if (isValidValue(fields()[56], other.flex_field_8)) {
+        this.flex_field_8 = data().deepCopy(fields()[56].schema(), other.flex_field_8);
         fieldSetFlags()[56] = true;
       }
-      if (isValidValue(fields()[57], other.flex_field_10)) {
-        this.flex_field_10 = data().deepCopy(fields()[57].schema(), other.flex_field_10);
+      if (isValidValue(fields()[57], other.flex_field_9)) {
+        this.flex_field_9 = data().deepCopy(fields()[57].schema(), other.flex_field_9);
         fieldSetFlags()[57] = true;
       }
-      if (isValidValue(fields()[58], other.flex_field_11)) {
-        this.flex_field_11 = data().deepCopy(fields()[58].schema(), other.flex_field_11);
+      if (isValidValue(fields()[58], other.flex_field_10)) {
+        this.flex_field_10 = data().deepCopy(fields()[58].schema(), other.flex_field_10);
         fieldSetFlags()[58] = true;
       }
-      if (isValidValue(fields()[59], other.flex_field_12)) {
-        this.flex_field_12 = data().deepCopy(fields()[59].schema(), other.flex_field_12);
+      if (isValidValue(fields()[59], other.flex_field_11)) {
+        this.flex_field_11 = data().deepCopy(fields()[59].schema(), other.flex_field_11);
         fieldSetFlags()[59] = true;
       }
-      if (isValidValue(fields()[60], other.flex_field_13)) {
-        this.flex_field_13 = data().deepCopy(fields()[60].schema(), other.flex_field_13);
+      if (isValidValue(fields()[60], other.flex_field_12)) {
+        this.flex_field_12 = data().deepCopy(fields()[60].schema(), other.flex_field_12);
         fieldSetFlags()[60] = true;
       }
-      if (isValidValue(fields()[61], other.flex_field_14)) {
-        this.flex_field_14 = data().deepCopy(fields()[61].schema(), other.flex_field_14);
+      if (isValidValue(fields()[61], other.flex_field_13)) {
+        this.flex_field_13 = data().deepCopy(fields()[61].schema(), other.flex_field_13);
         fieldSetFlags()[61] = true;
       }
-      if (isValidValue(fields()[62], other.flex_field_15)) {
-        this.flex_field_15 = data().deepCopy(fields()[62].schema(), other.flex_field_15);
+      if (isValidValue(fields()[62], other.flex_field_14)) {
+        this.flex_field_14 = data().deepCopy(fields()[62].schema(), other.flex_field_14);
         fieldSetFlags()[62] = true;
       }
-      if (isValidValue(fields()[63], other.flex_field_16)) {
-        this.flex_field_16 = data().deepCopy(fields()[63].schema(), other.flex_field_16);
+      if (isValidValue(fields()[63], other.flex_field_15)) {
+        this.flex_field_15 = data().deepCopy(fields()[63].schema(), other.flex_field_15);
         fieldSetFlags()[63] = true;
       }
-      if (isValidValue(fields()[64], other.flex_field_17)) {
-        this.flex_field_17 = data().deepCopy(fields()[64].schema(), other.flex_field_17);
+      if (isValidValue(fields()[64], other.flex_field_16)) {
+        this.flex_field_16 = data().deepCopy(fields()[64].schema(), other.flex_field_16);
         fieldSetFlags()[64] = true;
       }
-      if (isValidValue(fields()[65], other.flex_field_18)) {
-        this.flex_field_18 = data().deepCopy(fields()[65].schema(), other.flex_field_18);
+      if (isValidValue(fields()[65], other.flex_field_17)) {
+        this.flex_field_17 = data().deepCopy(fields()[65].schema(), other.flex_field_17);
         fieldSetFlags()[65] = true;
       }
-      if (isValidValue(fields()[66], other.flex_field_19)) {
-        this.flex_field_19 = data().deepCopy(fields()[66].schema(), other.flex_field_19);
+      if (isValidValue(fields()[66], other.flex_field_18)) {
+        this.flex_field_18 = data().deepCopy(fields()[66].schema(), other.flex_field_18);
         fieldSetFlags()[66] = true;
       }
-      if (isValidValue(fields()[67], other.flex_field_20)) {
-        this.flex_field_20 = data().deepCopy(fields()[67].schema(), other.flex_field_20);
+      if (isValidValue(fields()[67], other.flex_field_19)) {
+        this.flex_field_19 = data().deepCopy(fields()[67].schema(), other.flex_field_19);
         fieldSetFlags()[67] = true;
       }
-      if (isValidValue(fields()[68], other.perf_track_name_value)) {
-        this.perf_track_name_value = data().deepCopy(fields()[68].schema(), other.perf_track_name_value);
+      if (isValidValue(fields()[68], other.flex_field_20)) {
+        this.flex_field_20 = data().deepCopy(fields()[68].schema(), other.flex_field_20);
         fieldSetFlags()[68] = true;
       }
-      if (isValidValue(fields()[69], other.mgvalue)) {
-        this.mgvalue = data().deepCopy(fields()[69].schema(), other.mgvalue);
+      if (isValidValue(fields()[69], other.perf_track_name_value)) {
+        this.perf_track_name_value = data().deepCopy(fields()[69].schema(), other.perf_track_name_value);
         fieldSetFlags()[69] = true;
       }
-      if (isValidValue(fields()[70], other.mgvalue_rsn_cd)) {
-        this.mgvalue_rsn_cd = data().deepCopy(fields()[70].schema(), other.mgvalue_rsn_cd);
+      if (isValidValue(fields()[70], other.mgvalue)) {
+        this.mgvalue = data().deepCopy(fields()[70].schema(), other.mgvalue);
         fieldSetFlags()[70] = true;
       }
-      if (isValidValue(fields()[71], other.cre_date)) {
-        this.cre_date = data().deepCopy(fields()[71].schema(), other.cre_date);
+      if (isValidValue(fields()[71], other.mgvalue_rsn_cd)) {
+        this.mgvalue_rsn_cd = data().deepCopy(fields()[71].schema(), other.mgvalue_rsn_cd);
         fieldSetFlags()[71] = true;
       }
-      if (isValidValue(fields()[72], other.cre_user)) {
-        this.cre_user = data().deepCopy(fields()[72].schema(), other.cre_user);
+      if (isValidValue(fields()[72], other.cre_date)) {
+        this.cre_date = data().deepCopy(fields()[72].schema(), other.cre_date);
         fieldSetFlags()[72] = true;
       }
-      if (isValidValue(fields()[73], other.upd_date)) {
-        this.upd_date = data().deepCopy(fields()[73].schema(), other.upd_date);
+      if (isValidValue(fields()[73], other.cre_user)) {
+        this.cre_user = data().deepCopy(fields()[73].schema(), other.cre_user);
         fieldSetFlags()[73] = true;
       }
-      if (isValidValue(fields()[74], other.upd_user)) {
-        this.upd_user = data().deepCopy(fields()[74].schema(), other.upd_user);
+      if (isValidValue(fields()[74], other.upd_date)) {
+        this.upd_date = data().deepCopy(fields()[74].schema(), other.upd_date);
         fieldSetFlags()[74] = true;
+      }
+      if (isValidValue(fields()[75], other.upd_user)) {
+        this.upd_user = data().deepCopy(fields()[75].schema(), other.upd_user);
+        fieldSetFlags()[75] = true;
       }
     }
 
@@ -2398,7 +2428,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Rheos header - This is  mandatory for every schema in Rheos 
       * @return The value.
       */
-    public RheosHeader getRheosHeader() {
+    public com.ebay.app.raptor.chocolate.avro.RheosHeader getRheosHeader() {
       return rheosHeader;
     }
 
@@ -2408,7 +2438,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rheosHeader'.
       * @return This builder.
       */
-    public Builder setRheosHeader(RheosHeader value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRheosHeader(com.ebay.app.raptor.chocolate.avro.RheosHeader value) {
       validate(fields()[0], value);
       this.rheosHeaderBuilder = null;
       this.rheosHeader = value;
@@ -2430,12 +2460,12 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
      * Rheos header - This is  mandatory for every schema in Rheos 
      * @return This builder.
      */
-    public RheosHeader.Builder getRheosHeaderBuilder() {
+    public com.ebay.app.raptor.chocolate.avro.RheosHeader.Builder getRheosHeaderBuilder() {
       if (rheosHeaderBuilder == null) {
         if (hasRheosHeader()) {
-          setRheosHeaderBuilder(RheosHeader.newBuilder(rheosHeader));
+          setRheosHeaderBuilder(com.ebay.app.raptor.chocolate.avro.RheosHeader.newBuilder(rheosHeader));
         } else {
-          setRheosHeaderBuilder(RheosHeader.newBuilder());
+          setRheosHeaderBuilder(com.ebay.app.raptor.chocolate.avro.RheosHeader.newBuilder());
         }
       }
       return rheosHeaderBuilder;
@@ -2447,7 +2477,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
      * @param value The builder instance that must be set.
      * @return This builder.
      */
-    public Builder setRheosHeaderBuilder(RheosHeader.Builder value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRheosHeaderBuilder(com.ebay.app.raptor.chocolate.avro.RheosHeader.Builder value) {
       clearRheosHeader();
       rheosHeaderBuilder = value;
       return this;
@@ -2467,7 +2497,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Rheos header - This is  mandatory for every schema in Rheos 
       * @return This builder.
       */
-    public Builder clearRheosHeader() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRheosHeader() {
       rheosHeader = null;
       rheosHeaderBuilder = null;
       fieldSetFlags()[0] = false;
@@ -2478,7 +2508,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'batch_id' field.
       * @return The value.
       */
-    public String getBatchId() {
+    public java.lang.String getBatchId() {
       return batch_id;
     }
 
@@ -2487,7 +2517,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'batch_id'.
       * @return This builder.
       */
-    public Builder setBatchId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setBatchId(java.lang.String value) {
       validate(fields()[1], value);
       this.batch_id = value;
       fieldSetFlags()[1] = true;
@@ -2507,7 +2537,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'batch_id' field.
       * @return This builder.
       */
-    public Builder clearBatchId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearBatchId() {
       batch_id = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -2517,7 +2547,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'file_id' field.
       * @return The value.
       */
-    public Integer getFileId() {
+    public java.lang.Integer getFileId() {
       return file_id;
     }
 
@@ -2526,7 +2556,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'file_id'.
       * @return This builder.
       */
-    public Builder setFileId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFileId(int value) {
       validate(fields()[2], value);
       this.file_id = value;
       fieldSetFlags()[2] = true;
@@ -2546,7 +2576,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'file_id' field.
       * @return This builder.
       */
-    public Builder clearFileId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFileId() {
       fieldSetFlags()[2] = false;
       return this;
     }
@@ -2555,7 +2585,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'file_schm_vrsn' field.
       * @return The value.
       */
-    public Integer getFileSchmVrsn() {
+    public java.lang.Integer getFileSchmVrsn() {
       return file_schm_vrsn;
     }
 
@@ -2564,7 +2594,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'file_schm_vrsn'.
       * @return This builder.
       */
-    public Builder setFileSchmVrsn(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFileSchmVrsn(int value) {
       validate(fields()[3], value);
       this.file_schm_vrsn = value;
       fieldSetFlags()[3] = true;
@@ -2584,7 +2614,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'file_schm_vrsn' field.
       * @return This builder.
       */
-    public Builder clearFileSchmVrsn() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFileSchmVrsn() {
       fieldSetFlags()[3] = false;
       return this;
     }
@@ -2593,7 +2623,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rvr_id' field.
       * @return The value.
       */
-    public Long getRvrId() {
+    public java.lang.Long getRvrId() {
       return rvr_id;
     }
 
@@ -2602,7 +2632,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rvr_id'.
       * @return This builder.
       */
-    public Builder setRvrId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRvrId(long value) {
       validate(fields()[4], value);
       this.rvr_id = value;
       fieldSetFlags()[4] = true;
@@ -2622,7 +2652,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rvr_id' field.
       * @return This builder.
       */
-    public Builder clearRvrId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRvrId() {
       fieldSetFlags()[4] = false;
       return this;
     }
@@ -2631,7 +2661,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'event_dt' field.
       * @return The value.
       */
-    public String getEventDt() {
+    public java.lang.String getEventDt() {
       return event_dt;
     }
 
@@ -2640,7 +2670,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'event_dt'.
       * @return This builder.
       */
-    public Builder setEventDt(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setEventDt(java.lang.String value) {
       validate(fields()[5], value);
       this.event_dt = value;
       fieldSetFlags()[5] = true;
@@ -2660,7 +2690,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'event_dt' field.
       * @return This builder.
       */
-    public Builder clearEventDt() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearEventDt() {
       event_dt = null;
       fieldSetFlags()[5] = false;
       return this;
@@ -2670,7 +2700,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'srvd_pstn' field.
       * @return The value.
       */
-    public Integer getSrvdPstn() {
+    public java.lang.Integer getSrvdPstn() {
       return srvd_pstn;
     }
 
@@ -2679,7 +2709,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'srvd_pstn'.
       * @return This builder.
       */
-    public Builder setSrvdPstn(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setSrvdPstn(int value) {
       validate(fields()[6], value);
       this.srvd_pstn = value;
       fieldSetFlags()[6] = true;
@@ -2699,7 +2729,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'srvd_pstn' field.
       * @return This builder.
       */
-    public Builder clearSrvdPstn() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearSrvdPstn() {
       fieldSetFlags()[6] = false;
       return this;
     }
@@ -2708,7 +2738,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rvr_cmnd_type_cd' field.
       * @return The value.
       */
-    public String getRvrCmndTypeCd() {
+    public java.lang.String getRvrCmndTypeCd() {
       return rvr_cmnd_type_cd;
     }
 
@@ -2717,7 +2747,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rvr_cmnd_type_cd'.
       * @return This builder.
       */
-    public Builder setRvrCmndTypeCd(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRvrCmndTypeCd(java.lang.String value) {
       validate(fields()[7], value);
       this.rvr_cmnd_type_cd = value;
       fieldSetFlags()[7] = true;
@@ -2737,7 +2767,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rvr_cmnd_type_cd' field.
       * @return This builder.
       */
-    public Builder clearRvrCmndTypeCd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRvrCmndTypeCd() {
       rvr_cmnd_type_cd = null;
       fieldSetFlags()[7] = false;
       return this;
@@ -2747,7 +2777,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rvr_chnl_type_cd' field.
       * @return The value.
       */
-    public String getRvrChnlTypeCd() {
+    public java.lang.String getRvrChnlTypeCd() {
       return rvr_chnl_type_cd;
     }
 
@@ -2756,7 +2786,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rvr_chnl_type_cd'.
       * @return This builder.
       */
-    public Builder setRvrChnlTypeCd(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRvrChnlTypeCd(java.lang.String value) {
       validate(fields()[8], value);
       this.rvr_chnl_type_cd = value;
       fieldSetFlags()[8] = true;
@@ -2776,7 +2806,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rvr_chnl_type_cd' field.
       * @return This builder.
       */
-    public Builder clearRvrChnlTypeCd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRvrChnlTypeCd() {
       rvr_chnl_type_cd = null;
       fieldSetFlags()[8] = false;
       return this;
@@ -2786,7 +2816,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'cntry_cd' field.
       * @return The value.
       */
-    public String getCntryCd() {
+    public java.lang.String getCntryCd() {
       return cntry_cd;
     }
 
@@ -2795,7 +2825,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'cntry_cd'.
       * @return This builder.
       */
-    public Builder setCntryCd(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCntryCd(java.lang.String value) {
       validate(fields()[9], value);
       this.cntry_cd = value;
       fieldSetFlags()[9] = true;
@@ -2815,7 +2845,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'cntry_cd' field.
       * @return This builder.
       */
-    public Builder clearCntryCd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCntryCd() {
       cntry_cd = null;
       fieldSetFlags()[9] = false;
       return this;
@@ -2825,7 +2855,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'lang_cd' field.
       * @return The value.
       */
-    public String getLangCd() {
+    public java.lang.String getLangCd() {
       return lang_cd;
     }
 
@@ -2834,7 +2864,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'lang_cd'.
       * @return This builder.
       */
-    public Builder setLangCd(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setLangCd(java.lang.String value) {
       validate(fields()[10], value);
       this.lang_cd = value;
       fieldSetFlags()[10] = true;
@@ -2854,7 +2884,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'lang_cd' field.
       * @return This builder.
       */
-    public Builder clearLangCd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearLangCd() {
       lang_cd = null;
       fieldSetFlags()[10] = false;
       return this;
@@ -2864,7 +2894,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'trckng_prtnr_id' field.
       * @return The value.
       */
-    public Integer getTrckngPrtnrId() {
+    public java.lang.Integer getTrckngPrtnrId() {
       return trckng_prtnr_id;
     }
 
@@ -2873,7 +2903,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'trckng_prtnr_id'.
       * @return This builder.
       */
-    public Builder setTrckngPrtnrId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setTrckngPrtnrId(int value) {
       validate(fields()[11], value);
       this.trckng_prtnr_id = value;
       fieldSetFlags()[11] = true;
@@ -2893,7 +2923,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'trckng_prtnr_id' field.
       * @return This builder.
       */
-    public Builder clearTrckngPrtnrId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearTrckngPrtnrId() {
       fieldSetFlags()[11] = false;
       return this;
     }
@@ -2902,7 +2932,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'cguid' field.
       * @return The value.
       */
-    public String getCguid() {
+    public java.lang.String getCguid() {
       return cguid;
     }
 
@@ -2911,7 +2941,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'cguid'.
       * @return This builder.
       */
-    public Builder setCguid(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCguid(java.lang.String value) {
       validate(fields()[12], value);
       this.cguid = value;
       fieldSetFlags()[12] = true;
@@ -2931,7 +2961,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'cguid' field.
       * @return This builder.
       */
-    public Builder clearCguid() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCguid() {
       cguid = null;
       fieldSetFlags()[12] = false;
       return this;
@@ -2941,7 +2971,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'guid' field.
       * @return The value.
       */
-    public String getGuid() {
+    public java.lang.String getGuid() {
       return guid;
     }
 
@@ -2950,7 +2980,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'guid'.
       * @return This builder.
       */
-    public Builder setGuid(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setGuid(java.lang.String value) {
       validate(fields()[13], value);
       this.guid = value;
       fieldSetFlags()[13] = true;
@@ -2970,7 +3000,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'guid' field.
       * @return This builder.
       */
-    public Builder clearGuid() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearGuid() {
       guid = null;
       fieldSetFlags()[13] = false;
       return this;
@@ -2980,7 +3010,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'user_id' field.
       * @return The value.
       */
-    public Long getUserId() {
+    public java.lang.Long getUserId() {
       return user_id;
     }
 
@@ -2989,7 +3019,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'user_id'.
       * @return This builder.
       */
-    public Builder setUserId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUserId(long value) {
       validate(fields()[14], value);
       this.user_id = value;
       fieldSetFlags()[14] = true;
@@ -3009,7 +3039,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'user_id' field.
       * @return This builder.
       */
-    public Builder clearUserId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUserId() {
       fieldSetFlags()[14] = false;
       return this;
     }
@@ -3018,7 +3048,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'clnt_remote_ip' field.
       * @return The value.
       */
-    public String getClntRemoteIp() {
+    public java.lang.String getClntRemoteIp() {
       return clnt_remote_ip;
     }
 
@@ -3027,7 +3057,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'clnt_remote_ip'.
       * @return This builder.
       */
-    public Builder setClntRemoteIp(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setClntRemoteIp(java.lang.String value) {
       validate(fields()[15], value);
       this.clnt_remote_ip = value;
       fieldSetFlags()[15] = true;
@@ -3047,7 +3077,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'clnt_remote_ip' field.
       * @return This builder.
       */
-    public Builder clearClntRemoteIp() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearClntRemoteIp() {
       clnt_remote_ip = null;
       fieldSetFlags()[15] = false;
       return this;
@@ -3057,7 +3087,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'brwsr_type_id' field.
       * @return The value.
       */
-    public Integer getBrwsrTypeId() {
+    public java.lang.Integer getBrwsrTypeId() {
       return brwsr_type_id;
     }
 
@@ -3066,7 +3096,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'brwsr_type_id'.
       * @return This builder.
       */
-    public Builder setBrwsrTypeId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setBrwsrTypeId(int value) {
       validate(fields()[16], value);
       this.brwsr_type_id = value;
       fieldSetFlags()[16] = true;
@@ -3086,7 +3116,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'brwsr_type_id' field.
       * @return This builder.
       */
-    public Builder clearBrwsrTypeId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearBrwsrTypeId() {
       fieldSetFlags()[16] = false;
       return this;
     }
@@ -3095,7 +3125,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'brwsr_name' field.
       * @return The value.
       */
-    public String getBrwsrName() {
+    public java.lang.String getBrwsrName() {
       return brwsr_name;
     }
 
@@ -3104,7 +3134,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'brwsr_name'.
       * @return This builder.
       */
-    public Builder setBrwsrName(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setBrwsrName(java.lang.String value) {
       validate(fields()[17], value);
       this.brwsr_name = value;
       fieldSetFlags()[17] = true;
@@ -3124,7 +3154,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'brwsr_name' field.
       * @return This builder.
       */
-    public Builder clearBrwsrName() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearBrwsrName() {
       brwsr_name = null;
       fieldSetFlags()[17] = false;
       return this;
@@ -3134,7 +3164,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rfrr_dmn_name' field.
       * @return The value.
       */
-    public String getRfrrDmnName() {
+    public java.lang.String getRfrrDmnName() {
       return rfrr_dmn_name;
     }
 
@@ -3143,7 +3173,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rfrr_dmn_name'.
       * @return This builder.
       */
-    public Builder setRfrrDmnName(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRfrrDmnName(java.lang.String value) {
       validate(fields()[18], value);
       this.rfrr_dmn_name = value;
       fieldSetFlags()[18] = true;
@@ -3163,7 +3193,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rfrr_dmn_name' field.
       * @return This builder.
       */
-    public Builder clearRfrrDmnName() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRfrrDmnName() {
       rfrr_dmn_name = null;
       fieldSetFlags()[18] = false;
       return this;
@@ -3173,7 +3203,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rfrr_url' field.
       * @return The value.
       */
-    public String getRfrrUrl() {
+    public java.lang.String getRfrrUrl() {
       return rfrr_url;
     }
 
@@ -3182,7 +3212,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rfrr_url'.
       * @return This builder.
       */
-    public Builder setRfrrUrl(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRfrrUrl(java.lang.String value) {
       validate(fields()[19], value);
       this.rfrr_url = value;
       fieldSetFlags()[19] = true;
@@ -3202,7 +3232,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rfrr_url' field.
       * @return This builder.
       */
-    public Builder clearRfrrUrl() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRfrrUrl() {
       rfrr_url = null;
       fieldSetFlags()[19] = false;
       return this;
@@ -3212,7 +3242,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'url_encrptd_yn_ind' field.
       * @return The value.
       */
-    public Integer getUrlEncrptdYnInd() {
+    public java.lang.Integer getUrlEncrptdYnInd() {
       return url_encrptd_yn_ind;
     }
 
@@ -3221,7 +3251,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'url_encrptd_yn_ind'.
       * @return This builder.
       */
-    public Builder setUrlEncrptdYnInd(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUrlEncrptdYnInd(int value) {
       validate(fields()[20], value);
       this.url_encrptd_yn_ind = value;
       fieldSetFlags()[20] = true;
@@ -3241,7 +3271,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'url_encrptd_yn_ind' field.
       * @return This builder.
       */
-    public Builder clearUrlEncrptdYnInd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUrlEncrptdYnInd() {
       fieldSetFlags()[20] = false;
       return this;
     }
@@ -3250,7 +3280,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'pblshr_id' field.
       * @return The value.
       */
-    public String getPblshrId() {
+    public java.lang.String getPblshrId() {
       return pblshr_id;
     }
 
@@ -3259,7 +3289,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'pblshr_id'.
       * @return This builder.
       */
-    public Builder setPblshrId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setPblshrId(java.lang.String value) {
       validate(fields()[21], value);
       this.pblshr_id = value;
       fieldSetFlags()[21] = true;
@@ -3279,7 +3309,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'pblshr_id' field.
       * @return This builder.
       */
-    public Builder clearPblshrId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearPblshrId() {
       pblshr_id = null;
       fieldSetFlags()[21] = false;
       return this;
@@ -3289,7 +3319,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'lndng_page_dmn_name' field.
       * @return The value.
       */
-    public String getLndngPageDmnName() {
+    public java.lang.String getLndngPageDmnName() {
       return lndng_page_dmn_name;
     }
 
@@ -3298,7 +3328,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'lndng_page_dmn_name'.
       * @return This builder.
       */
-    public Builder setLndngPageDmnName(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setLndngPageDmnName(java.lang.String value) {
       validate(fields()[22], value);
       this.lndng_page_dmn_name = value;
       fieldSetFlags()[22] = true;
@@ -3318,7 +3348,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'lndng_page_dmn_name' field.
       * @return This builder.
       */
-    public Builder clearLndngPageDmnName() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearLndngPageDmnName() {
       lndng_page_dmn_name = null;
       fieldSetFlags()[22] = false;
       return this;
@@ -3328,7 +3358,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'lndng_page_url' field.
       * @return The value.
       */
-    public String getLndngPageUrl() {
+    public java.lang.String getLndngPageUrl() {
       return lndng_page_url;
     }
 
@@ -3337,7 +3367,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'lndng_page_url'.
       * @return This builder.
       */
-    public Builder setLndngPageUrl(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setLndngPageUrl(java.lang.String value) {
       validate(fields()[23], value);
       this.lndng_page_url = value;
       fieldSetFlags()[23] = true;
@@ -3357,7 +3387,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'lndng_page_url' field.
       * @return This builder.
       */
-    public Builder clearLndngPageUrl() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearLndngPageUrl() {
       lndng_page_url = null;
       fieldSetFlags()[23] = false;
       return this;
@@ -3367,7 +3397,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'user_query' field.
       * @return The value.
       */
-    public String getUserQuery() {
+    public java.lang.String getUserQuery() {
       return user_query;
     }
 
@@ -3376,7 +3406,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'user_query'.
       * @return This builder.
       */
-    public Builder setUserQuery(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUserQuery(java.lang.String value) {
       validate(fields()[24], value);
       this.user_query = value;
       fieldSetFlags()[24] = true;
@@ -3396,7 +3426,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'user_query' field.
       * @return This builder.
       */
-    public Builder clearUserQuery() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUserQuery() {
       user_query = null;
       fieldSetFlags()[24] = false;
       return this;
@@ -3406,7 +3436,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rule_bit_flag_strng' field.
       * @return The value.
       */
-    public String getRuleBitFlagStrng() {
+    public java.lang.String getRuleBitFlagStrng() {
       return rule_bit_flag_strng;
     }
 
@@ -3415,7 +3445,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rule_bit_flag_strng'.
       * @return This builder.
       */
-    public Builder setRuleBitFlagStrng(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRuleBitFlagStrng(java.lang.String value) {
       validate(fields()[25], value);
       this.rule_bit_flag_strng = value;
       fieldSetFlags()[25] = true;
@@ -3435,7 +3465,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rule_bit_flag_strng' field.
       * @return This builder.
       */
-    public Builder clearRuleBitFlagStrng() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRuleBitFlagStrng() {
       rule_bit_flag_strng = null;
       fieldSetFlags()[25] = false;
       return this;
@@ -3445,7 +3475,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'event_ts' field.
       * @return The value.
       */
-    public String getEventTs() {
+    public java.lang.String getEventTs() {
       return event_ts;
     }
 
@@ -3454,7 +3484,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'event_ts'.
       * @return This builder.
       */
-    public Builder setEventTs(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setEventTs(java.lang.String value) {
       validate(fields()[26], value);
       this.event_ts = value;
       fieldSetFlags()[26] = true;
@@ -3474,7 +3504,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'event_ts' field.
       * @return This builder.
       */
-    public Builder clearEventTs() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearEventTs() {
       event_ts = null;
       fieldSetFlags()[26] = false;
       return this;
@@ -3484,7 +3514,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'dflt_bhrv_id' field.
       * @return The value.
       */
-    public Integer getDfltBhrvId() {
+    public java.lang.Integer getDfltBhrvId() {
       return dflt_bhrv_id;
     }
 
@@ -3493,7 +3523,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'dflt_bhrv_id'.
       * @return This builder.
       */
-    public Builder setDfltBhrvId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setDfltBhrvId(int value) {
       validate(fields()[27], value);
       this.dflt_bhrv_id = value;
       fieldSetFlags()[27] = true;
@@ -3513,7 +3543,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'dflt_bhrv_id' field.
       * @return This builder.
       */
-    public Builder clearDfltBhrvId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearDfltBhrvId() {
       fieldSetFlags()[27] = false;
       return this;
     }
@@ -3522,7 +3552,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'src_rotation_id' field.
       * @return The value.
       */
-    public Long getSrcRotationId() {
+    public java.lang.Long getSrcRotationId() {
       return src_rotation_id;
     }
 
@@ -3531,7 +3561,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'src_rotation_id'.
       * @return This builder.
       */
-    public Builder setSrcRotationId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setSrcRotationId(long value) {
       validate(fields()[28], value);
       this.src_rotation_id = value;
       fieldSetFlags()[28] = true;
@@ -3551,7 +3581,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'src_rotation_id' field.
       * @return This builder.
       */
-    public Builder clearSrcRotationId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearSrcRotationId() {
       fieldSetFlags()[28] = false;
       return this;
     }
@@ -3560,7 +3590,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'dst_rotation_id' field.
       * @return The value.
       */
-    public Long getDstRotationId() {
+    public java.lang.Long getDstRotationId() {
       return dst_rotation_id;
     }
 
@@ -3569,7 +3599,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'dst_rotation_id'.
       * @return This builder.
       */
-    public Builder setDstRotationId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setDstRotationId(long value) {
       validate(fields()[29], value);
       this.dst_rotation_id = value;
       fieldSetFlags()[29] = true;
@@ -3589,7 +3619,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'dst_rotation_id' field.
       * @return This builder.
       */
-    public Builder clearDstRotationId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearDstRotationId() {
       fieldSetFlags()[29] = false;
       return this;
     }
@@ -3598,7 +3628,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'user_map_ind' field.
       * @return The value.
       */
-    public String getUserMapInd() {
+    public java.lang.String getUserMapInd() {
       return user_map_ind;
     }
 
@@ -3607,7 +3637,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'user_map_ind'.
       * @return This builder.
       */
-    public Builder setUserMapInd(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUserMapInd(java.lang.String value) {
       validate(fields()[30], value);
       this.user_map_ind = value;
       fieldSetFlags()[30] = true;
@@ -3627,7 +3657,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'user_map_ind' field.
       * @return This builder.
       */
-    public Builder clearUserMapInd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUserMapInd() {
       user_map_ind = null;
       fieldSetFlags()[30] = false;
       return this;
@@ -3637,7 +3667,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'dst_client_id' field.
       * @return The value.
       */
-    public Integer getDstClientId() {
+    public java.lang.Integer getDstClientId() {
       return dst_client_id;
     }
 
@@ -3646,7 +3676,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'dst_client_id'.
       * @return This builder.
       */
-    public Builder setDstClientId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setDstClientId(int value) {
       validate(fields()[31], value);
       this.dst_client_id = value;
       fieldSetFlags()[31] = true;
@@ -3666,7 +3696,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'dst_client_id' field.
       * @return This builder.
       */
-    public Builder clearDstClientId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearDstClientId() {
       fieldSetFlags()[31] = false;
       return this;
     }
@@ -3675,7 +3705,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'creative_id' field.
       * @return The value.
       */
-    public Long getCreativeId() {
+    public java.lang.Long getCreativeId() {
       return creative_id;
     }
 
@@ -3684,7 +3714,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'creative_id'.
       * @return This builder.
       */
-    public Builder setCreativeId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCreativeId(long value) {
       validate(fields()[32], value);
       this.creative_id = value;
       fieldSetFlags()[32] = true;
@@ -3704,7 +3734,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'creative_id' field.
       * @return This builder.
       */
-    public Builder clearCreativeId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCreativeId() {
       fieldSetFlags()[32] = false;
       return this;
     }
@@ -3713,7 +3743,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'test_ctrl_flag' field.
       * @return The value.
       */
-    public Integer getTestCtrlFlag() {
+    public java.lang.Integer getTestCtrlFlag() {
       return test_ctrl_flag;
     }
 
@@ -3722,7 +3752,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'test_ctrl_flag'.
       * @return This builder.
       */
-    public Builder setTestCtrlFlag(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setTestCtrlFlag(int value) {
       validate(fields()[33], value);
       this.test_ctrl_flag = value;
       fieldSetFlags()[33] = true;
@@ -3742,7 +3772,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'test_ctrl_flag' field.
       * @return This builder.
       */
-    public Builder clearTestCtrlFlag() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearTestCtrlFlag() {
       fieldSetFlags()[33] = false;
       return this;
     }
@@ -3751,7 +3781,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'mfe_id' field.
       * @return The value.
       */
-    public Integer getMfeId() {
+    public java.lang.Integer getMfeId() {
       return mfe_id;
     }
 
@@ -3760,7 +3790,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'mfe_id'.
       * @return This builder.
       */
-    public Builder setMfeId(int value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setMfeId(int value) {
       validate(fields()[34], value);
       this.mfe_id = value;
       fieldSetFlags()[34] = true;
@@ -3780,7 +3810,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'mfe_id' field.
       * @return This builder.
       */
-    public Builder clearMfeId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearMfeId() {
       fieldSetFlags()[34] = false;
       return this;
     }
@@ -3789,7 +3819,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'kw_id' field.
       * @return The value.
       */
-    public Long getKwId() {
+    public java.lang.Long getKwId() {
       return kw_id;
     }
 
@@ -3798,7 +3828,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'kw_id'.
       * @return This builder.
       */
-    public Builder setKwId(long value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setKwId(long value) {
       validate(fields()[35], value);
       this.kw_id = value;
       fieldSetFlags()[35] = true;
@@ -3818,7 +3848,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'kw_id' field.
       * @return This builder.
       */
-    public Builder clearKwId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearKwId() {
       fieldSetFlags()[35] = false;
       return this;
     }
@@ -3827,7 +3857,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'keyword' field.
       * @return The value.
       */
-    public String getKeyword() {
+    public java.lang.String getKeyword() {
       return keyword;
     }
 
@@ -3836,7 +3866,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'keyword'.
       * @return This builder.
       */
-    public Builder setKeyword(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setKeyword(java.lang.String value) {
       validate(fields()[36], value);
       this.keyword = value;
       fieldSetFlags()[36] = true;
@@ -3856,7 +3886,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'keyword' field.
       * @return This builder.
       */
-    public Builder clearKeyword() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearKeyword() {
       keyword = null;
       fieldSetFlags()[36] = false;
       return this;
@@ -3866,7 +3896,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'mt_id' field.
       * @return The value.
       */
-    public String getMtId() {
+    public java.lang.String getMtId() {
       return mt_id;
     }
 
@@ -3875,7 +3905,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'mt_id'.
       * @return This builder.
       */
-    public Builder setMtId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setMtId(java.lang.String value) {
       validate(fields()[37], value);
       this.mt_id = value;
       fieldSetFlags()[37] = true;
@@ -3895,7 +3925,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'mt_id' field.
       * @return This builder.
       */
-    public Builder clearMtId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearMtId() {
       mt_id = null;
       fieldSetFlags()[37] = false;
       return this;
@@ -3905,7 +3935,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'crlp' field.
       * @return The value.
       */
-    public String getCrlp() {
+    public java.lang.String getCrlp() {
       return crlp;
     }
 
@@ -3914,7 +3944,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'crlp'.
       * @return This builder.
       */
-    public Builder setCrlp(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCrlp(java.lang.String value) {
       validate(fields()[38], value);
       this.crlp = value;
       fieldSetFlags()[38] = true;
@@ -3934,7 +3964,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'crlp' field.
       * @return This builder.
       */
-    public Builder clearCrlp() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCrlp() {
       crlp = null;
       fieldSetFlags()[38] = false;
       return this;
@@ -3944,7 +3974,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'geo_id' field.
       * @return The value.
       */
-    public String getGeoId() {
+    public java.lang.String getGeoId() {
       return geo_id;
     }
 
@@ -3953,7 +3983,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'geo_id'.
       * @return This builder.
       */
-    public Builder setGeoId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setGeoId(java.lang.String value) {
       validate(fields()[39], value);
       this.geo_id = value;
       fieldSetFlags()[39] = true;
@@ -3973,7 +4003,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'geo_id' field.
       * @return This builder.
       */
-    public Builder clearGeoId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearGeoId() {
       geo_id = null;
       fieldSetFlags()[39] = false;
       return this;
@@ -3983,7 +4013,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'item_id' field.
       * @return The value.
       */
-    public String getItemId() {
+    public java.lang.String getItemId() {
       return item_id;
     }
 
@@ -3992,7 +4022,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'item_id'.
       * @return This builder.
       */
-    public Builder setItemId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setItemId(java.lang.String value) {
       validate(fields()[40], value);
       this.item_id = value;
       fieldSetFlags()[40] = true;
@@ -4012,7 +4042,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'item_id' field.
       * @return This builder.
       */
-    public Builder clearItemId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearItemId() {
       item_id = null;
       fieldSetFlags()[40] = false;
       return this;
@@ -4022,7 +4052,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'transaction_type' field.
       * @return The value.
       */
-    public String getTransactionType() {
+    public java.lang.String getTransactionType() {
       return transaction_type;
     }
 
@@ -4031,7 +4061,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'transaction_type'.
       * @return This builder.
       */
-    public Builder setTransactionType(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setTransactionType(java.lang.String value) {
       validate(fields()[41], value);
       this.transaction_type = value;
       fieldSetFlags()[41] = true;
@@ -4051,7 +4081,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'transaction_type' field.
       * @return This builder.
       */
-    public Builder clearTransactionType() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearTransactionType() {
       transaction_type = null;
       fieldSetFlags()[41] = false;
       return this;
@@ -4061,7 +4091,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'transaction_id' field.
       * @return The value.
       */
-    public String getTransactionId() {
+    public java.lang.String getTransactionId() {
       return transaction_id;
     }
 
@@ -4070,7 +4100,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'transaction_id'.
       * @return This builder.
       */
-    public Builder setTransactionId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setTransactionId(java.lang.String value) {
       validate(fields()[42], value);
       this.transaction_id = value;
       fieldSetFlags()[42] = true;
@@ -4090,7 +4120,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'transaction_id' field.
       * @return This builder.
       */
-    public Builder clearTransactionId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearTransactionId() {
       transaction_id = null;
       fieldSetFlags()[42] = false;
       return this;
@@ -4100,7 +4130,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'cart_id' field.
       * @return The value.
       */
-    public String getCartId() {
+    public java.lang.String getCartId() {
       return cart_id;
     }
 
@@ -4109,7 +4139,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'cart_id'.
       * @return This builder.
       */
-    public Builder setCartId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCartId(java.lang.String value) {
       validate(fields()[43], value);
       this.cart_id = value;
       fieldSetFlags()[43] = true;
@@ -4129,7 +4159,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'cart_id' field.
       * @return This builder.
       */
-    public Builder clearCartId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCartId() {
       cart_id = null;
       fieldSetFlags()[43] = false;
       return this;
@@ -4139,7 +4169,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'extrnl_cookie' field.
       * @return The value.
       */
-    public String getExtrnlCookie() {
+    public java.lang.String getExtrnlCookie() {
       return extrnl_cookie;
     }
 
@@ -4148,7 +4178,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'extrnl_cookie'.
       * @return This builder.
       */
-    public Builder setExtrnlCookie(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setExtrnlCookie(java.lang.String value) {
       validate(fields()[44], value);
       this.extrnl_cookie = value;
       fieldSetFlags()[44] = true;
@@ -4168,7 +4198,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'extrnl_cookie' field.
       * @return This builder.
       */
-    public Builder clearExtrnlCookie() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearExtrnlCookie() {
       extrnl_cookie = null;
       fieldSetFlags()[44] = false;
       return this;
@@ -4178,7 +4208,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'ebay_site_id' field.
       * @return The value.
       */
-    public String getEbaySiteId() {
+    public java.lang.String getEbaySiteId() {
       return ebay_site_id;
     }
 
@@ -4187,7 +4217,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'ebay_site_id'.
       * @return This builder.
       */
-    public Builder setEbaySiteId(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setEbaySiteId(java.lang.String value) {
       validate(fields()[45], value);
       this.ebay_site_id = value;
       fieldSetFlags()[45] = true;
@@ -4207,7 +4237,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'ebay_site_id' field.
       * @return This builder.
       */
-    public Builder clearEbaySiteId() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearEbaySiteId() {
       ebay_site_id = null;
       fieldSetFlags()[45] = false;
       return this;
@@ -4217,7 +4247,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'rvr_url' field.
       * @return The value.
       */
-    public String getRvrUrl() {
+    public java.lang.String getRvrUrl() {
       return rvr_url;
     }
 
@@ -4226,7 +4256,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'rvr_url'.
       * @return This builder.
       */
-    public Builder setRvrUrl(String value) {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setRvrUrl(java.lang.String value) {
       validate(fields()[46], value);
       this.rvr_url = value;
       fieldSetFlags()[46] = true;
@@ -4246,9 +4276,48 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'rvr_url' field.
       * @return This builder.
       */
-    public Builder clearRvrUrl() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearRvrUrl() {
       rvr_url = null;
       fieldSetFlags()[46] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'client_data' field.
+      * @return The value.
+      */
+    public java.lang.String getClientData() {
+      return client_data;
+    }
+
+    /**
+      * Sets the value of the 'client_data' field.
+      * @param value The value of 'client_data'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setClientData(java.lang.String value) {
+      validate(fields()[47], value);
+      this.client_data = value;
+      fieldSetFlags()[47] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'client_data' field has been set.
+      * @return True if the 'client_data' field has been set, false otherwise.
+      */
+    public boolean hasClientData() {
+      return fieldSetFlags()[47];
+    }
+
+
+    /**
+      * Clears the value of the 'client_data' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearClientData() {
+      client_data = null;
+      fieldSetFlags()[47] = false;
       return this;
     }
 
@@ -4256,7 +4325,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_vrsn_num' field.
       * @return The value.
       */
-    public Integer getFlexFieldVrsnNum() {
+    public java.lang.Integer getFlexFieldVrsnNum() {
       return flex_field_vrsn_num;
     }
 
@@ -4265,10 +4334,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_vrsn_num'.
       * @return This builder.
       */
-    public Builder setFlexFieldVrsnNum(int value) {
-      validate(fields()[47], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexFieldVrsnNum(int value) {
+      validate(fields()[48], value);
       this.flex_field_vrsn_num = value;
-      fieldSetFlags()[47] = true;
+      fieldSetFlags()[48] = true;
       return this;
     }
 
@@ -4277,7 +4346,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_vrsn_num' field has been set, false otherwise.
       */
     public boolean hasFlexFieldVrsnNum() {
-      return fieldSetFlags()[47];
+      return fieldSetFlags()[48];
     }
 
 
@@ -4285,8 +4354,8 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_vrsn_num' field.
       * @return This builder.
       */
-    public Builder clearFlexFieldVrsnNum() {
-      fieldSetFlags()[47] = false;
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexFieldVrsnNum() {
+      fieldSetFlags()[48] = false;
       return this;
     }
 
@@ -4294,7 +4363,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_1' field.
       * @return The value.
       */
-    public String getFlexField1() {
+    public java.lang.String getFlexField1() {
       return flex_field_1;
     }
 
@@ -4303,10 +4372,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_1'.
       * @return This builder.
       */
-    public Builder setFlexField1(String value) {
-      validate(fields()[48], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField1(java.lang.String value) {
+      validate(fields()[49], value);
       this.flex_field_1 = value;
-      fieldSetFlags()[48] = true;
+      fieldSetFlags()[49] = true;
       return this;
     }
 
@@ -4315,7 +4384,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_1' field has been set, false otherwise.
       */
     public boolean hasFlexField1() {
-      return fieldSetFlags()[48];
+      return fieldSetFlags()[49];
     }
 
 
@@ -4323,9 +4392,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_1' field.
       * @return This builder.
       */
-    public Builder clearFlexField1() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField1() {
       flex_field_1 = null;
-      fieldSetFlags()[48] = false;
+      fieldSetFlags()[49] = false;
       return this;
     }
 
@@ -4333,7 +4402,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_2' field.
       * @return The value.
       */
-    public String getFlexField2() {
+    public java.lang.String getFlexField2() {
       return flex_field_2;
     }
 
@@ -4342,10 +4411,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_2'.
       * @return This builder.
       */
-    public Builder setFlexField2(String value) {
-      validate(fields()[49], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField2(java.lang.String value) {
+      validate(fields()[50], value);
       this.flex_field_2 = value;
-      fieldSetFlags()[49] = true;
+      fieldSetFlags()[50] = true;
       return this;
     }
 
@@ -4354,7 +4423,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_2' field has been set, false otherwise.
       */
     public boolean hasFlexField2() {
-      return fieldSetFlags()[49];
+      return fieldSetFlags()[50];
     }
 
 
@@ -4362,9 +4431,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_2' field.
       * @return This builder.
       */
-    public Builder clearFlexField2() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField2() {
       flex_field_2 = null;
-      fieldSetFlags()[49] = false;
+      fieldSetFlags()[50] = false;
       return this;
     }
 
@@ -4372,7 +4441,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_3' field.
       * @return The value.
       */
-    public String getFlexField3() {
+    public java.lang.String getFlexField3() {
       return flex_field_3;
     }
 
@@ -4381,10 +4450,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_3'.
       * @return This builder.
       */
-    public Builder setFlexField3(String value) {
-      validate(fields()[50], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField3(java.lang.String value) {
+      validate(fields()[51], value);
       this.flex_field_3 = value;
-      fieldSetFlags()[50] = true;
+      fieldSetFlags()[51] = true;
       return this;
     }
 
@@ -4393,7 +4462,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_3' field has been set, false otherwise.
       */
     public boolean hasFlexField3() {
-      return fieldSetFlags()[50];
+      return fieldSetFlags()[51];
     }
 
 
@@ -4401,9 +4470,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_3' field.
       * @return This builder.
       */
-    public Builder clearFlexField3() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField3() {
       flex_field_3 = null;
-      fieldSetFlags()[50] = false;
+      fieldSetFlags()[51] = false;
       return this;
     }
 
@@ -4411,7 +4480,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_4' field.
       * @return The value.
       */
-    public String getFlexField4() {
+    public java.lang.String getFlexField4() {
       return flex_field_4;
     }
 
@@ -4420,10 +4489,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_4'.
       * @return This builder.
       */
-    public Builder setFlexField4(String value) {
-      validate(fields()[51], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField4(java.lang.String value) {
+      validate(fields()[52], value);
       this.flex_field_4 = value;
-      fieldSetFlags()[51] = true;
+      fieldSetFlags()[52] = true;
       return this;
     }
 
@@ -4432,7 +4501,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_4' field has been set, false otherwise.
       */
     public boolean hasFlexField4() {
-      return fieldSetFlags()[51];
+      return fieldSetFlags()[52];
     }
 
 
@@ -4440,9 +4509,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_4' field.
       * @return This builder.
       */
-    public Builder clearFlexField4() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField4() {
       flex_field_4 = null;
-      fieldSetFlags()[51] = false;
+      fieldSetFlags()[52] = false;
       return this;
     }
 
@@ -4450,7 +4519,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_5' field.
       * @return The value.
       */
-    public String getFlexField5() {
+    public java.lang.String getFlexField5() {
       return flex_field_5;
     }
 
@@ -4459,10 +4528,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_5'.
       * @return This builder.
       */
-    public Builder setFlexField5(String value) {
-      validate(fields()[52], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField5(java.lang.String value) {
+      validate(fields()[53], value);
       this.flex_field_5 = value;
-      fieldSetFlags()[52] = true;
+      fieldSetFlags()[53] = true;
       return this;
     }
 
@@ -4471,7 +4540,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_5' field has been set, false otherwise.
       */
     public boolean hasFlexField5() {
-      return fieldSetFlags()[52];
+      return fieldSetFlags()[53];
     }
 
 
@@ -4479,9 +4548,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_5' field.
       * @return This builder.
       */
-    public Builder clearFlexField5() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField5() {
       flex_field_5 = null;
-      fieldSetFlags()[52] = false;
+      fieldSetFlags()[53] = false;
       return this;
     }
 
@@ -4489,7 +4558,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_6' field.
       * @return The value.
       */
-    public String getFlexField6() {
+    public java.lang.String getFlexField6() {
       return flex_field_6;
     }
 
@@ -4498,10 +4567,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_6'.
       * @return This builder.
       */
-    public Builder setFlexField6(String value) {
-      validate(fields()[53], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField6(java.lang.String value) {
+      validate(fields()[54], value);
       this.flex_field_6 = value;
-      fieldSetFlags()[53] = true;
+      fieldSetFlags()[54] = true;
       return this;
     }
 
@@ -4510,7 +4579,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_6' field has been set, false otherwise.
       */
     public boolean hasFlexField6() {
-      return fieldSetFlags()[53];
+      return fieldSetFlags()[54];
     }
 
 
@@ -4518,9 +4587,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_6' field.
       * @return This builder.
       */
-    public Builder clearFlexField6() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField6() {
       flex_field_6 = null;
-      fieldSetFlags()[53] = false;
+      fieldSetFlags()[54] = false;
       return this;
     }
 
@@ -4528,7 +4597,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_7' field.
       * @return The value.
       */
-    public String getFlexField7() {
+    public java.lang.String getFlexField7() {
       return flex_field_7;
     }
 
@@ -4537,10 +4606,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_7'.
       * @return This builder.
       */
-    public Builder setFlexField7(String value) {
-      validate(fields()[54], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField7(java.lang.String value) {
+      validate(fields()[55], value);
       this.flex_field_7 = value;
-      fieldSetFlags()[54] = true;
+      fieldSetFlags()[55] = true;
       return this;
     }
 
@@ -4549,7 +4618,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_7' field has been set, false otherwise.
       */
     public boolean hasFlexField7() {
-      return fieldSetFlags()[54];
+      return fieldSetFlags()[55];
     }
 
 
@@ -4557,9 +4626,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_7' field.
       * @return This builder.
       */
-    public Builder clearFlexField7() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField7() {
       flex_field_7 = null;
-      fieldSetFlags()[54] = false;
+      fieldSetFlags()[55] = false;
       return this;
     }
 
@@ -4567,7 +4636,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_8' field.
       * @return The value.
       */
-    public String getFlexField8() {
+    public java.lang.String getFlexField8() {
       return flex_field_8;
     }
 
@@ -4576,10 +4645,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_8'.
       * @return This builder.
       */
-    public Builder setFlexField8(String value) {
-      validate(fields()[55], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField8(java.lang.String value) {
+      validate(fields()[56], value);
       this.flex_field_8 = value;
-      fieldSetFlags()[55] = true;
+      fieldSetFlags()[56] = true;
       return this;
     }
 
@@ -4588,7 +4657,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_8' field has been set, false otherwise.
       */
     public boolean hasFlexField8() {
-      return fieldSetFlags()[55];
+      return fieldSetFlags()[56];
     }
 
 
@@ -4596,9 +4665,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_8' field.
       * @return This builder.
       */
-    public Builder clearFlexField8() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField8() {
       flex_field_8 = null;
-      fieldSetFlags()[55] = false;
+      fieldSetFlags()[56] = false;
       return this;
     }
 
@@ -4606,7 +4675,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_9' field.
       * @return The value.
       */
-    public String getFlexField9() {
+    public java.lang.String getFlexField9() {
       return flex_field_9;
     }
 
@@ -4615,10 +4684,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_9'.
       * @return This builder.
       */
-    public Builder setFlexField9(String value) {
-      validate(fields()[56], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField9(java.lang.String value) {
+      validate(fields()[57], value);
       this.flex_field_9 = value;
-      fieldSetFlags()[56] = true;
+      fieldSetFlags()[57] = true;
       return this;
     }
 
@@ -4627,7 +4696,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_9' field has been set, false otherwise.
       */
     public boolean hasFlexField9() {
-      return fieldSetFlags()[56];
+      return fieldSetFlags()[57];
     }
 
 
@@ -4635,9 +4704,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_9' field.
       * @return This builder.
       */
-    public Builder clearFlexField9() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField9() {
       flex_field_9 = null;
-      fieldSetFlags()[56] = false;
+      fieldSetFlags()[57] = false;
       return this;
     }
 
@@ -4645,7 +4714,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_10' field.
       * @return The value.
       */
-    public String getFlexField10() {
+    public java.lang.String getFlexField10() {
       return flex_field_10;
     }
 
@@ -4654,10 +4723,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_10'.
       * @return This builder.
       */
-    public Builder setFlexField10(String value) {
-      validate(fields()[57], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField10(java.lang.String value) {
+      validate(fields()[58], value);
       this.flex_field_10 = value;
-      fieldSetFlags()[57] = true;
+      fieldSetFlags()[58] = true;
       return this;
     }
 
@@ -4666,7 +4735,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_10' field has been set, false otherwise.
       */
     public boolean hasFlexField10() {
-      return fieldSetFlags()[57];
+      return fieldSetFlags()[58];
     }
 
 
@@ -4674,9 +4743,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_10' field.
       * @return This builder.
       */
-    public Builder clearFlexField10() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField10() {
       flex_field_10 = null;
-      fieldSetFlags()[57] = false;
+      fieldSetFlags()[58] = false;
       return this;
     }
 
@@ -4684,7 +4753,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_11' field.
       * @return The value.
       */
-    public String getFlexField11() {
+    public java.lang.String getFlexField11() {
       return flex_field_11;
     }
 
@@ -4693,10 +4762,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_11'.
       * @return This builder.
       */
-    public Builder setFlexField11(String value) {
-      validate(fields()[58], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField11(java.lang.String value) {
+      validate(fields()[59], value);
       this.flex_field_11 = value;
-      fieldSetFlags()[58] = true;
+      fieldSetFlags()[59] = true;
       return this;
     }
 
@@ -4705,7 +4774,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_11' field has been set, false otherwise.
       */
     public boolean hasFlexField11() {
-      return fieldSetFlags()[58];
+      return fieldSetFlags()[59];
     }
 
 
@@ -4713,9 +4782,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_11' field.
       * @return This builder.
       */
-    public Builder clearFlexField11() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField11() {
       flex_field_11 = null;
-      fieldSetFlags()[58] = false;
+      fieldSetFlags()[59] = false;
       return this;
     }
 
@@ -4723,7 +4792,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_12' field.
       * @return The value.
       */
-    public String getFlexField12() {
+    public java.lang.String getFlexField12() {
       return flex_field_12;
     }
 
@@ -4732,10 +4801,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_12'.
       * @return This builder.
       */
-    public Builder setFlexField12(String value) {
-      validate(fields()[59], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField12(java.lang.String value) {
+      validate(fields()[60], value);
       this.flex_field_12 = value;
-      fieldSetFlags()[59] = true;
+      fieldSetFlags()[60] = true;
       return this;
     }
 
@@ -4744,7 +4813,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_12' field has been set, false otherwise.
       */
     public boolean hasFlexField12() {
-      return fieldSetFlags()[59];
+      return fieldSetFlags()[60];
     }
 
 
@@ -4752,9 +4821,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_12' field.
       * @return This builder.
       */
-    public Builder clearFlexField12() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField12() {
       flex_field_12 = null;
-      fieldSetFlags()[59] = false;
+      fieldSetFlags()[60] = false;
       return this;
     }
 
@@ -4762,7 +4831,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_13' field.
       * @return The value.
       */
-    public String getFlexField13() {
+    public java.lang.String getFlexField13() {
       return flex_field_13;
     }
 
@@ -4771,10 +4840,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_13'.
       * @return This builder.
       */
-    public Builder setFlexField13(String value) {
-      validate(fields()[60], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField13(java.lang.String value) {
+      validate(fields()[61], value);
       this.flex_field_13 = value;
-      fieldSetFlags()[60] = true;
+      fieldSetFlags()[61] = true;
       return this;
     }
 
@@ -4783,7 +4852,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_13' field has been set, false otherwise.
       */
     public boolean hasFlexField13() {
-      return fieldSetFlags()[60];
+      return fieldSetFlags()[61];
     }
 
 
@@ -4791,9 +4860,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_13' field.
       * @return This builder.
       */
-    public Builder clearFlexField13() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField13() {
       flex_field_13 = null;
-      fieldSetFlags()[60] = false;
+      fieldSetFlags()[61] = false;
       return this;
     }
 
@@ -4801,7 +4870,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_14' field.
       * @return The value.
       */
-    public String getFlexField14() {
+    public java.lang.String getFlexField14() {
       return flex_field_14;
     }
 
@@ -4810,10 +4879,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_14'.
       * @return This builder.
       */
-    public Builder setFlexField14(String value) {
-      validate(fields()[61], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField14(java.lang.String value) {
+      validate(fields()[62], value);
       this.flex_field_14 = value;
-      fieldSetFlags()[61] = true;
+      fieldSetFlags()[62] = true;
       return this;
     }
 
@@ -4822,7 +4891,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_14' field has been set, false otherwise.
       */
     public boolean hasFlexField14() {
-      return fieldSetFlags()[61];
+      return fieldSetFlags()[62];
     }
 
 
@@ -4830,9 +4899,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_14' field.
       * @return This builder.
       */
-    public Builder clearFlexField14() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField14() {
       flex_field_14 = null;
-      fieldSetFlags()[61] = false;
+      fieldSetFlags()[62] = false;
       return this;
     }
 
@@ -4840,7 +4909,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_15' field.
       * @return The value.
       */
-    public String getFlexField15() {
+    public java.lang.String getFlexField15() {
       return flex_field_15;
     }
 
@@ -4849,10 +4918,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_15'.
       * @return This builder.
       */
-    public Builder setFlexField15(String value) {
-      validate(fields()[62], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField15(java.lang.String value) {
+      validate(fields()[63], value);
       this.flex_field_15 = value;
-      fieldSetFlags()[62] = true;
+      fieldSetFlags()[63] = true;
       return this;
     }
 
@@ -4861,7 +4930,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_15' field has been set, false otherwise.
       */
     public boolean hasFlexField15() {
-      return fieldSetFlags()[62];
+      return fieldSetFlags()[63];
     }
 
 
@@ -4869,9 +4938,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_15' field.
       * @return This builder.
       */
-    public Builder clearFlexField15() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField15() {
       flex_field_15 = null;
-      fieldSetFlags()[62] = false;
+      fieldSetFlags()[63] = false;
       return this;
     }
 
@@ -4879,7 +4948,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_16' field.
       * @return The value.
       */
-    public String getFlexField16() {
+    public java.lang.String getFlexField16() {
       return flex_field_16;
     }
 
@@ -4888,10 +4957,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_16'.
       * @return This builder.
       */
-    public Builder setFlexField16(String value) {
-      validate(fields()[63], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField16(java.lang.String value) {
+      validate(fields()[64], value);
       this.flex_field_16 = value;
-      fieldSetFlags()[63] = true;
+      fieldSetFlags()[64] = true;
       return this;
     }
 
@@ -4900,7 +4969,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_16' field has been set, false otherwise.
       */
     public boolean hasFlexField16() {
-      return fieldSetFlags()[63];
+      return fieldSetFlags()[64];
     }
 
 
@@ -4908,9 +4977,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_16' field.
       * @return This builder.
       */
-    public Builder clearFlexField16() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField16() {
       flex_field_16 = null;
-      fieldSetFlags()[63] = false;
+      fieldSetFlags()[64] = false;
       return this;
     }
 
@@ -4918,7 +4987,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_17' field.
       * @return The value.
       */
-    public String getFlexField17() {
+    public java.lang.String getFlexField17() {
       return flex_field_17;
     }
 
@@ -4927,10 +4996,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_17'.
       * @return This builder.
       */
-    public Builder setFlexField17(String value) {
-      validate(fields()[64], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField17(java.lang.String value) {
+      validate(fields()[65], value);
       this.flex_field_17 = value;
-      fieldSetFlags()[64] = true;
+      fieldSetFlags()[65] = true;
       return this;
     }
 
@@ -4939,7 +5008,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_17' field has been set, false otherwise.
       */
     public boolean hasFlexField17() {
-      return fieldSetFlags()[64];
+      return fieldSetFlags()[65];
     }
 
 
@@ -4947,9 +5016,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_17' field.
       * @return This builder.
       */
-    public Builder clearFlexField17() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField17() {
       flex_field_17 = null;
-      fieldSetFlags()[64] = false;
+      fieldSetFlags()[65] = false;
       return this;
     }
 
@@ -4957,7 +5026,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_18' field.
       * @return The value.
       */
-    public String getFlexField18() {
+    public java.lang.String getFlexField18() {
       return flex_field_18;
     }
 
@@ -4966,10 +5035,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_18'.
       * @return This builder.
       */
-    public Builder setFlexField18(String value) {
-      validate(fields()[65], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField18(java.lang.String value) {
+      validate(fields()[66], value);
       this.flex_field_18 = value;
-      fieldSetFlags()[65] = true;
+      fieldSetFlags()[66] = true;
       return this;
     }
 
@@ -4978,7 +5047,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_18' field has been set, false otherwise.
       */
     public boolean hasFlexField18() {
-      return fieldSetFlags()[65];
+      return fieldSetFlags()[66];
     }
 
 
@@ -4986,9 +5055,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_18' field.
       * @return This builder.
       */
-    public Builder clearFlexField18() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField18() {
       flex_field_18 = null;
-      fieldSetFlags()[65] = false;
+      fieldSetFlags()[66] = false;
       return this;
     }
 
@@ -4996,7 +5065,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_19' field.
       * @return The value.
       */
-    public String getFlexField19() {
+    public java.lang.String getFlexField19() {
       return flex_field_19;
     }
 
@@ -5005,10 +5074,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_19'.
       * @return This builder.
       */
-    public Builder setFlexField19(String value) {
-      validate(fields()[66], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField19(java.lang.String value) {
+      validate(fields()[67], value);
       this.flex_field_19 = value;
-      fieldSetFlags()[66] = true;
+      fieldSetFlags()[67] = true;
       return this;
     }
 
@@ -5017,7 +5086,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_19' field has been set, false otherwise.
       */
     public boolean hasFlexField19() {
-      return fieldSetFlags()[66];
+      return fieldSetFlags()[67];
     }
 
 
@@ -5025,9 +5094,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_19' field.
       * @return This builder.
       */
-    public Builder clearFlexField19() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField19() {
       flex_field_19 = null;
-      fieldSetFlags()[66] = false;
+      fieldSetFlags()[67] = false;
       return this;
     }
 
@@ -5035,7 +5104,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'flex_field_20' field.
       * @return The value.
       */
-    public String getFlexField20() {
+    public java.lang.String getFlexField20() {
       return flex_field_20;
     }
 
@@ -5044,10 +5113,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'flex_field_20'.
       * @return This builder.
       */
-    public Builder setFlexField20(String value) {
-      validate(fields()[67], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setFlexField20(java.lang.String value) {
+      validate(fields()[68], value);
       this.flex_field_20 = value;
-      fieldSetFlags()[67] = true;
+      fieldSetFlags()[68] = true;
       return this;
     }
 
@@ -5056,7 +5125,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'flex_field_20' field has been set, false otherwise.
       */
     public boolean hasFlexField20() {
-      return fieldSetFlags()[67];
+      return fieldSetFlags()[68];
     }
 
 
@@ -5064,9 +5133,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'flex_field_20' field.
       * @return This builder.
       */
-    public Builder clearFlexField20() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearFlexField20() {
       flex_field_20 = null;
-      fieldSetFlags()[67] = false;
+      fieldSetFlags()[68] = false;
       return this;
     }
 
@@ -5074,7 +5143,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'perf_track_name_value' field.
       * @return The value.
       */
-    public String getPerfTrackNameValue() {
+    public java.lang.String getPerfTrackNameValue() {
       return perf_track_name_value;
     }
 
@@ -5083,10 +5152,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'perf_track_name_value'.
       * @return This builder.
       */
-    public Builder setPerfTrackNameValue(String value) {
-      validate(fields()[68], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setPerfTrackNameValue(java.lang.String value) {
+      validate(fields()[69], value);
       this.perf_track_name_value = value;
-      fieldSetFlags()[68] = true;
+      fieldSetFlags()[69] = true;
       return this;
     }
 
@@ -5095,7 +5164,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'perf_track_name_value' field has been set, false otherwise.
       */
     public boolean hasPerfTrackNameValue() {
-      return fieldSetFlags()[68];
+      return fieldSetFlags()[69];
     }
 
 
@@ -5103,9 +5172,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'perf_track_name_value' field.
       * @return This builder.
       */
-    public Builder clearPerfTrackNameValue() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearPerfTrackNameValue() {
       perf_track_name_value = null;
-      fieldSetFlags()[68] = false;
+      fieldSetFlags()[69] = false;
       return this;
     }
 
@@ -5113,7 +5182,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'mgvalue' field.
       * @return The value.
       */
-    public String getMgvalue() {
+    public java.lang.String getMgvalue() {
       return mgvalue;
     }
 
@@ -5122,10 +5191,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'mgvalue'.
       * @return This builder.
       */
-    public Builder setMgvalue(String value) {
-      validate(fields()[69], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setMgvalue(java.lang.String value) {
+      validate(fields()[70], value);
       this.mgvalue = value;
-      fieldSetFlags()[69] = true;
+      fieldSetFlags()[70] = true;
       return this;
     }
 
@@ -5134,7 +5203,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'mgvalue' field has been set, false otherwise.
       */
     public boolean hasMgvalue() {
-      return fieldSetFlags()[69];
+      return fieldSetFlags()[70];
     }
 
 
@@ -5142,9 +5211,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'mgvalue' field.
       * @return This builder.
       */
-    public Builder clearMgvalue() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearMgvalue() {
       mgvalue = null;
-      fieldSetFlags()[69] = false;
+      fieldSetFlags()[70] = false;
       return this;
     }
 
@@ -5152,7 +5221,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'mgvalue_rsn_cd' field.
       * @return The value.
       */
-    public String getMgvalueRsnCd() {
+    public java.lang.String getMgvalueRsnCd() {
       return mgvalue_rsn_cd;
     }
 
@@ -5161,10 +5230,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'mgvalue_rsn_cd'.
       * @return This builder.
       */
-    public Builder setMgvalueRsnCd(String value) {
-      validate(fields()[70], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setMgvalueRsnCd(java.lang.String value) {
+      validate(fields()[71], value);
       this.mgvalue_rsn_cd = value;
-      fieldSetFlags()[70] = true;
+      fieldSetFlags()[71] = true;
       return this;
     }
 
@@ -5173,7 +5242,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'mgvalue_rsn_cd' field has been set, false otherwise.
       */
     public boolean hasMgvalueRsnCd() {
-      return fieldSetFlags()[70];
+      return fieldSetFlags()[71];
     }
 
 
@@ -5181,9 +5250,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'mgvalue_rsn_cd' field.
       * @return This builder.
       */
-    public Builder clearMgvalueRsnCd() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearMgvalueRsnCd() {
       mgvalue_rsn_cd = null;
-      fieldSetFlags()[70] = false;
+      fieldSetFlags()[71] = false;
       return this;
     }
 
@@ -5191,7 +5260,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'cre_date' field.
       * @return The value.
       */
-    public String getCreDate() {
+    public java.lang.String getCreDate() {
       return cre_date;
     }
 
@@ -5200,10 +5269,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'cre_date'.
       * @return This builder.
       */
-    public Builder setCreDate(String value) {
-      validate(fields()[71], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCreDate(java.lang.String value) {
+      validate(fields()[72], value);
       this.cre_date = value;
-      fieldSetFlags()[71] = true;
+      fieldSetFlags()[72] = true;
       return this;
     }
 
@@ -5212,7 +5281,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'cre_date' field has been set, false otherwise.
       */
     public boolean hasCreDate() {
-      return fieldSetFlags()[71];
+      return fieldSetFlags()[72];
     }
 
 
@@ -5220,9 +5289,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'cre_date' field.
       * @return This builder.
       */
-    public Builder clearCreDate() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCreDate() {
       cre_date = null;
-      fieldSetFlags()[71] = false;
+      fieldSetFlags()[72] = false;
       return this;
     }
 
@@ -5230,7 +5299,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'cre_user' field.
       * @return The value.
       */
-    public String getCreUser() {
+    public java.lang.String getCreUser() {
       return cre_user;
     }
 
@@ -5239,10 +5308,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'cre_user'.
       * @return This builder.
       */
-    public Builder setCreUser(String value) {
-      validate(fields()[72], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setCreUser(java.lang.String value) {
+      validate(fields()[73], value);
       this.cre_user = value;
-      fieldSetFlags()[72] = true;
+      fieldSetFlags()[73] = true;
       return this;
     }
 
@@ -5251,7 +5320,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'cre_user' field has been set, false otherwise.
       */
     public boolean hasCreUser() {
-      return fieldSetFlags()[72];
+      return fieldSetFlags()[73];
     }
 
 
@@ -5259,9 +5328,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'cre_user' field.
       * @return This builder.
       */
-    public Builder clearCreUser() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearCreUser() {
       cre_user = null;
-      fieldSetFlags()[72] = false;
+      fieldSetFlags()[73] = false;
       return this;
     }
 
@@ -5269,7 +5338,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'upd_date' field.
       * @return The value.
       */
-    public String getUpdDate() {
+    public java.lang.String getUpdDate() {
       return upd_date;
     }
 
@@ -5278,10 +5347,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'upd_date'.
       * @return This builder.
       */
-    public Builder setUpdDate(String value) {
-      validate(fields()[73], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUpdDate(java.lang.String value) {
+      validate(fields()[74], value);
       this.upd_date = value;
-      fieldSetFlags()[73] = true;
+      fieldSetFlags()[74] = true;
       return this;
     }
 
@@ -5290,7 +5359,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'upd_date' field has been set, false otherwise.
       */
     public boolean hasUpdDate() {
-      return fieldSetFlags()[73];
+      return fieldSetFlags()[74];
     }
 
 
@@ -5298,9 +5367,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'upd_date' field.
       * @return This builder.
       */
-    public Builder clearUpdDate() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUpdDate() {
       upd_date = null;
-      fieldSetFlags()[73] = false;
+      fieldSetFlags()[74] = false;
       return this;
     }
 
@@ -5308,7 +5377,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Gets the value of the 'upd_user' field.
       * @return The value.
       */
-    public String getUpdUser() {
+    public java.lang.String getUpdUser() {
       return upd_user;
     }
 
@@ -5317,10 +5386,10 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @param value The value of 'upd_user'.
       * @return This builder.
       */
-    public Builder setUpdUser(String value) {
-      validate(fields()[74], value);
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder setUpdUser(java.lang.String value) {
+      validate(fields()[75], value);
       this.upd_user = value;
-      fieldSetFlags()[74] = true;
+      fieldSetFlags()[75] = true;
       return this;
     }
 
@@ -5329,7 +5398,7 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * @return True if the 'upd_user' field has been set, false otherwise.
       */
     public boolean hasUpdUser() {
-      return fieldSetFlags()[74];
+      return fieldSetFlags()[75];
     }
 
 
@@ -5337,9 +5406,9 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
       * Clears the value of the 'upd_user' field.
       * @return This builder.
       */
-    public Builder clearUpdUser() {
+    public com.ebay.app.raptor.chocolate.avro.UnifiedTrackingImkMessage.Builder clearUpdUser() {
       upd_user = null;
-      fieldSetFlags()[74] = false;
+      fieldSetFlags()[75] = false;
       return this;
     }
 
@@ -5351,84 +5420,85 @@ public class UnifiedTrackingImkMessage extends org.apache.avro.specific.Specific
         if (rheosHeaderBuilder != null) {
           record.rheosHeader = this.rheosHeaderBuilder.build();
         } else {
-          record.rheosHeader = fieldSetFlags()[0] ? this.rheosHeader : (RheosHeader) defaultValue(fields()[0]);
+          record.rheosHeader = fieldSetFlags()[0] ? this.rheosHeader : (com.ebay.app.raptor.chocolate.avro.RheosHeader) defaultValue(fields()[0]);
         }
-        record.batch_id = fieldSetFlags()[1] ? this.batch_id : (String) defaultValue(fields()[1]);
-        record.file_id = fieldSetFlags()[2] ? this.file_id : (Integer) defaultValue(fields()[2]);
-        record.file_schm_vrsn = fieldSetFlags()[3] ? this.file_schm_vrsn : (Integer) defaultValue(fields()[3]);
-        record.rvr_id = fieldSetFlags()[4] ? this.rvr_id : (Long) defaultValue(fields()[4]);
-        record.event_dt = fieldSetFlags()[5] ? this.event_dt : (String) defaultValue(fields()[5]);
-        record.srvd_pstn = fieldSetFlags()[6] ? this.srvd_pstn : (Integer) defaultValue(fields()[6]);
-        record.rvr_cmnd_type_cd = fieldSetFlags()[7] ? this.rvr_cmnd_type_cd : (String) defaultValue(fields()[7]);
-        record.rvr_chnl_type_cd = fieldSetFlags()[8] ? this.rvr_chnl_type_cd : (String) defaultValue(fields()[8]);
-        record.cntry_cd = fieldSetFlags()[9] ? this.cntry_cd : (String) defaultValue(fields()[9]);
-        record.lang_cd = fieldSetFlags()[10] ? this.lang_cd : (String) defaultValue(fields()[10]);
-        record.trckng_prtnr_id = fieldSetFlags()[11] ? this.trckng_prtnr_id : (Integer) defaultValue(fields()[11]);
-        record.cguid = fieldSetFlags()[12] ? this.cguid : (String) defaultValue(fields()[12]);
-        record.guid = fieldSetFlags()[13] ? this.guid : (String) defaultValue(fields()[13]);
-        record.user_id = fieldSetFlags()[14] ? this.user_id : (Long) defaultValue(fields()[14]);
-        record.clnt_remote_ip = fieldSetFlags()[15] ? this.clnt_remote_ip : (String) defaultValue(fields()[15]);
-        record.brwsr_type_id = fieldSetFlags()[16] ? this.brwsr_type_id : (Integer) defaultValue(fields()[16]);
-        record.brwsr_name = fieldSetFlags()[17] ? this.brwsr_name : (String) defaultValue(fields()[17]);
-        record.rfrr_dmn_name = fieldSetFlags()[18] ? this.rfrr_dmn_name : (String) defaultValue(fields()[18]);
-        record.rfrr_url = fieldSetFlags()[19] ? this.rfrr_url : (String) defaultValue(fields()[19]);
-        record.url_encrptd_yn_ind = fieldSetFlags()[20] ? this.url_encrptd_yn_ind : (Integer) defaultValue(fields()[20]);
-        record.pblshr_id = fieldSetFlags()[21] ? this.pblshr_id : (String) defaultValue(fields()[21]);
-        record.lndng_page_dmn_name = fieldSetFlags()[22] ? this.lndng_page_dmn_name : (String) defaultValue(fields()[22]);
-        record.lndng_page_url = fieldSetFlags()[23] ? this.lndng_page_url : (String) defaultValue(fields()[23]);
-        record.user_query = fieldSetFlags()[24] ? this.user_query : (String) defaultValue(fields()[24]);
-        record.rule_bit_flag_strng = fieldSetFlags()[25] ? this.rule_bit_flag_strng : (String) defaultValue(fields()[25]);
-        record.event_ts = fieldSetFlags()[26] ? this.event_ts : (String) defaultValue(fields()[26]);
-        record.dflt_bhrv_id = fieldSetFlags()[27] ? this.dflt_bhrv_id : (Integer) defaultValue(fields()[27]);
-        record.src_rotation_id = fieldSetFlags()[28] ? this.src_rotation_id : (Long) defaultValue(fields()[28]);
-        record.dst_rotation_id = fieldSetFlags()[29] ? this.dst_rotation_id : (Long) defaultValue(fields()[29]);
-        record.user_map_ind = fieldSetFlags()[30] ? this.user_map_ind : (String) defaultValue(fields()[30]);
-        record.dst_client_id = fieldSetFlags()[31] ? this.dst_client_id : (Integer) defaultValue(fields()[31]);
-        record.creative_id = fieldSetFlags()[32] ? this.creative_id : (Long) defaultValue(fields()[32]);
-        record.test_ctrl_flag = fieldSetFlags()[33] ? this.test_ctrl_flag : (Integer) defaultValue(fields()[33]);
-        record.mfe_id = fieldSetFlags()[34] ? this.mfe_id : (Integer) defaultValue(fields()[34]);
-        record.kw_id = fieldSetFlags()[35] ? this.kw_id : (Long) defaultValue(fields()[35]);
-        record.keyword = fieldSetFlags()[36] ? this.keyword : (String) defaultValue(fields()[36]);
-        record.mt_id = fieldSetFlags()[37] ? this.mt_id : (String) defaultValue(fields()[37]);
-        record.crlp = fieldSetFlags()[38] ? this.crlp : (String) defaultValue(fields()[38]);
-        record.geo_id = fieldSetFlags()[39] ? this.geo_id : (String) defaultValue(fields()[39]);
-        record.item_id = fieldSetFlags()[40] ? this.item_id : (String) defaultValue(fields()[40]);
-        record.transaction_type = fieldSetFlags()[41] ? this.transaction_type : (String) defaultValue(fields()[41]);
-        record.transaction_id = fieldSetFlags()[42] ? this.transaction_id : (String) defaultValue(fields()[42]);
-        record.cart_id = fieldSetFlags()[43] ? this.cart_id : (String) defaultValue(fields()[43]);
-        record.extrnl_cookie = fieldSetFlags()[44] ? this.extrnl_cookie : (String) defaultValue(fields()[44]);
-        record.ebay_site_id = fieldSetFlags()[45] ? this.ebay_site_id : (String) defaultValue(fields()[45]);
-        record.rvr_url = fieldSetFlags()[46] ? this.rvr_url : (String) defaultValue(fields()[46]);
-        record.flex_field_vrsn_num = fieldSetFlags()[47] ? this.flex_field_vrsn_num : (Integer) defaultValue(fields()[47]);
-        record.flex_field_1 = fieldSetFlags()[48] ? this.flex_field_1 : (String) defaultValue(fields()[48]);
-        record.flex_field_2 = fieldSetFlags()[49] ? this.flex_field_2 : (String) defaultValue(fields()[49]);
-        record.flex_field_3 = fieldSetFlags()[50] ? this.flex_field_3 : (String) defaultValue(fields()[50]);
-        record.flex_field_4 = fieldSetFlags()[51] ? this.flex_field_4 : (String) defaultValue(fields()[51]);
-        record.flex_field_5 = fieldSetFlags()[52] ? this.flex_field_5 : (String) defaultValue(fields()[52]);
-        record.flex_field_6 = fieldSetFlags()[53] ? this.flex_field_6 : (String) defaultValue(fields()[53]);
-        record.flex_field_7 = fieldSetFlags()[54] ? this.flex_field_7 : (String) defaultValue(fields()[54]);
-        record.flex_field_8 = fieldSetFlags()[55] ? this.flex_field_8 : (String) defaultValue(fields()[55]);
-        record.flex_field_9 = fieldSetFlags()[56] ? this.flex_field_9 : (String) defaultValue(fields()[56]);
-        record.flex_field_10 = fieldSetFlags()[57] ? this.flex_field_10 : (String) defaultValue(fields()[57]);
-        record.flex_field_11 = fieldSetFlags()[58] ? this.flex_field_11 : (String) defaultValue(fields()[58]);
-        record.flex_field_12 = fieldSetFlags()[59] ? this.flex_field_12 : (String) defaultValue(fields()[59]);
-        record.flex_field_13 = fieldSetFlags()[60] ? this.flex_field_13 : (String) defaultValue(fields()[60]);
-        record.flex_field_14 = fieldSetFlags()[61] ? this.flex_field_14 : (String) defaultValue(fields()[61]);
-        record.flex_field_15 = fieldSetFlags()[62] ? this.flex_field_15 : (String) defaultValue(fields()[62]);
-        record.flex_field_16 = fieldSetFlags()[63] ? this.flex_field_16 : (String) defaultValue(fields()[63]);
-        record.flex_field_17 = fieldSetFlags()[64] ? this.flex_field_17 : (String) defaultValue(fields()[64]);
-        record.flex_field_18 = fieldSetFlags()[65] ? this.flex_field_18 : (String) defaultValue(fields()[65]);
-        record.flex_field_19 = fieldSetFlags()[66] ? this.flex_field_19 : (String) defaultValue(fields()[66]);
-        record.flex_field_20 = fieldSetFlags()[67] ? this.flex_field_20 : (String) defaultValue(fields()[67]);
-        record.perf_track_name_value = fieldSetFlags()[68] ? this.perf_track_name_value : (String) defaultValue(fields()[68]);
-        record.mgvalue = fieldSetFlags()[69] ? this.mgvalue : (String) defaultValue(fields()[69]);
-        record.mgvalue_rsn_cd = fieldSetFlags()[70] ? this.mgvalue_rsn_cd : (String) defaultValue(fields()[70]);
-        record.cre_date = fieldSetFlags()[71] ? this.cre_date : (String) defaultValue(fields()[71]);
-        record.cre_user = fieldSetFlags()[72] ? this.cre_user : (String) defaultValue(fields()[72]);
-        record.upd_date = fieldSetFlags()[73] ? this.upd_date : (String) defaultValue(fields()[73]);
-        record.upd_user = fieldSetFlags()[74] ? this.upd_user : (String) defaultValue(fields()[74]);
+        record.batch_id = fieldSetFlags()[1] ? this.batch_id : (java.lang.String) defaultValue(fields()[1]);
+        record.file_id = fieldSetFlags()[2] ? this.file_id : (java.lang.Integer) defaultValue(fields()[2]);
+        record.file_schm_vrsn = fieldSetFlags()[3] ? this.file_schm_vrsn : (java.lang.Integer) defaultValue(fields()[3]);
+        record.rvr_id = fieldSetFlags()[4] ? this.rvr_id : (java.lang.Long) defaultValue(fields()[4]);
+        record.event_dt = fieldSetFlags()[5] ? this.event_dt : (java.lang.String) defaultValue(fields()[5]);
+        record.srvd_pstn = fieldSetFlags()[6] ? this.srvd_pstn : (java.lang.Integer) defaultValue(fields()[6]);
+        record.rvr_cmnd_type_cd = fieldSetFlags()[7] ? this.rvr_cmnd_type_cd : (java.lang.String) defaultValue(fields()[7]);
+        record.rvr_chnl_type_cd = fieldSetFlags()[8] ? this.rvr_chnl_type_cd : (java.lang.String) defaultValue(fields()[8]);
+        record.cntry_cd = fieldSetFlags()[9] ? this.cntry_cd : (java.lang.String) defaultValue(fields()[9]);
+        record.lang_cd = fieldSetFlags()[10] ? this.lang_cd : (java.lang.String) defaultValue(fields()[10]);
+        record.trckng_prtnr_id = fieldSetFlags()[11] ? this.trckng_prtnr_id : (java.lang.Integer) defaultValue(fields()[11]);
+        record.cguid = fieldSetFlags()[12] ? this.cguid : (java.lang.String) defaultValue(fields()[12]);
+        record.guid = fieldSetFlags()[13] ? this.guid : (java.lang.String) defaultValue(fields()[13]);
+        record.user_id = fieldSetFlags()[14] ? this.user_id : (java.lang.Long) defaultValue(fields()[14]);
+        record.clnt_remote_ip = fieldSetFlags()[15] ? this.clnt_remote_ip : (java.lang.String) defaultValue(fields()[15]);
+        record.brwsr_type_id = fieldSetFlags()[16] ? this.brwsr_type_id : (java.lang.Integer) defaultValue(fields()[16]);
+        record.brwsr_name = fieldSetFlags()[17] ? this.brwsr_name : (java.lang.String) defaultValue(fields()[17]);
+        record.rfrr_dmn_name = fieldSetFlags()[18] ? this.rfrr_dmn_name : (java.lang.String) defaultValue(fields()[18]);
+        record.rfrr_url = fieldSetFlags()[19] ? this.rfrr_url : (java.lang.String) defaultValue(fields()[19]);
+        record.url_encrptd_yn_ind = fieldSetFlags()[20] ? this.url_encrptd_yn_ind : (java.lang.Integer) defaultValue(fields()[20]);
+        record.pblshr_id = fieldSetFlags()[21] ? this.pblshr_id : (java.lang.String) defaultValue(fields()[21]);
+        record.lndng_page_dmn_name = fieldSetFlags()[22] ? this.lndng_page_dmn_name : (java.lang.String) defaultValue(fields()[22]);
+        record.lndng_page_url = fieldSetFlags()[23] ? this.lndng_page_url : (java.lang.String) defaultValue(fields()[23]);
+        record.user_query = fieldSetFlags()[24] ? this.user_query : (java.lang.String) defaultValue(fields()[24]);
+        record.rule_bit_flag_strng = fieldSetFlags()[25] ? this.rule_bit_flag_strng : (java.lang.String) defaultValue(fields()[25]);
+        record.event_ts = fieldSetFlags()[26] ? this.event_ts : (java.lang.String) defaultValue(fields()[26]);
+        record.dflt_bhrv_id = fieldSetFlags()[27] ? this.dflt_bhrv_id : (java.lang.Integer) defaultValue(fields()[27]);
+        record.src_rotation_id = fieldSetFlags()[28] ? this.src_rotation_id : (java.lang.Long) defaultValue(fields()[28]);
+        record.dst_rotation_id = fieldSetFlags()[29] ? this.dst_rotation_id : (java.lang.Long) defaultValue(fields()[29]);
+        record.user_map_ind = fieldSetFlags()[30] ? this.user_map_ind : (java.lang.String) defaultValue(fields()[30]);
+        record.dst_client_id = fieldSetFlags()[31] ? this.dst_client_id : (java.lang.Integer) defaultValue(fields()[31]);
+        record.creative_id = fieldSetFlags()[32] ? this.creative_id : (java.lang.Long) defaultValue(fields()[32]);
+        record.test_ctrl_flag = fieldSetFlags()[33] ? this.test_ctrl_flag : (java.lang.Integer) defaultValue(fields()[33]);
+        record.mfe_id = fieldSetFlags()[34] ? this.mfe_id : (java.lang.Integer) defaultValue(fields()[34]);
+        record.kw_id = fieldSetFlags()[35] ? this.kw_id : (java.lang.Long) defaultValue(fields()[35]);
+        record.keyword = fieldSetFlags()[36] ? this.keyword : (java.lang.String) defaultValue(fields()[36]);
+        record.mt_id = fieldSetFlags()[37] ? this.mt_id : (java.lang.String) defaultValue(fields()[37]);
+        record.crlp = fieldSetFlags()[38] ? this.crlp : (java.lang.String) defaultValue(fields()[38]);
+        record.geo_id = fieldSetFlags()[39] ? this.geo_id : (java.lang.String) defaultValue(fields()[39]);
+        record.item_id = fieldSetFlags()[40] ? this.item_id : (java.lang.String) defaultValue(fields()[40]);
+        record.transaction_type = fieldSetFlags()[41] ? this.transaction_type : (java.lang.String) defaultValue(fields()[41]);
+        record.transaction_id = fieldSetFlags()[42] ? this.transaction_id : (java.lang.String) defaultValue(fields()[42]);
+        record.cart_id = fieldSetFlags()[43] ? this.cart_id : (java.lang.String) defaultValue(fields()[43]);
+        record.extrnl_cookie = fieldSetFlags()[44] ? this.extrnl_cookie : (java.lang.String) defaultValue(fields()[44]);
+        record.ebay_site_id = fieldSetFlags()[45] ? this.ebay_site_id : (java.lang.String) defaultValue(fields()[45]);
+        record.rvr_url = fieldSetFlags()[46] ? this.rvr_url : (java.lang.String) defaultValue(fields()[46]);
+        record.client_data = fieldSetFlags()[47] ? this.client_data : (java.lang.String) defaultValue(fields()[47]);
+        record.flex_field_vrsn_num = fieldSetFlags()[48] ? this.flex_field_vrsn_num : (java.lang.Integer) defaultValue(fields()[48]);
+        record.flex_field_1 = fieldSetFlags()[49] ? this.flex_field_1 : (java.lang.String) defaultValue(fields()[49]);
+        record.flex_field_2 = fieldSetFlags()[50] ? this.flex_field_2 : (java.lang.String) defaultValue(fields()[50]);
+        record.flex_field_3 = fieldSetFlags()[51] ? this.flex_field_3 : (java.lang.String) defaultValue(fields()[51]);
+        record.flex_field_4 = fieldSetFlags()[52] ? this.flex_field_4 : (java.lang.String) defaultValue(fields()[52]);
+        record.flex_field_5 = fieldSetFlags()[53] ? this.flex_field_5 : (java.lang.String) defaultValue(fields()[53]);
+        record.flex_field_6 = fieldSetFlags()[54] ? this.flex_field_6 : (java.lang.String) defaultValue(fields()[54]);
+        record.flex_field_7 = fieldSetFlags()[55] ? this.flex_field_7 : (java.lang.String) defaultValue(fields()[55]);
+        record.flex_field_8 = fieldSetFlags()[56] ? this.flex_field_8 : (java.lang.String) defaultValue(fields()[56]);
+        record.flex_field_9 = fieldSetFlags()[57] ? this.flex_field_9 : (java.lang.String) defaultValue(fields()[57]);
+        record.flex_field_10 = fieldSetFlags()[58] ? this.flex_field_10 : (java.lang.String) defaultValue(fields()[58]);
+        record.flex_field_11 = fieldSetFlags()[59] ? this.flex_field_11 : (java.lang.String) defaultValue(fields()[59]);
+        record.flex_field_12 = fieldSetFlags()[60] ? this.flex_field_12 : (java.lang.String) defaultValue(fields()[60]);
+        record.flex_field_13 = fieldSetFlags()[61] ? this.flex_field_13 : (java.lang.String) defaultValue(fields()[61]);
+        record.flex_field_14 = fieldSetFlags()[62] ? this.flex_field_14 : (java.lang.String) defaultValue(fields()[62]);
+        record.flex_field_15 = fieldSetFlags()[63] ? this.flex_field_15 : (java.lang.String) defaultValue(fields()[63]);
+        record.flex_field_16 = fieldSetFlags()[64] ? this.flex_field_16 : (java.lang.String) defaultValue(fields()[64]);
+        record.flex_field_17 = fieldSetFlags()[65] ? this.flex_field_17 : (java.lang.String) defaultValue(fields()[65]);
+        record.flex_field_18 = fieldSetFlags()[66] ? this.flex_field_18 : (java.lang.String) defaultValue(fields()[66]);
+        record.flex_field_19 = fieldSetFlags()[67] ? this.flex_field_19 : (java.lang.String) defaultValue(fields()[67]);
+        record.flex_field_20 = fieldSetFlags()[68] ? this.flex_field_20 : (java.lang.String) defaultValue(fields()[68]);
+        record.perf_track_name_value = fieldSetFlags()[69] ? this.perf_track_name_value : (java.lang.String) defaultValue(fields()[69]);
+        record.mgvalue = fieldSetFlags()[70] ? this.mgvalue : (java.lang.String) defaultValue(fields()[70]);
+        record.mgvalue_rsn_cd = fieldSetFlags()[71] ? this.mgvalue_rsn_cd : (java.lang.String) defaultValue(fields()[71]);
+        record.cre_date = fieldSetFlags()[72] ? this.cre_date : (java.lang.String) defaultValue(fields()[72]);
+        record.cre_user = fieldSetFlags()[73] ? this.cre_user : (java.lang.String) defaultValue(fields()[73]);
+        record.upd_date = fieldSetFlags()[74] ? this.upd_date : (java.lang.String) defaultValue(fields()[74]);
+        record.upd_user = fieldSetFlags()[75] ? this.upd_user : (java.lang.String) defaultValue(fields()[75]);
         return record;
-      } catch (Exception e) {
+      } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
       }
     }

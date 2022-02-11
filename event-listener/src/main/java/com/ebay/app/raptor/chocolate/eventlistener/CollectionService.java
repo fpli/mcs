@@ -569,6 +569,8 @@ public class CollectionService {
 
     Map<String, String> requestHeaders = commonRequestHandler.getHeaderMaps(request);
 
+    SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
+
     // validate tracking header only, adservice does not construct enduserctx
     validateTrackingHeader(request.getHeader(TRACKING_HEADER));
 
@@ -674,6 +676,7 @@ public class CollectionService {
     String utpEventId = UUID.randomUUID().toString();
     baseEvent.setUuid(utpEventId);
 
+    SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
 
     // add channel specific tags, and produce message for EPN and IMK
     if (channelType == ChannelIdEnum.SITE_EMAIL || channelType == ChannelIdEnum.SITE_MESSAGE_CENTER) {

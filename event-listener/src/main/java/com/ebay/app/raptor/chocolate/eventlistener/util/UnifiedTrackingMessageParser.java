@@ -2,10 +2,11 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
+import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
-import com.ebay.app.raptor.chocolate.eventlistener.constant.StringConstants;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -44,7 +45,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
@@ -613,10 +613,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // clientdata
-    Map<String,String> clientHints= baseEvent.getEndUserContext().getClientHints();
-    if (MapUtils.isNotEmpty(clientHints)) {
-      payload.put("clientData", formatClientData(clientHints));
-    }
+    payload.put("clientData", constructClientData(baseEvent));
 
     // guid list
     if (needGuidList(channelType, channelAction, baseEvent.isThirdParty())) {
@@ -838,23 +835,6 @@ public class UnifiedTrackingMessageParser {
   }
 
   /**
-   * Convert Map to query string
-   * @param map
-   * @return
-   */
-  private static String formatClientData(Map<String, String> map) {
-    if(MapUtils.isNotEmpty(map)){
-      try {
-        return map.entrySet().stream().map(m -> m.getKey() + StringConstants.EQUAL + m.getValue()).collect(Collectors.joining(StringConstants.AND));
-      }catch (Exception e){
-        MonitorUtil.info("formatClientDataError");
-        logger.warn("format client data to map error", e);
-      }
-    }
-    return "";
-  }
-
-  /**
    * Only Email Open and Email 3rd party Clicks need fake guid
    */
   private static boolean needFakeGuid(ChannelType channelType, ChannelAction channelAction, boolean isThirdParty) {
@@ -888,5 +868,38 @@ public class UnifiedTrackingMessageParser {
             ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType));
 
     return isEmailOpen || isThirdPartyClick;
+  }
+
+  /**
+   * To construct Client Data according to baseEvent
+   * @param baseEvent
+   * @return
+   */
+  private static String constructClientData(BaseEvent baseEvent) {
+    if (baseEvent == null || baseEvent.getEndUserContext() == null) {
+      return null;
+    }
+
+    StringJoiner clientData = new StringJoiner(StringConstants.AND);
+    StringJoiner clientDataHeader = new StringJoiner(StringConstants.EQUAL);
+    if(StringUtils.isNotEmpty(baseEvent.getEndUserContext().getUserAgent())){
+      clientDataHeader.add(ClientDataEnum.USER_AGENT.getHeaderAliasName()).add(baseEvent.getEndUserContext().getUserAgent());
+      clientData.add(clientDataHeader.toString());
+    }
+
+    Map<String, String> clientHints = baseEvent.getEndUserContext().getClientHints();
+    if (MapUtils.isNotEmpty(clientHints)) {
+      for (ClientDataEnum dataEnum : ClientDataEnum.getClientHint()) {
+        clientDataHeader = new StringJoiner(StringConstants.EQUAL);
+        String headerVal = clientHints.get(dataEnum.getHeaderName());
+        ;
+        if (StringUtils.isNotEmpty(headerVal)) {
+          clientDataHeader.add(dataEnum.getHeaderAliasName()).add(headerVal);
+          clientData.add(clientDataHeader.toString());
+        }
+      }
+    }
+
+    return clientData.toString();
   }
 }

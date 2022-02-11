@@ -727,6 +727,10 @@ public class UTPImkTransformer {
     return replaceMkgroupidMktype();
   }
 
+  protected String getClientData() {
+    return payload.get("clientData");
+  }
+
   protected String getMgvalue() {
     return StringConstants.EMPTY;
   }
