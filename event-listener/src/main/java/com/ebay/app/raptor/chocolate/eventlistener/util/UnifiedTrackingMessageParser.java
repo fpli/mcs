@@ -103,6 +103,8 @@ public class UnifiedTrackingMessageParser {
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
+    record.setAppVersion(event.getAppVersion());
+    record.setDeviceType(event.getDeviceType());
 
     // channel type
     record.setChannelType(event.getChannelType());
