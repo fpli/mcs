@@ -238,6 +238,68 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-api</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-couchbase</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-couchbase2</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-dal3</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>KernelDAL</artifactId>
+          <groupId>com.ebay.v3jars.Houston</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-fountclient</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-mcf</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-memcached</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-simple</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-ukernel</artifactId>
+      <version>${dukes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-fountclient</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>persistence-api</artifactId>
+          <groupId>javax.persistence</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-dal-starter</artifactId>
     </dependency>
@@ -447,6 +509,46 @@
         <exclusion>
           <artifactId>platform-core-annotations</artifactId>
           <groupId>com.ebayinc.platform.raptor</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes.component</groupId>
+      <artifactId>raptor-dukes-starter</artifactId>
+      <version>0.10.2-RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-migration</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-nukv</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-failover</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

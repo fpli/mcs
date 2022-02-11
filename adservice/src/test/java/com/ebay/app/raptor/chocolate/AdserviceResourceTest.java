@@ -329,7 +329,7 @@ public class AdserviceResourceTest {
   public void sync() {
     Response syncResponse = client.target(svcEndPoint).path(SYNC_PATH)
         .queryParam("guid", "abcd")
-        .queryParam("uid", "12345")
+        .queryParam("uid", "123456")
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
         .get();
