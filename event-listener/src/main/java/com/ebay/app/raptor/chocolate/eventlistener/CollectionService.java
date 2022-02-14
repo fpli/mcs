@@ -1,19 +1,12 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
-import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.raptor.opentracing.SpanEventHelper;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
-import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
-import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
-import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.collector.*;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
+import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
@@ -21,15 +14,20 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.*;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.auth.RaptorSecureContext;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
+import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
+import com.ebay.traffic.chocolate.utp.common.model.UnifiedTrackingMessage;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -45,6 +43,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -53,6 +52,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 
+import static com.ebay.app.raptor.chocolate.constant.ChannelActionEnum.*;
+import static com.ebay.app.raptor.chocolate.constant.ChannelIdEnum.parse;
+import static com.ebay.app.raptor.chocolate.constant.ChannelIdEnum.*;
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 
@@ -69,9 +71,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 public class CollectionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionService.class);
   private ListenerMessageParser listenerMessageParser;
-  private BehaviorMessageParser behaviorMessageParser;
-  private Producer behaviorProducer;
-  private String behaviorTopic;
   private Producer unifiedTrackingProducer;
   private String unifiedTrackingTopic;
   private String internalClickTopic;
@@ -98,8 +97,9 @@ public class CollectionService {
   private CustomizedSchemeRequestHandler customizedSchemeRequestHandler;
   @Autowired
   private CommonRequestHandler commonRequestHandler;
+  @Autowired
+  private GCXCollector gcxCollector;
 
-  private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String ADGUID_PARAM = "adguid";
@@ -113,9 +113,6 @@ public class CollectionService {
   @PostConstruct
   public void postInit() throws Exception {
     this.listenerMessageParser = ListenerMessageParser.getInstance();
-    this.behaviorMessageParser = BehaviorMessageParser.getInstance();
-    this.behaviorProducer = BehaviorKafkaSink.get();
-    this.behaviorTopic = ApplicationOptions.getInstance().getProduceBehaviorTopic();
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
     this.internalClickTopic = ApplicationOptions.getInstance().getInternalItmClickTopic();
@@ -130,15 +127,15 @@ public class CollectionService {
     }
 
     // XC-1695. no mkevt, rejected but return 201 accepted for clients since app team has started unconditionally call
-    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+    if (!parameters.containsKey(MKEVT) || parameters.get(MKEVT).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKEVT);
       MonitorUtil.info(Errors.ERROR_NO_MKEVT);
       return true;
     }
 
     // XC-1695. mkevt != 1, rejected but return 201 accepted for clients
-    String mkevt = parameters.get(Constants.MKEVT).get(0);
-    if (!mkevt.equals(Constants.VALID_MKEVT_CLICK)) {
+    String mkevt = parameters.get(MKEVT).get(0);
+    if (!mkevt.equals(VALID_MKEVT_CLICK)) {
       LOGGER.warn(Errors.ERROR_INVALID_MKEVT);
       MonitorUtil.info(Errors.ERROR_INVALID_MKEVT);
       return true;
@@ -146,7 +143,7 @@ public class CollectionService {
 
     // parse channel from query mkcid
     // no mkcid, rejected but return 201 accepted for clients
-    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+    if (!parameters.containsKey(MKCID) || parameters.get(MKCID).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKCID);
       MonitorUtil.info("NoMkcidParameter");
       return true;
@@ -208,7 +205,7 @@ public class CollectionService {
     // get valid channel type
     ChannelIdEnum channelType;
 
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+    channelType = parse(parameters.get(MKCID).get(0));
     if (channelType == null) {
       LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", targetUrl);
       MonitorUtil.info("InvalidMkcid");
@@ -216,16 +213,16 @@ public class CollectionService {
     }
 
     // for search engine free listings, append mkrid
-    if (channelType == ChannelIdEnum.SEARCH_ENGINE_FREE_LISTINGS) {
+    if (channelType == SEARCH_ENGINE_FREE_LISTINGS) {
       String rotationId = performanceMarketingCollector.getSearchEngineFreeListingsRotationId(userPrefsCtx);
-      finalUrl = finalUrl + "&" + Constants.MKRID + "=" + rotationId;
+      finalUrl = finalUrl + "&" + MKRID + "=" + rotationId;
     }
 
     // overwrite referer if the url is transformed from Rover to Chocolate by UFES
     Matcher roverSitesMatcher = roversites.matcher(finalRef.toLowerCase());
     if (roverSitesMatcher.find()
-            && parameters.containsKey(Constants.UFES_REDIRECT)
-            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+            && parameters.containsKey(UFES_REDIRECT)
+            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))) {
       finalRef = org.apache.commons.lang3.StringUtils.EMPTY;
     }
 
@@ -292,26 +289,30 @@ public class CollectionService {
     // UFES metrics
     MonitorUtil.info("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
         Field.of(LANDING_PAGE_TYPE, landingPageType),
-        Field.of("statusCode", request.getHeader(Constants.NODE_REDIRECTION_HEADER_NAME)));
+        Field.of("statusCode", request.getHeader(NODE_REDIRECTION_HEADER_NAME)));
 
     // UFES Redirect metrics
-    if (parameters.containsKey(Constants.UFES_REDIRECT) && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(Constants.UFES_REDIRECT)))) {
+    if (parameters.containsKey(UFES_REDIRECT) && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))) {
         MonitorUtil.info("UFESRedirect", 1, Field.of(CHANNEL_TYPE, urlRefChannel.getRight().getLogicalChannel().getAvro().toString()));
+    }
+    if (requestHeaders.containsKey(UFES_EDGTRKSVC_HDR)
+            && Boolean.toString(true).equalsIgnoreCase(requestHeaders.get(UFES_EDGTRKSVC_HDR))) {
+      MonitorUtil.info("UFESEdgTrkSvcHdrTrue");
     }
 
     // platform check by user agent
     UserAgentInfo agentInfo = (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME);
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
-    String action = ChannelActionEnum.CLICK.toString();
+    String action = CLICK.toString();
     String type = urlRefChannel.getRight().getLogicalChannel().getAvro().toString();
 
     // Self-service events, send them to couchbase
-    if (parameters.containsKey(Constants.SELF_SERVICE) && parameters.containsKey(Constants.SELF_SERVICE_ID)) {
-      if ("1".equals(parameters.getFirst(Constants.SELF_SERVICE)) &&
-          parameters.getFirst(Constants.SELF_SERVICE_ID) != null) {
+    if (parameters.containsKey(SELF_SERVICE) && parameters.containsKey(SELF_SERVICE_ID)) {
+      if ("1".equals(parameters.getFirst(SELF_SERVICE)) &&
+          parameters.getFirst(SELF_SERVICE_ID) != null) {
         MonitorUtil.info("SelfServiceIncoming");
-        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(Constants.SELF_SERVICE_ID),
+        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(SELF_SERVICE_ID),
             urlRefChannel.getLeft());
         MonitorUtil.info("SelfServiceSuccess");
 
@@ -344,7 +345,7 @@ public class CollectionService {
     baseEvent.setUrl(urlRefChannel.getLeft());
     baseEvent.setReferer(urlRefChannel.getMiddle());
     baseEvent.setRemoteIp(remoteIp);
-    baseEvent.setActionType(ChannelActionEnum.CLICK);
+    baseEvent.setActionType(CLICK);
     baseEvent.setChannelType(urlRefChannel.getRight());
     baseEvent.setUriComponents(uriComponents);
     baseEvent.setUrlParameters(parameters);
@@ -370,7 +371,7 @@ public class CollectionService {
           parameters, baseEvent.getReferer());
 
       if (isEPNClickFromPromotedListings) {
-        baseEvent.setReferer(URLDecoder.decode(parameters.get(Constants.PLRFR).get(0), StandardCharsets.UTF_8.name()));
+        baseEvent.setReferer(URLDecoder.decode(parameters.get(PLRFR).get(0), StandardCharsets.UTF_8.name()));
         MonitorUtil.info("OverwriteRefererForPromotedListingsClick");
       }
     } catch (Exception e) {
@@ -404,15 +405,17 @@ public class CollectionService {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.SITE_EMAIL ||
-              urlRefChannel.getRight() == ChannelIdEnum.SITE_MESSAGE_CENTER) {
-        fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_EMAIL ||
-              urlRefChannel.getRight() == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
-        fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-      } else if (urlRefChannel.getRight() == ChannelIdEnum.MRKT_SMS
-          || urlRefChannel.getRight() == ChannelIdEnum.SITE_SMS) {
-        fireCmEvent(baseEvent, requestContext, smsCollector);
+      } else {
+        ChannelIdEnum channel = urlRefChannel.getRight();
+        if (channel == SITE_EMAIL || channel == SITE_MESSAGE_CENTER) {
+          fireCmEvent(baseEvent, requestContext, siteEmailCollector);
+        } else if (channel == MRKT_EMAIL || channel == MRKT_MESSAGE_CENTER) {
+          fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
+        } else if (channel == MRKT_SMS || channel == SITE_SMS) {
+          fireCmEvent(baseEvent, requestContext, smsCollector);
+        } else if (channel == GCX_EMAIL || channel == GCX_MESSAGE_CENTER) {
+          fireGCXEvent(baseEvent, requestContext);
+        }
       }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -434,10 +437,12 @@ public class CollectionService {
       logError(Errors.ERROR_NO_ENDUSERCTX);
     }
   }
+
   protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
     if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
       return false;
-    } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType) {
+    } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType
+            || ChannelType.GCX_MESSAGE_CENTER == channelType) {
       return false;
     }
 
@@ -599,26 +604,26 @@ public class CollectionService {
     }
 
     // parse action from query param mkevt
-    if (!parameters.containsKey(Constants.MKEVT) || parameters.get(Constants.MKEVT).get(0) == null) {
+    if (!parameters.containsKey(MKEVT) || parameters.get(MKEVT).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKEVT);
       MonitorUtil.info(Errors.ERROR_NO_MKEVT);
     }
 
     // TODO refactor ChannelActionEnum
     // mkevt != 2, 3, 4, rejected
-    String mkevt = parameters.get(Constants.MKEVT).get(0);
+    String mkevt = parameters.get(MKEVT).get(0);
     switch (mkevt) {
       case "2":
-        channelAction = ChannelActionEnum.IMPRESSION;
+        channelAction = IMPRESSION;
         break;
       case "3":
-        channelAction = ChannelActionEnum.VIMP;
+        channelAction = VIMP;
         break;
       case "4":
-        channelAction = ChannelActionEnum.EMAIL_OPEN;
+        channelAction = EMAIL_OPEN;
         break;
       case "6":
-        channelAction = ChannelActionEnum.SERVE;
+        channelAction = SERVE;
         break;
       default:
         logError(Errors.ERROR_INVALID_MKEVT);
@@ -626,14 +631,14 @@ public class CollectionService {
 
     // parse channel from query mkcid
     // no mkcid, accepted
-    if (!parameters.containsKey(Constants.MKCID) || parameters.get(Constants.MKCID).get(0) == null) {
+    if (!parameters.containsKey(MKCID) || parameters.get(MKCID).get(0) == null) {
       LOGGER.warn(Errors.ERROR_NO_MKCID);
       MonitorUtil.info("NoMkcidParameter");
       return true;
     }
 
     // invalid mkcid, show error and accept
-    channelType = ChannelIdEnum.parse(parameters.get(Constants.MKCID).get(0));
+    channelType = parse(parameters.get(MKCID).get(0));
     if (channelType == null) {
       LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", uri);
       MonitorUtil.info("InvalidMkcid");
@@ -679,11 +684,11 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
 
     // add channel specific tags, and produce message for EPN and IMK
-    if (channelType == ChannelIdEnum.SITE_EMAIL || channelType == ChannelIdEnum.SITE_MESSAGE_CENTER) {
+    if (channelType == SITE_EMAIL || channelType == SITE_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
-    } else if (channelType == ChannelIdEnum.MRKT_EMAIL || channelType == ChannelIdEnum.MRKT_MESSAGE_CENTER) {
+    } else if (channelType == MRKT_EMAIL || channelType == MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-    } else if (channelType == ChannelIdEnum.GCX_EMAIL || channelType == ChannelIdEnum.GCX_MESSAGE_CENTER) {
+    } else if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
       fireGCXEvent(baseEvent, requestContext);
     } else {
       firePMEvent(baseEvent, requestContext);
@@ -742,8 +747,8 @@ public class CollectionService {
       MultiValueMap<String, String> clickParameters = clickUriComponents.getQueryParams();
 
       baseEvent.setUrl(clickUrl);
-      baseEvent.setActionType(ChannelActionEnum.CLICK);
-      baseEvent.setChannelType(ChannelIdEnum.DAP);
+      baseEvent.setActionType(CLICK);
+      baseEvent.setChannelType(DAP);
       baseEvent.setUriComponents(clickUriComponents);
       baseEvent.setUrlParameters(clickParameters);
       baseEvent.setUuid(UUID.randomUUID().toString());
@@ -761,8 +766,8 @@ public class CollectionService {
           mockClickListenerMessage.getShortSnapshotId());
 
       // Log mock click for pre-install ROI by transaction type
-      MonitorUtil.info("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, ChannelActionEnum.CLICK.toString()),
-          Field.of(CHANNEL_TYPE, ChannelIdEnum.DAP.getLogicalChannel().getAvro().toString()),
+      MonitorUtil.info("PreInstallMockClick", 1, Field.of(CHANNEL_ACTION, CLICK.toString()),
+          Field.of(CHANNEL_TYPE, DAP.getLogicalChannel().getAvro().toString()),
           Field.of(ROI_TRANS_TYPE, baseEvent.getRoiEvent().getTransType()));
     }
   }
@@ -813,7 +818,7 @@ public class CollectionService {
       requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.AR.getId(), Integer.class);
 
       // event action
-      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
+      requestTracker.addTag(TrackerTagValueUtil.EventActionTag, EVENT_ACTION, String.class);
 
       // target url
       if (!StringUtils.isEmpty(targetUrl)) {
@@ -875,15 +880,19 @@ public class CollectionService {
     try {
       UnifiedTrackingMessage utpMessage = utpParser.parse(baseEvent, requestContext, snapshotId,
           shortSnapshotId);
-      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(utpMessage.getChannelType())
+      String channel = utpMessage.getChannelType();
+      if (ChannelTypeEnum.SEARCH_ENGINE_FREE_LISTINGS.getValue().equals(channel)
           && utpMessage.getIsBot()) {
         MonitorUtil.info("CollectionServiceSkipFreeListingBot");
-      } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(utpMessage.getChannelType())
-          || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(utpMessage.getChannelType())
-          || ChannelTypeEnum.SITE_MESSAGE_CENTER.getValue().equals(utpMessage.getChannelType())
-          || ChannelTypeEnum.MRKT_MESSAGE_CENTER.getValue().equals(utpMessage.getChannelType()))
-          && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType())
-          && !baseEvent.isThirdParty()) {
+      } else if ((ChannelTypeEnum.SITE_EMAIL.getValue().equals(channel)
+              || ChannelTypeEnum.SITE_MESSAGE_CENTER.getValue().equals(channel)
+              || ChannelTypeEnum.MRKT_EMAIL.getValue().equals(channel)
+              || ChannelTypeEnum.MRKT_MESSAGE_CENTER.getValue().equals(channel)
+              || ChannelTypeEnum.GCX_EMAIL.getValue().equals(channel)
+              || ChannelTypeEnum.GCX_MESSAGE_CENTER.getValue().equals(channel)
+              || ChannelTypeEnum.MRKT_SMS.getValue().equals(channel)
+              || ChannelTypeEnum.SITE_SMS.getValue().equals(channel))
+              && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType()) && !baseEvent.isThirdParty()) {
         MonitorUtil.info("UTPSkipChocolateEmailClick");
       } else {
         unifiedTrackingProducer.send(new ProducerRecord<>(unifiedTrackingTopic, utpMessage.getEventId().getBytes(),
@@ -922,7 +931,7 @@ public class CollectionService {
       MonitorUtil.info("CheckoutAPIClick", 1);
     } else if (baseEvent.isPlaceOfferApi()) {
       MonitorUtil.info("PlaceOfferAPIClick", 1);
-    } else if (baseEvent.getActionType().equals(ChannelActionEnum.CLICK)) {
+    } else if (baseEvent.getActionType().equals(CLICK)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
 
@@ -936,17 +945,8 @@ public class CollectionService {
                                CustomerMarketingCollector cmCollector) {
 
     // 1. track ubi
-    if (ChannelActionEnum.CLICK.equals(baseEvent.getActionType())) {
+    if (CLICK.equals(baseEvent.getActionType())) {
       cmCollector.trackUbi(requestContext, baseEvent);
-    }
-
-    // 2. send email open to behavior topic
-    if (ChannelActionEnum.EMAIL_OPEN.equals(baseEvent.getActionType())) {
-      BehaviorMessage message = behaviorMessageParser.parse(baseEvent, requestContext);
-      if (message != null) {
-        behaviorProducer.send(new ProducerRecord<>(behaviorTopic, message.getSnapshotId().getBytes(), message),
-            KafkaSink.callback);
-      }
     }
 
     // 3. fire utp event
@@ -954,6 +954,10 @@ public class CollectionService {
   }
 
   private void fireGCXEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
+    // 1. track ubi
+    if (CLICK.equals(baseEvent.getActionType())) {
+      gcxCollector.trackUbi(requestContext, baseEvent);
+    }
     // fire utp event
     submitChocolateUtpEvent(baseEvent, requestContext, 0L, 0L);
   }
@@ -1018,12 +1022,5 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(internalClickTopic, message.getSnapshotId(), message), KafkaSink.callback);
     MonitorUtil.info("InternalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
         Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
-  }
-
-  /**
-   * Only for test
-   */
-  public Producer getBehaviorProducer() {
-    return behaviorProducer;
   }
 }

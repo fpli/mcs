@@ -1,11 +1,10 @@
 package chocolate;
 
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
-import com.ebay.app.raptor.chocolate.avro.BehaviorMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
+import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
-import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
@@ -27,7 +26,6 @@ import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
@@ -37,6 +35,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StringUtils;
 
@@ -52,14 +51,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.generateQueryString;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
-import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.roversites;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -107,10 +107,6 @@ public class EventListenerServiceTest {
   private static String endUserCtxMweb;
   private static String endUserCtxNoReferer;
   private static String endUserCtxCheckoutAPI;
-  private static String endUserCtxNoUserAgent;
-  private static String endUserCtxiPad;
-  private static String endUserCtxMobileTabletWeb;
-  private static String endUserCtxBot;
   private static String endUserCtxPlaceOfferAPI;
   private static String endUserCtxAndroidNoReferer;
 
@@ -227,49 +223,6 @@ public class EventListenerServiceTest {
       "userAgent=checkoutApi," +
       "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
       "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,uri=%2Fsampleappweb%2Fsctest," +
-      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-      endUserCtxNoUserAgent = "ip=10.148.184.210," +
-      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-      endUserCtxiPad = "ip=10.148.184.210," +
-      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-      "userAgent=eBayiPad%2F6.7.0," +
-      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-      endUserCtxMobileTabletWeb = "ip=10.148.184.210," +
-      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-      "userAgent=Mozilla%2F5.0%20%28iPad%3B%20CPU%20OS%2010_3_3%20like%20Mac%20OS%20X%29%20AppleWebKit%2F603.1.30%20%28KHTML%2C%20like%20Gecko%29%20GSA%2F68.0.234683655%20Mobile%2F14G60%20Safari%2F602.1," +
-      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
-      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-      endUserCtxBot = "ip=10.148.184.210," +
-      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-      "userAgent=Mozilla%2F5.0%20%28Linux%3B%20Android%206.0.1%3B%20Nexus%205X%20Build%2FMMB29P%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F85.0.4183.135%20Mobile%20Safari%2F537.36%20%28compatible%3B%20Googlebot%2F2.1%3B%20%2Bhttp%3A%2F%2Fwww.google.com%2Fbot.html%29," +
-      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,referer=https%3A%2F%2Fwiki.vip.corp.ebay" +
-      ".com%2Fdisplay%2FTRACKING%2FTest%2BMarketing%2Btracking,uri=%2Fsampleappweb%2Fsctest," +
       "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
       "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
       "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
@@ -875,16 +828,6 @@ public class EventListenerServiceTest {
     event.setTargetUrl("http://mktcollectionsvc.vip.ebay.com/marketingtracking/v1/impression?mkevt=4&mkcid=7&mkpid=999&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&euid=c527526a795a414cb4ad11bfaba21b5d&ext=56623");
     response = postMcsResponse(impressionPath, endUserCtxiPhone, tracking, event);
     assertEquals(200, response.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    collectionService.getBehaviorProducer().flush();
-    Consumer<String, BehaviorMessage> consumerEmail =
-        new KafkaConsumer<>(getProperties("event-listener-behavior-rheos-consumer.properties"));
-    Map<String, BehaviorMessage> listenerMessagesEmail = pollFromKafkaTopic(
-        consumerEmail, Arrays.asList("marketing.tracking.staging.behavior"), 4, 30 * 1000);
-    consumerEpn.close();
-    assertTrue(listenerMessagesEmail.size() >= 4);
   }
 
   @Test
@@ -1669,5 +1612,29 @@ public class EventListenerServiceTest {
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(201, response.getStatus());
 
+  }
+
+  @Test
+  public void testGCXEmailClick() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=29&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setPlaceOfferAPIClickTs("1641970800491");
+    event.setPayload(eventPayload);
+    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+  }
+
+  @Test
+  public void testGCXMessageCentreClick() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=30&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
+    EventPayload eventPayload = new EventPayload();
+    eventPayload.setPlaceOfferAPIClickTs("1641970896430");
+    event.setPayload(eventPayload);
+    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
 }

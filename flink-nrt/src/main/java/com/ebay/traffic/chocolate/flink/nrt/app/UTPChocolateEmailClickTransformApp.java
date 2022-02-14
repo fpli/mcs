@@ -125,6 +125,8 @@ public class UTPChocolateEmailClickTransformApp
     private transient Meter numChocolateMrktMCClickInRate;
     private transient Meter numChocolateGcxEmailClickInRate;
     private transient Meter numChocolateGcxMCClickInRate;
+    private transient Meter numChocolateMrktSMSClickInRate;
+    private transient Meter numChocolateSiteSMSClickInRate;
     private transient Meter numNoPageIdInRate;
     private transient Meter numNoChnlInRate;
     private transient Meter numNotChocolateClickInRate;
@@ -168,6 +170,8 @@ public class UTPChocolateEmailClickTransformApp
       numChocolateMrktMCClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateMrktMCClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numChocolateGcxEmailClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateGcxEmailClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numChocolateGcxMCClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateGcxMCClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
+      numChocolateMrktSMSClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateMrktSMSClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
+      numChocolateSiteSMSClickInRate = getRuntimeContext().getMetricGroup().meter("numChocolateSiteSMSClickInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
 
       numNoPageIdInRate = getRuntimeContext().getMetricGroup().meter("numNoPageIdInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
       numNoChnlInRate = getRuntimeContext().getMetricGroup().meter("numNoChnlInRate", new DropwizardMeterWrapper(new com.codahale.metrics.Meter()));
@@ -217,6 +221,12 @@ public class UTPChocolateEmailClickTransformApp
           break;
         case "GCX_MESSAGE_CENTER":
           numChocolateGcxMCClickInRate.markEvent();
+          break;
+        case "MRKT_SMS":
+          numChocolateMrktSMSClickInRate.markEvent();
+          break;
+        case "SITE_SMS":
+          numChocolateSiteSMSClickInRate.markEvent();
           break;
         default:
           throw new IllegalArgumentException(String.format("Unknown channel of %s", message));

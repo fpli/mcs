@@ -156,6 +156,12 @@ public class PerformanceMarketingCollector {
 
     //producereventts
     requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
+
+    //UFES Tag
+    String ufesEdgTrkSvcHeader = baseEvent.getRequestHeaders().get(UFES_EDGTRKSVC_HDR);
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
+      requestTracker.addTag(UFES_EDGTRKSVC_HDR, ufesEdgTrkSvcHeader, String.class);
+    }
   }
 
   public String getSearchEngineFreeListingsRotationId(UserPrefsCtx userPrefsCtx) {

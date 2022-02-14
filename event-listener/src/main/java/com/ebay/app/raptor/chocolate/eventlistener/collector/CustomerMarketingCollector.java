@@ -103,6 +103,11 @@ public abstract class CustomerMarketingCollector {
       requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
     }
 
+    String ufesEdgTrkSvcHeader = baseEvent.getRequestHeaders().get(UFES_EDGTRKSVC_HDR);
+    if (StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
+      requestTracker.addTag(UFES_EDGTRKSVC_HDR, ufesEdgTrkSvcHeader, String.class);
+    }
+
     // populate device info
     CollectionServiceUtil.populateDeviceDetectionParams(baseEvent.getUserAgentInfo(), requestTracker);
   }
