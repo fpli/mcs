@@ -337,6 +337,10 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.GCX_EMAIL;
       case GCX_MESSAGE_CENTER:
         return ChannelTypeEnum.GCX_MESSAGE_CENTER;
+      case MRKT_SMS:
+        return ChannelTypeEnum.MRKT_SMS;
+      case SITE_SMS:
+        return ChannelTypeEnum.SITE_SMS;
       default:
         return ChannelTypeEnum.GENERIC;
     }
