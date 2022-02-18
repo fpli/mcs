@@ -100,6 +100,9 @@ public class CollectionService {
   @Autowired
   private GCXCollector gcxCollector;
 
+  @Autowired
+  private CouchbaseClientV2 couchbaseClientV2;
+  private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String ADGUID_PARAM = "adguid";
@@ -312,7 +315,7 @@ public class CollectionService {
       if ("1".equals(parameters.getFirst(SELF_SERVICE)) &&
           parameters.getFirst(SELF_SERVICE_ID) != null) {
         MonitorUtil.info("SelfServiceIncoming");
-        CouchbaseClient.getInstance().addSelfServiceRecord(parameters.getFirst(SELF_SERVICE_ID),
+        couchbaseClientV2.addSelfServiceRecord(parameters.getFirst(SELF_SERVICE_ID),
             urlRefChannel.getLeft());
         MonitorUtil.info("SelfServiceSuccess");
 

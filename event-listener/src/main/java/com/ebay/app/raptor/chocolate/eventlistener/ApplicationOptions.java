@@ -3,7 +3,8 @@ package com.ebay.app.raptor.chocolate.eventlistener;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
-import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClientV2;
+import com.ebay.app.raptor.chocolate.eventlistener.util.SpringUtils;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.traffic.chocolate.kafka.KafkaCluster;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
@@ -291,7 +292,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   @Override
   public int getKafkaGlobalConfig() {
     try {
-      return CouchbaseClient.getInstance().getKafkaGlobalConfig();
+      CouchbaseClientV2 couchbaseClientV2 = SpringUtils.getBean("CouchbaseClientV2", CouchbaseClientV2.class);
+      return couchbaseClientV2.getKafkaGlobalConfig();
     } catch (Exception e) {
     }
     return 0;

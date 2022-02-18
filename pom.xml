@@ -29,6 +29,7 @@
     <zookeeper.version>3.7.0</zookeeper.version>
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.11</couchbase.client.version>
+    <dukes.component.version>1.6.26.raptorio</dukes.component.version>
     <dukes.version>1.6.26.raptorio</dukes.version>
     <rheos.version>2.0.11</rheos.version>
     <kafka.version>2.0.1</kafka.version>

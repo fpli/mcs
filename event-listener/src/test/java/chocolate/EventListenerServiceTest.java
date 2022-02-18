@@ -7,6 +7,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClientV2;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
@@ -80,8 +81,8 @@ import static org.mockito.Mockito.when;
   classes = EventListenerApplication.class)
 public class EventListenerServiceTest {
   private static MiniKafkaCluster kafkaCluster;
-  private static CouchbaseClient couchbaseClient;
-
+  @Autowired
+  CouchbaseClientV2 couchbaseClientV2;
   @LocalServerPort
   private int port;
 
@@ -127,16 +128,6 @@ public class EventListenerServiceTest {
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
       LongSerializer.class, ListenerMessageSerializer.class));
 
-    CouchbaseClientMock.createClient();
-    CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
-    BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
-    Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
-    when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
-    when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
-    when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
-
-    couchbaseClient = new CouchbaseClient(cacheFactory);
-    CouchbaseClient.init(couchbaseClient);
   }
 
   @Before
@@ -548,7 +539,7 @@ public class EventListenerServiceTest {
 
     // validate couchbase message
     assertEquals("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&self_service=1&self_service_id=123",
-        CouchbaseClient.getInstance().getSelfServiceUrl("123"));
+        couchbaseClientV2.getSelfServiceUrl("123"));
   }
 
   @Test
