@@ -24,6 +24,7 @@ public class Constants {
   public static final String CHOCO_BUYER_ACCESS_SITE_ID = "choco_bs";
   public static final String USER_ID = "user_id";
 
+
   // DAP constants
   public static final String UNIQUE_DEVICE_ID = "udid";
   public static final String MKRVRID = "mkrvrid";

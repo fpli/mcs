@@ -40,6 +40,12 @@ public class Constants {
   public static final String TAG_STATUS_CODE = "statusCode";
   public static final String TAG_IS_UFES_REDIRECT = "isUFESRedirect";
   public static final String TAG_IS_THIRD_PARTY = "isThirdParty";
+  public static final String TAG_CHANNEL = "chnl";
+  public static final String TAG_REF = "ref";
+  public static final String TAG_UTP_ID = "utpid";
+  public static final String TAG_BU = "bu";
+  public static final String TAG_TRACK_ID = "trkId";
+
 
   // Session relatives
   public static final String SESSION_ID = "sessionId";
@@ -117,6 +123,7 @@ public class Constants {
 
   // UFES header
   public static final String IS_FROM_UFES_HEADER = "x-ufes-mcs-int";
+  public static final String UFES_EDGTRKSVC_HDR = "X-UFES-EDGTRKSVC-INT";
 
   // Deep Link native uri params
   public static final String NAV = "nav";

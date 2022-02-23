@@ -480,6 +480,46 @@
       <groupId>com.ebay.raptorio.component</groupId>
       <artifactId>raptor-envoyhealth-status-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes.component</groupId>
+      <artifactId>raptor-dukes-starter</artifactId>
+      <version>0.10.2-RELEASE</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-migration</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-nukv</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.dukes</groupId>
+      <artifactId>dukes-failover</artifactId>
+      <version>${dukes.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 
   <build>

@@ -4,36 +4,24 @@
 
 package com.ebay.app.raptor.chocolate.adservice.util.idmapping;
 
-import com.ebay.app.raptor.chocolate.adservice.util.CouchbaseClient;
-import com.ebay.app.raptor.chocolate.util.CouchbaseClientMock;
-import com.ebay.dukes.CacheFactory;
-import com.ebay.dukes.base.BaseDelegatingCacheClient;
-import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
+import com.ebay.app.raptor.chocolate.AdserviceApplication;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = AdserviceApplication.class)
 public class CouchbaseIdMappingTest {
-  private IdMapable idMapping = new CouchbaseIdMapping();
-  private static CouchbaseClient couchbaseClient;
+ @Autowired
+ CouchbaseIdMapping idMapping;
 
   @BeforeClass
   public static void preTest() throws Exception {
-    CouchbaseClientMock.createClient();
-
-    CacheFactory cacheFactory = Mockito.mock(CacheFactory.class);
-    BaseDelegatingCacheClient baseDelegatingCacheClient = Mockito.mock(BaseDelegatingCacheClient.class);
-    Couchbase2CacheClient couchbase2CacheClient = Mockito.mock(Couchbase2CacheClient.class);
-    when(couchbase2CacheClient.getCouchbaseClient()).thenReturn(CouchbaseClientMock.getBucket());
-    when(baseDelegatingCacheClient.getCacheClient()).thenReturn(couchbase2CacheClient);
-    when(cacheFactory.getClient(any())).thenReturn(baseDelegatingCacheClient);
-
-    couchbaseClient = new CouchbaseClient(cacheFactory);
-    CouchbaseClient.init(couchbaseClient);
   }
 
   @Test

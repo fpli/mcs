@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.eventlistener.configuration.CacheProperties;
 import com.ebay.app.raptor.chocolate.eventlistener.configuration.DatabaseProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableConfigurationProperties({
-				DatabaseProperties.class
+		DatabaseProperties.class,
+		CacheProperties.class
 })
 public class EventListenerApplication {
 

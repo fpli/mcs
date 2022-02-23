@@ -70,6 +70,8 @@ public class UTPChocolateEmailClickTransformer {
   private static final String MRKT_MESSAGE_CENTER_CHANNEL_ID = "27";
   private static final String GCX_EMAIL_CHANNEL_ID = "29";
   private static final String GCX_MESSAGE_CENTER_CHANNEL_ID = "30";
+  private static final String MRKT_SMS_CHANNEL_ID = "24";
+  private static final String SITE_SMS_CHANNEL_ID = "25";
   public static final String BEHAVIOR_PULSAR_MISC_BOT = "behavior.pulsar.customized.marketing-tracking.bot";
   public static final String REFERER = "Referer";
   public static final String TOPIC = "topic";
@@ -109,6 +111,7 @@ public class UTPChocolateEmailClickTransformer {
           .put("isUfes", "isUfes")
           .put("statusCode","statusCode")
           .put("xt", "xt")
+          .put("X-UFES-EDGTRKSVC-INT", "X-UFES-EDGTRKSVC-INT")
           .build();
 
   private static final String GET_METHOD_PREFIX = "get";
@@ -219,6 +222,12 @@ public class UTPChocolateEmailClickTransformer {
     }
     if (GCX_MESSAGE_CENTER_CHANNEL_ID.equals(channelId)) {
       return GCX_MESSAGE_CENTER;
+    }
+    if (MRKT_SMS_CHANNEL_ID.equals(channelId)) {
+      return MRKT_SMS;
+    }
+    if (SITE_SMS_CHANNEL_ID.equals(channelId)) {
+      return SITE_SMS;
     }
     return null;
   }
