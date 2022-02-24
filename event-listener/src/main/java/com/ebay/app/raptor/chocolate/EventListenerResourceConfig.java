@@ -1,6 +1,5 @@
 package com.ebay.app.raptor.chocolate;
 
-import com.ebay.ads.tracking.filter.AdsTrackingRequestFilter;
 import com.ebay.raptor.dds.jaxrs.DDSTrackingFilter;
 import com.ebay.tracking.filter.TrackingServiceFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,9 +77,6 @@ public class EventListenerResourceConfig extends Application {
   @Qualifier("user-preferences-filter")
   private ContainerRequestFilter userPreferenceFilter;
 
-  @Autowired
-  @Named("ads-tracking-request-filter")
-  private AdsTrackingRequestFilter adsTrackingRequestFilter;
 
   @Override
   public Set<Class<?>> getClasses() {
@@ -105,7 +101,6 @@ public class EventListenerResourceConfig extends Application {
     providers.add(userCulturalPrefsFilter);
     providers.add(geoTrackingFilter);
     providers.add(userPreferenceFilter);
-    providers.add(adsTrackingRequestFilter);
 
     return providers;
   }
