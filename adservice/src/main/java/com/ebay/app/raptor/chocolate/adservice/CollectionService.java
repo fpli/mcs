@@ -70,8 +70,7 @@ public class CollectionService {
    * @return OK or Error message
    */
   public URI collectRedirect(HttpServletRequest request, HttpServletResponse response, Client mktClient,
-                             String endpoint)
-      throws Exception {
+                             String endpoint) throws Exception {
 
     // verify the request
     MultiValueMap<String, String> parameters = verifyAndParseRequest(request);

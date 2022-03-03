@@ -8,11 +8,11 @@ import com.ebay.app.raptor.chocolate.adservice.util.MarketingTrackingEvent;
 import com.ebay.app.raptor.chocolate.jdbc.data.LookupManager;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
@@ -78,7 +78,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   public boolean isValidRedirectUrl(String redirectUrl) {
     // empty landing page
     if (StringUtils.isEmpty(redirectUrl)) {
-      logger.warn("Redirect URL is empty " );
+      logger.warn("Redirect URL is empty ");
       return false;
     }
 
@@ -89,9 +89,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     }
 
     // Valid thirdparty domain
-    if (LookupManager.isApprovedOffEbayDestination(redirectUrl))
+    if (LookupManager.isApprovedOffEbayDestination(redirectUrl)) {
       return true;
-
+    }
     // avoid infinite redirect
     URL urlObj;
     try {
