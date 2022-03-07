@@ -1,7 +1,9 @@
 package com.ebay.app.raptor.chocolate.jdbc.data;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.jdbc.model.ThirdpartyWhitelist;
 import com.ebay.app.raptor.chocolate.jdbc.repo.ThirdpartyWhitelistRepo;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,10 @@ public class ThirdpartyWhitelistCache {
   private ThirdpartyWhitelistRepo thirdpartyWhitelistRepo;
 
   private static final Pattern domainPattern = Pattern.compile("[a-z0-9-]+(\\.[a-z0-9-]+)+");
+
+  private static final String REFRESH_TPWL_CACHE = "refreshTPWLCache";
+
+  private static final String REFRESH_TPWL_CACHE_ERROR = "refreshTPWLCacheError";
 
   /**
    Singleton instance of ThirdpartyWhitelistCache
@@ -75,10 +81,12 @@ public class ThirdpartyWhitelistCache {
     timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
+        MonitorUtil.info(REFRESH_TPWL_CACHE);
         logger.info("Start refreshing the thirdparty whitelist");
         try {
           refreshThirdpartyWhitelist();
         } catch (Exception e) {
+          MonitorUtil.warn(REFRESH_TPWL_CACHE_ERROR);
           logger.warn("Error while refreshing the thirdparty whitelist, Error:", e);
         }
       }
