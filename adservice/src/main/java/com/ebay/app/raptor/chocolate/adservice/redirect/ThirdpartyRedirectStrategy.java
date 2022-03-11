@@ -1,7 +1,6 @@
 package com.ebay.app.raptor.chocolate.adservice.redirect;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
-import com.ebay.app.raptor.chocolate.adservice.constant.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;

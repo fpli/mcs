@@ -245,6 +245,7 @@ public class UtpMonitorApp {
                                     Field.of("platform", platform),
                                     Field.of("messageId", messageId.get(i)),
                                     Field.of("cnvId", cnvId),
+                                    Field.of("site", site),
                                     Field.of("is1stMId", i == 0 ? "true" : "false")
                             );
                         }

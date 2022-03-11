@@ -140,13 +140,6 @@
       <artifactId>standards-exception-starter</artifactId>
     </dependency>
 
-    <!-- promoted listing -->
-    <dependency>
-      <groupId>com.ebay.raptorio.component</groupId>
-      <artifactId>ads-tracking-handler-starter</artifactId>
-      <version>1.0.14-RELEASE</version>
-    </dependency>
-
     <!--global config-->
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>

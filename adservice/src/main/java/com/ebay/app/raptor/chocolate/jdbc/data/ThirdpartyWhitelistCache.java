@@ -1,13 +1,17 @@
 package com.ebay.app.raptor.chocolate.jdbc.data;
 
+import com.ebay.app.raptor.chocolate.adservice.constant.Errors;
 import com.ebay.app.raptor.chocolate.jdbc.model.ThirdpartyWhitelist;
 import com.ebay.app.raptor.chocolate.jdbc.repo.ThirdpartyWhitelistRepo;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Refresh the table and provide whitelist lookup
@@ -20,6 +24,10 @@ public class ThirdpartyWhitelistCache {
   private ThirdpartyWhitelistRepo thirdpartyWhitelistRepo;
 
   private static final Pattern domainPattern = Pattern.compile("[a-z0-9-]+(\\.[a-z0-9-]+)+");
+
+  private static final String REFRESH_TPWL_CACHE = "refreshTPWLCache";
+
+  private static final String REFRESH_TPWL_CACHE_ERROR = "refreshTPWLCacheError";
 
   /**
    Singleton instance of ThirdpartyWhitelistCache
@@ -54,17 +62,17 @@ public class ThirdpartyWhitelistCache {
   /**
    * Full domain whitelist
    */
-  private List<ThirdpartyWhitelist> fullWhitelist = new ArrayList<ThirdpartyWhitelist>();
+  private List<ThirdpartyWhitelist> fullWhitelist = new ArrayList<>();
 
   /**
-   * Parital domain whitelist
+   * Partial domain whitelist
    */
-  private List<ThirdpartyWhitelist> partialWhitelist = new ArrayList<ThirdpartyWhitelist>();
+  private List<ThirdpartyWhitelist> partialWhitelist = new ArrayList<>();
 
   /**
    * Protocol suffix whitelist
    */
-  private static List<ThirdpartyWhitelist> protocolWhitelist = new ArrayList<ThirdpartyWhitelist>();
+  private static List<ThirdpartyWhitelist> protocolWhitelist = new ArrayList<>();
 
   ThirdpartyWhitelistCache(ThirdpartyWhitelistRepo thirdpartyWhitelistRepo) {
     this.thirdpartyWhitelistRepo = thirdpartyWhitelistRepo;
@@ -73,8 +81,14 @@ public class ThirdpartyWhitelistCache {
     timer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
+        MonitorUtil.info(REFRESH_TPWL_CACHE);
         logger.info("Start refreshing the thirdparty whitelist");
-        refreshThirdpartyWhitelist();
+        try {
+          refreshThirdpartyWhitelist();
+        } catch (Exception e) {
+          MonitorUtil.warn(REFRESH_TPWL_CACHE_ERROR);
+          logger.warn("Error while refreshing the thirdparty whitelist, Error:", e);
+        }
       }
     }, 0, REFRESH_INTERVAL);
   }
@@ -101,8 +115,19 @@ public class ThirdpartyWhitelistCache {
    * Refresh thirdparty whitelists
    */
   private void refreshThirdpartyWhitelist() {
-    fullWhitelist = thirdpartyWhitelistRepo.findByTypeId(FULL_DOMAIN_TYPE_ID);
-    partialWhitelist = thirdpartyWhitelistRepo.findByTypeId(PARTIAL_DOMAIN_TYPE_ID);
+    List<ThirdpartyWhitelist> whitelists = thirdpartyWhitelistRepo.findAll();
+    if (CollectionUtils.isNotEmpty(whitelists)) {
+      List<ThirdpartyWhitelist> fullDomainWhitelists = whitelists.stream()
+              .filter(whitelist -> FULL_DOMAIN_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
+      if (CollectionUtils.isNotEmpty(fullDomainWhitelists)) {
+        fullWhitelist = fullDomainWhitelists;
+      }
+      List<ThirdpartyWhitelist> partialDomainWhitelists = whitelists.stream()
+              .filter(whitelist -> PARTIAL_DOMAIN_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
+      if (CollectionUtils.isNotEmpty(partialDomainWhitelists)) {
+        partialWhitelist = partialDomainWhitelists;
+      }
+    }
   }
 
   /**

@@ -99,6 +99,8 @@ public class CollectionService {
   private CommonRequestHandler commonRequestHandler;
   @Autowired
   private GCXCollector gcxCollector;
+  @Autowired
+  private AdsClickCollector adsClickCollector;
 
   @Autowired
   private CouchbaseClientV2 couchbaseClientV2;
@@ -249,6 +251,9 @@ public class CollectionService {
 
     validateTrackingHeader(request.getHeader(TRACKING_HEADER));
     validateEndUserCtxHeader(request.getHeader(ENDUSERCTX_HEADER));
+
+    //Process ads product click
+    adsClickCollector.processPromotedListingClick(endUserContext, event, requestContext.getHeaders());
 
     // get original referer from different sources
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
@@ -418,8 +423,8 @@ public class CollectionService {
           fireCmEvent(baseEvent, requestContext, smsCollector);
         } else if (channel == GCX_EMAIL || channel == GCX_MESSAGE_CENTER) {
           fireGCXEvent(baseEvent, requestContext);
-        }
       }
+    }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
      Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
