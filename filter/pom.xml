@@ -419,6 +419,10 @@
             <artifactId>raptor-dukes-starter</artifactId>
             <version>0.10.2-RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-gis-aid-starter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
