@@ -154,14 +154,17 @@ public class PerformanceMarketingCollector {
     }
     requestTracker.addTag("gclid", gclid, String.class);
 
-    //producereventts
+    // producereventts
     requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
 
-    //UFES Tag
+    // UFES Tag
     String ufesEdgTrkSvcHeader = baseEvent.getRequestHeaders().get(UFES_EDGTRKSVC_HDR);
     if (org.apache.commons.lang3.StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
       requestTracker.addTag(UFES_EDGTRKSVC_HDR, ufesEdgTrkSvcHeader, String.class);
     }
+
+    // channel id
+    requestTracker.addTag(TAG_CHANNEL, baseEvent.getChannelType().getValue(), String.class);
   }
 
   public String getSearchEngineFreeListingsRotationId(UserPrefsCtx userPrefsCtx) {
