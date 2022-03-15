@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
+import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -83,6 +84,7 @@ public class CollectionServiceUtil {
   private static final String PRE_INSTALL_APP_USECASE = "prm";
   private static final String CLICK_EVENT_FLAG = "1";
   private static final String PRM_CLICK_ROTATION_ID = "14362-130847-18990-0";
+  private static final String ADOBE_PARTNER_NAME = "adobe";
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -97,6 +99,8 @@ public class CollectionServiceUtil {
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
   private static final List<String> PAGE_WHITELIST = Arrays.asList("cnt", "seller", "rxo", "ws", "bo", "cart");
+
+  private static final List<String> ADOBE_PAGE_WHITELIST = Arrays.asList("itm");
 
   private static final List<String> REFERER_WHITELIST = Arrays.asList(
           "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
@@ -627,5 +631,34 @@ public class CollectionServiceUtil {
     }
 
     return true;
+  }
+
+  /**
+   * The referer belongs to ebay site if user clicks some ulk links and redirects to the pages which UFES supports on iOS
+   * To make sure there is no impact on the original filtered internal clicks, add some page whitelist filter logic only for Adobe
+   * @param finalUrl
+   * @param referer
+   * @param userAgentInfo
+   * @return in AdobePageWhitelist or not
+   */
+  public static boolean inAdobePageWhitelist(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+    UriComponents finalUrlComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
+    MultiValueMap<String, String> finalUrlParameters = finalUrlComponents.getQueryParams();
+    String partner = EmailPartnerIdEnum.parse(finalUrlParameters.getFirst(Constants.MKPID));
+
+    if (ChannelType.MRKT_EMAIL == channelType && partner == ADOBE_PARTNER_NAME
+            && userAgentInfo.isMobile() && (userAgentInfo.requestIsMobileWeb() || userAgentInfo.requestIsTabletWeb())) {
+      UriComponents refererComponents = UriComponentsBuilder.fromUriString(referer).build();
+      List<String> refererPathSegments = refererComponents.getPathSegments();
+
+      if (refererPathSegments.isEmpty()) {
+        List<String> finalUrlPathSegments = finalUrlComponents.getPathSegments();
+        if (!finalUrlPathSegments.isEmpty() && ADOBE_PAGE_WHITELIST.contains(finalUrlPathSegments.get(0))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
