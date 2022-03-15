@@ -121,20 +121,6 @@ public class UTPPathfinderEventTransformer {
         }
     
         channelType = ChannelTypeEnum.GENERIC;
-        if (pageId == PAGE_ID_APP_DOWNLOAD || pageId == PAGE_ID_UPGRADE_LAUNCH) {
-            channelType = ChannelTypeEnum.GENERIC;
-
-            String pageName = parsePageName();
-            if (pageName == null) {
-                SherlockioMetrics.getInstance().meter("NoPageName", 1, Field.of(TOPIC, sourceTopic));
-                return false;
-            }
-            if (!PAGE_NAME_BATCH_TRACK.equals(pageName)) {
-                SherlockioMetrics.getInstance().meter("NotInstallFromBatchTrack", 1, Field.of(TOPIC, sourceTopic));
-                return false;
-            }
-        }
-        
         if (pageId == PAGE_ID_FIRST_LAUNCH) {
             String mlch = applicationPayload.get("mlch");
             if (!MLCH_VALUE.equals(mlch)) {
