@@ -12,24 +12,25 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.GingerClientBuilder;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.jaxrs.client.config.bean.spi.JaxrsClientBaseConfigBean;
+import com.ebay.kernel.calwrapper.CalTransaction;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContextProvider;
 import com.ebay.raptor.auth.RaptorSecureContextProvider;
+import com.ebay.raptor.calclient.api.ICalTransactionFactory;
 import com.ebay.raptor.geo.utils.GeoUtils;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.MultiValueMap;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -69,12 +70,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Autowired
   private HttpServletResponse response;
 
-  @Autowired
-  private IEndUserContextProvider userCtxProvider;
-
-  @Autowired
-  private RaptorSecureContextProvider raptorSecureContextProvider;
-
   @Context
   private ContainerRequestContext requestContext;
 
@@ -88,6 +83,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Autowired
   private GdprConsentHandler gdprConsentHandler;
 
+  @Autowired
+  private ICalTransactionFactory calTransactionFactory;
 
   private static final String METRIC_ADD_MAPPING_SUCCESS = "METRIC_ADD_MAPPING_SUCCESS";
   private static final String METRIC_ADD_MAPPING_FAIL = "METRIC_ADD_MAPPING_FAIL";
@@ -100,6 +97,11 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
   private static final int GUID_LIST_MAX_SIZE = 20;
+
+  private static final String CAL_TRANSACTION_TYPE = "mktAdservice";
+  private static final String CAL_TRANSACTION_AR = "ar";
+  private static final String CAL_TRANSACTION_IMPRESSION = "impression";
+  private static final String CAL_TRANSACTION_STATUS_ZERO = "0";
 
   // get the adobe service info from application.properties in resources dir
   private static Configuration adobeConfig = ConfigurationBuilder.newConfig("adservice.mktAdobeClient");
@@ -127,6 +129,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response ar(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
+    CalTransaction calTransaction = calTransactionFactory.create(CAL_TRANSACTION_TYPE);
+    calTransaction.setName(CAL_TRANSACTION_AR);
+
     if (null == mkcid) {
       MonitorUtil.info(METRIC_NO_MKCID_IN_AR);
     }
@@ -154,8 +159,10 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       } else {
         res = Response.status(Response.Status.OK).build();
       }
+      calTransaction.setStatus(CAL_TRANSACTION_STATUS_ZERO);
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
+      calTransaction.setStatus(e);
       try {
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
@@ -171,6 +178,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response impression(Integer mkcid, String mkrid, Integer mkevt, String mksid) {
+    CalTransaction calTransaction = calTransactionFactory.create(CAL_TRANSACTION_TYPE);
+    calTransaction.setName(CAL_TRANSACTION_IMPRESSION);
+    calTransaction.setStatus(CAL_TRANSACTION_STATUS_ZERO);
     if (null == mkcid) {
       MonitorUtil.info(METRIC_NO_MKCID_IN_IMPRESSION);
     }
@@ -269,6 +279,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
             .append(request.getQueryString()).toString());
         res = Response.status(Response.Status.BAD_REQUEST).build();
       } catch (Exception ex) {
+        calTransaction.setStatus("0");
+
         logger.warn(ex.getMessage(), ex);
       }
     }
