@@ -5,6 +5,7 @@ import io.ebay.rheos.schema.avro.SchemaRegistryAwareAvroSerializerHelper;
 import io.ebay.rheos.schema.event.RheosEvent;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.kafka.clients.consumer.ConsumerGroupMetadata;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.Metric;
@@ -15,6 +16,7 @@ import org.apache.kafka.common.errors.ProducerFencedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -121,8 +123,8 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
   }
 
   @Override
-  public void close(long l, TimeUnit timeUnit) {
-    producer.close(l, timeUnit);
+  public void close(Duration duration) {
+    producer.close(duration);
   }
 
   // not support transaction mode for now
@@ -141,6 +143,12 @@ public class RheosKafkaProducer<K, V extends GenericRecord> implements Producer<
     ProducerFencedException {
 
   }
+
+  @Override
+  public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> map, ConsumerGroupMetadata consumerGroupMetadata) throws ProducerFencedException {
+
+  }
+
   @Override
   public void commitTransaction() throws ProducerFencedException {
 
