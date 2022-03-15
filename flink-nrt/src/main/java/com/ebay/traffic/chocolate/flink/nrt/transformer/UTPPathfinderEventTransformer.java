@@ -64,6 +64,7 @@ public class UTPPathfinderEventTransformer {
     public static final String BEHAVIOR_PULSAR_TRACKING_INSTALL_BOT = "behavior.pulsar.customized.tracking.install.bot";
     public static final String TOPIC = "topic";
     private static final String FORWARDED_FOR = "ForwardedFor";
+    private static final String MLCH_VALUE="1";
 
     private static final String GET_METHOD_PREFIX = "get";
 
@@ -118,8 +119,9 @@ public class UTPPathfinderEventTransformer {
             SherlockioMetrics.getInstance().meter("NoUrlQueryString", 1, Field.of(TOPIC, sourceTopic));
             return false;
         }
-
-        if (pageId == PAGE_ID_APP_DOWNLOAD || pageId == PAGE_ID_FIRST_LAUNCH || pageId == PAGE_ID_UPGRADE_LAUNCH) {
+    
+        channelType = ChannelTypeEnum.GENERIC;
+        if (pageId == PAGE_ID_APP_DOWNLOAD || pageId == PAGE_ID_UPGRADE_LAUNCH) {
             channelType = ChannelTypeEnum.GENERIC;
 
             String pageName = parsePageName();
@@ -128,6 +130,14 @@ public class UTPPathfinderEventTransformer {
                 return false;
             }
             if (!PAGE_NAME_BATCH_TRACK.equals(pageName)) {
+                SherlockioMetrics.getInstance().meter("NotInstallFromBatchTrack", 1, Field.of(TOPIC, sourceTopic));
+                return false;
+            }
+        }
+        
+        if (pageId == PAGE_ID_FIRST_LAUNCH) {
+            String mlch = applicationPayload.get("mlch");
+            if (!MLCH_VALUE.equals(mlch)) {
                 SherlockioMetrics.getInstance().meter("NotInstallFromBatchTrack", 1, Field.of(TOPIC, sourceTopic));
                 return false;
             }
