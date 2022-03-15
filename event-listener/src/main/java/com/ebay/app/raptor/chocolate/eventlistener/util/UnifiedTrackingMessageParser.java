@@ -531,16 +531,6 @@ public class UnifiedTrackingMessageParser {
       addTags(payload, parameters, snapshotId, shortSnapshotId);
     }
 
-    if (!ChannelType.MRKT_EMAIL.equals(channelType) && !ChannelType.SITE_EMAIL.equals(channelType)
-            && !ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) && !ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
-      // add tags from parameters
-      for (Map.Entry<String, String> entry : nonEmailTagParamMap.entries()) {
-        if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-          payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
-        }
-      }
-    }
-
     if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
     }

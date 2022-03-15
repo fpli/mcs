@@ -62,7 +62,6 @@ public class EventListenerService {
     BehaviorKafkaSink.initialize(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     UnifiedTrackingKafkaSink.initialize(ApplicationOptions.getInstance().getUnifiedTrackingRheosProperties());
     ListenerMessageParser.init();
-    BehaviorMessageParser.init();
 
     RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());
     RoverRheosTopicFilterTask.init(1000);

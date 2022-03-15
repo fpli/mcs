@@ -267,12 +267,6 @@ public class BehaviorMessageParser {
       parseTagFromParamByChannel(applicationPayload, baseEvent, parameters, channelType);
     } else {
       addSojTags(applicationPayload, parameters);
-      // add tags for non-email
-      for (Map.Entry<String, String> entry : nonEmailTagParamMap.entries()) {
-        if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-          applicationPayload.put(entry.getKey(), parseTagFromParams(parameters, entry.getValue()));
-        }
-      }
     }
 
     // add other tags
