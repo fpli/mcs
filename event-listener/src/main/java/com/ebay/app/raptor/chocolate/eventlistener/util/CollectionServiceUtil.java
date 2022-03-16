@@ -646,7 +646,7 @@ public class CollectionServiceUtil {
     MultiValueMap<String, String> finalUrlParameters = finalUrlComponents.getQueryParams();
     String partner = EmailPartnerIdEnum.parse(finalUrlParameters.getFirst(Constants.MKPID));
 
-    if (ChannelType.MRKT_EMAIL == channelType && partner == ADOBE_PARTNER_NAME
+    if (ChannelType.MRKT_EMAIL == channelType && partner.equals(ADOBE_PARTNER_NAME)
             && userAgentInfo.isMobile() && (userAgentInfo.requestIsMobileWeb() || userAgentInfo.requestIsTabletWeb())) {
       UriComponents refererComponents = UriComponentsBuilder.fromUriString(referer).build();
       List<String> refererPathSegments = refererComponents.getPathSegments();
