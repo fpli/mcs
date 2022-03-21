@@ -389,7 +389,7 @@ public class CollectionService {
 
     // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-        baseEvent.getReferer(), baseEvent.getUrl());
+        baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
 
     // filter duplicate clicks which are caused by ULK link and send to internal topic: XC-4032
     boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
@@ -446,8 +446,9 @@ public class CollectionService {
     }
   }
 
-  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl) {
-    if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)) {
+  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+    if (CollectionServiceUtil.inRefererWhitelist(referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)
+         || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)) {
       return false;
     } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType
             || ChannelType.GCX_MESSAGE_CENTER == channelType) {
