@@ -5,30 +5,34 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.CommonConstant;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.component.GdprConsentHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
-import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
+import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.SearchEngineFreeListingsRotationEnum;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
-import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.util.MultiValueMap;
+
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
+
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 
 /**
@@ -100,7 +104,7 @@ public class PerformanceMarketingCollector {
 
   public void trackUbi(ContainerRequestContext requestContext, BaseEvent baseEvent, ListenerMessage message) {
     IRequestScopeTracker requestTracker
-        = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
+            = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
 
     // page id
     requestTracker.addTag(TrackerTagValueUtil.PageIdTag, PageIdEnum.CLICK.getId(), Integer.class);
@@ -109,23 +113,23 @@ public class PerformanceMarketingCollector {
     requestTracker.addTag(TrackerTagValueUtil.EventActionTag, Constants.EVENT_ACTION, String.class);
 
     // target url
-    if (!StringUtils.isEmpty(baseEvent.getUrl())) {
+    if (StringUtils.isNotBlank(baseEvent.getUrl())) {
       requestTracker.addTag(SOJ_MPRE_TAG, baseEvent.getUrl(), String.class);
     }
 
     // referer
-    if (!StringUtils.isEmpty(baseEvent.getReferer())) {
+    if (StringUtils.isNotBlank(baseEvent.getReferer())) {
       requestTracker.addTag("ref", baseEvent.getReferer(), String.class);
     }
 
     // utp event id
-    if (!StringUtils.isEmpty(baseEvent.getUuid())) {
+    if (StringUtils.isNotBlank(baseEvent.getUuid())) {
       requestTracker.addTag("utpid", baseEvent.getUuid(), String.class);
     }
 
     // populate device info
     CollectionServiceUtil.populateDeviceDetectionParams(
-        (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
+            (UserAgentInfo) requestContext.getProperty(UserAgentInfo.NAME), requestTracker);
 
     // event family
     requestTracker.addTag(TrackerTagValueUtil.EventFamilyTag, "mkt", String.class);
@@ -136,8 +140,7 @@ public class PerformanceMarketingCollector {
     // keyword
     String searchKeyword = "";
     if (baseEvent.getUrlParameters().containsKey(Constants.SEARCH_KEYWORD)
-        && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
-
+            && baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0) != null) {
       searchKeyword = baseEvent.getUrlParameters().get(Constants.SEARCH_KEYWORD).get(0);
     }
     requestTracker.addTag("keyword", searchKeyword, String.class);
@@ -147,9 +150,8 @@ public class PerformanceMarketingCollector {
 
     // gclid
     String gclid = "";
-    if (baseEvent.getUrlParameters().containsKey(Constants.GCLID) &&
-        baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
-
+    if (baseEvent.getUrlParameters().containsKey(Constants.GCLID)
+            && baseEvent.getUrlParameters().get(Constants.GCLID).get(0) != null) {
       gclid = baseEvent.getUrlParameters().get(Constants.GCLID).get(0);
     }
     requestTracker.addTag("gclid", gclid, String.class);
@@ -159,8 +161,13 @@ public class PerformanceMarketingCollector {
 
     //UFES Tag
     String ufesEdgTrkSvcHeader = baseEvent.getRequestHeaders().get(UFES_EDGTRKSVC_HDR);
-    if (org.apache.commons.lang3.StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
+    if (StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
       requestTracker.addTag(UFES_EDGTRKSVC_HDR, ufesEdgTrkSvcHeader, String.class);
+    }
+
+    if (baseEvent.getChannelType().equals(ChannelIdEnum.SOCIAL_MEDIA)) {
+      socialMediaParamTags.forEach((key, val) ->
+              addTagFromUrlQuery(baseEvent.getUrlParameters(), requestTracker, val, key, String.class));
     }
   }
 
@@ -221,5 +228,12 @@ public class PerformanceMarketingCollector {
       }
     }
     return baseEvent;
+  }
+
+  private void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
+                                  String urlParam, String tag, Class tagType) {
+    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
+      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    }
   }
 }

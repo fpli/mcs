@@ -919,9 +919,7 @@ public class CollectionService {
    */
   private void firePMEvent(BaseEvent baseEvent, ContainerRequestContext requestContext) {
 
-    ListenerMessage listenerMessage;
-
-    listenerMessage = performanceMarketingCollector.decorateListenerMessageAndHandleGDPR(baseEvent);
+    ListenerMessage listenerMessage = performanceMarketingCollector.decorateListenerMessageAndHandleGDPR(baseEvent);
 
     // 1. send to chocolate topic
     Producer<Long, ListenerMessage> producer = KafkaSink.get();
@@ -1031,4 +1029,6 @@ public class CollectionService {
     MonitorUtil.info("InternalClick", 1, Field.of(CHANNEL_ACTION, message.getChannelAction().toString()),
         Field.of(CHANNEL_TYPE, message.getChannelType().toString()));
   }
+
+
 }

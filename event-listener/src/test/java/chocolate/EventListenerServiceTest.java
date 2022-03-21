@@ -1628,4 +1628,24 @@ public class EventListenerServiceTest {
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
+
+  @Test
+  public void testSocialSpecialTag_withDeeplinking() {
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("ebay://link?nav=item.view&id=143707027917&mkrid=707-127634-2357-0&mkevt=1&_trksid=p2349624.m46890.l49286&mkcid=16&media=facebook&sssrc=pageid&ssuid=1234567&ssspo=7654321");
+
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testSocialSpecialTag_withNonDeeplinking() {
+    Event event = new Event();
+    event.setReferrer("www.google.com");
+    event.setTargetUrl("https://www.ebay.com/itm/154632806780?mkcid=16&mkevt=1&mkrid=711-127632-2357-0&ssspo=iWiCELLQSL2&sssrc=2349624&ssuid=&var=&widget_ver=artemis&media=FB");
+
+    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
+  }
 }

@@ -45,9 +45,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.deeplinksites;
 
 /**
  * Created by jialili1 on 11/5/20
@@ -58,6 +60,10 @@ public class UnifiedTrackingMessageParser {
 
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
       "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
+
+  private static final String ITEM = "itm";
+  private static final String ITEM_VIEW = "item.view";
+  private static final String ITEM_PRODUCT = "item.product";
 
   public UnifiedTrackingMessageParser() throws Exception {
     UnifiedTrackerFactory.getUnifiedTracker(getEnv());
@@ -601,7 +607,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // parse itm from url and put itm to payload
-    parseItmTag(payload, baseEvent.getUrl());
+    parseItmTag(payload, baseEvent.getUrl(), parameters);
 
     // session sequence number
     payload.put(Constants.SEQ_NUM, "1");
@@ -637,18 +643,30 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.SESSION_SKEY, String.valueOf(sessionSkey));
     }
 
+    if (ChannelAction.CLICK.equals(channelAction) && ChannelType.SOCIAL_MEDIA.equals(channelType)) {
+      socialMediaParamTags.forEach((key, val) -> payload.put(key, HttpRequestUtil.parseTagFromParams(parameters, val)));
+    }
     return encodeTags(payload);
   }
 
-  private static void parseItmTag(Map<String, String> payload, String url) {
-    if (!payload.containsKey("itm")) {
+  private static void parseItmTag(Map<String, String> payload, String url, MultiValueMap<String, String> parameters) {
+    if (!payload.containsKey(ITEM)) {
       try {
-        URI uri = new URI(url);
-        String path = uri.getPath();
-        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
-          String itemId = path.substring(path.lastIndexOf("/") + 1);
-          if (StringUtils.isNumeric(itemId)) {
-            payload.put("itm", itemId);
+        Matcher deeplinkMatcher = deeplinksites.matcher(url.toLowerCase());
+        if (deeplinkMatcher.find()) {
+          if (url.toLowerCase().contains(ITEM_VIEW)) {
+            payload.put(ITEM, HttpRequestUtil.parseTagFromParams(parameters, ID));
+          } else if (url.toLowerCase().contains(ITEM_PRODUCT)) {
+            payload.put(ITEM, HttpRequestUtil.parseTagFromParams(parameters, IID));
+          }
+        } else {
+          URI uri = new URI(url);
+          String path = uri.getPath();
+          if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+            String itemId = path.substring(path.lastIndexOf("/") + 1);
+            if (StringUtils.isNumeric(itemId)) {
+              payload.put(ITEM, itemId);
+            }
           }
         }
       } catch (Exception e) {
