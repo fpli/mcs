@@ -255,6 +255,9 @@ public class CollectionServiceUtilTest {
     targetUrl = "https://m.ebay.de/?_mwBanner=1&ul_alt=store&ul_noapp=true";
     assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
 
+    targetUrl = "https://www.ebay.ca/pages/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
     targetUrl = "https://www.ebay.com/itm/12345678";
     assertFalse(CollectionServiceUtil.inPageWhitelist(targetUrl));
   }
@@ -300,26 +303,55 @@ public class CollectionServiceUtilTest {
   @Test
   public void testInRefererWhitelist() {
     String referer = "https://ebay.mtag.io/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
-    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.EPN, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://ebay.pissedconsumer.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://ebay.pissedconsumer.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://secureir.ebaystatic.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://secureir.ebaystatic.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://ebay.mtag.io/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://ebay.com/";
-    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://ocsnext.ebay.co.uk/ocs/home?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44210280665&segname=CH1234560_UK&crd=20220316030000&ch=osgood&sojTags=segname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://mesg.ebay.co.uk/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://m.ebay.co.uk/messaging?FolderId=0&messageId=155046577635&curIdx=1";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://mesgmy.ebay.com/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://ocsnext.ebay.co.uk/ocs/home?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44210280665&segname=CH1234560_UK&crd=20220316030000&ch=osgood&sojTags=segname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://mesg.ebay.co.uk/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://m.ebay.co.uk/messaging?FolderId=0&messageId=155046577635&curIdx=1";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://mesgmy.ebay.com/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
   }
 
   @Test
@@ -466,5 +498,9 @@ public class CollectionServiceUtilTest {
     assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
     assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
     assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.com/itm/234014894667";
+    referer = "https://www.ebay.com/";
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
   }
 }

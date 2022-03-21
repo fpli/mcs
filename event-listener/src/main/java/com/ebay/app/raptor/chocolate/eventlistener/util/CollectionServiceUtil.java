@@ -98,13 +98,13 @@ public class CollectionServiceUtil {
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
 
-  private static final List<String> PAGE_WHITELIST = Arrays.asList("cnt", "seller", "rxo", "ws", "bo", "cart");
+  private static final List<String> PAGE_WHITELIST = Arrays.asList("cnt", "seller", "rxo", "ws", "bo", "cart", "pages");
 
   private static final List<String> ADOBE_PAGE_WHITELIST = Arrays.asList("itm");
 
   private static final List<String> REFERER_WHITELIST = Arrays.asList(
-          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
-          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com", "https://mesgmy.ebay", "https://mesg.ebay", "https://m.ebay", "https://ocsnext.ebay", "https://pages.ebay",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com", "http://mesgmy.ebay", "http://mesg.ebay", "http://m.ebay", "http://ocsnext.ebay", "http://pages.ebay");
 
   /**
    * get app id from user agent info
@@ -515,6 +515,7 @@ public class CollectionServiceUtil {
 
   /**
    * The referer belongs to ebay site if user clicks some ulk links and redirects to the pages which UFES supports on iOS
+   * The referer is always ebay site for the static page (pages.ebay)
    * So add a page whitelist to avoid rejecting these clicks
    * @param finalUrl finalUrl
    * @return in whitelist or not
@@ -532,16 +533,12 @@ public class CollectionServiceUtil {
 
   /**
    * The ebaysites pattern will treat ebay.abcd.com and ebaystatic as ebay site.
-   * So add a whitelist to handle these bad cases.
-   * @param channelType channel type
+   * In Customer Marketing channels, there are some domains whose clicks' referer always belongs to ebay site.
+   * So add a whitelist to handle these cases.
    * @param referer referer
    * @return in whitelist or not
    */
-  public static boolean inRefererWhitelist(ChannelType channelType, String referer) {
-    // currently, this case only exists in display channel
-    if (ChannelType.DISPLAY != channelType) {
-      return false;
-    }
+  public static boolean inRefererWhitelist(String referer) {
     String lowerCase = referer.toLowerCase();
     for (String referWhitelist : REFERER_WHITELIST) {
       if (lowerCase.startsWith(referWhitelist)) {
@@ -644,17 +641,21 @@ public class CollectionServiceUtil {
   public static boolean inAdobePageWhitelist(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
     UriComponents finalUrlComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
     MultiValueMap<String, String> finalUrlParameters = finalUrlComponents.getQueryParams();
-    String partner = EmailPartnerIdEnum.parse(finalUrlParameters.getFirst(Constants.MKPID));
 
-    if (ChannelType.MRKT_EMAIL == channelType && partner.equals(ADOBE_PARTNER_NAME)
-            && userAgentInfo.isMobile() && (userAgentInfo.requestIsMobileWeb() || userAgentInfo.requestIsTabletWeb())) {
-      UriComponents refererComponents = UriComponentsBuilder.fromUriString(referer).build();
-      List<String> refererPathSegments = refererComponents.getPathSegments();
+    if (!finalUrlParameters.isEmpty()) {
+      String partner = EmailPartnerIdEnum.parse(finalUrlParameters.getFirst(Constants.MKPID));
 
-      if (refererPathSegments.isEmpty()) {
-        List<String> finalUrlPathSegments = finalUrlComponents.getPathSegments();
-        if (!finalUrlPathSegments.isEmpty() && ADOBE_PAGE_WHITELIST.contains(finalUrlPathSegments.get(0))) {
-          return true;
+      if (ChannelType.MRKT_EMAIL == channelType && ADOBE_PARTNER_NAME.equals(partner)
+              && userAgentInfo.isMobile() && (userAgentInfo.requestIsMobileWeb() || userAgentInfo.requestIsTabletWeb())) {
+        UriComponents refererComponents = UriComponentsBuilder.fromUriString(referer).build();
+        List<String> refererPathSegments = refererComponents.getPathSegments();
+
+        if (refererPathSegments.isEmpty()) {
+          List<String> finalUrlPathSegments = finalUrlComponents.getPathSegments();
+          if (!finalUrlPathSegments.isEmpty() && ADOBE_PAGE_WHITELIST.contains(finalUrlPathSegments.get(0))) {
+            MonitorUtil.info("ClickInAdobePageWhitelist", 1);
+            return true;
+          }
         }
       }
     }

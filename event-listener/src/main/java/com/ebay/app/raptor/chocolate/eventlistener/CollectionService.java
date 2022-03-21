@@ -447,7 +447,7 @@ public class CollectionService {
   }
 
   protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
-    if (CollectionServiceUtil.inRefererWhitelist(channelType, referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)
+    if (CollectionServiceUtil.inRefererWhitelist(referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)
          || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)) {
       return false;
     } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType
