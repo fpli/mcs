@@ -459,10 +459,8 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
       campaignId = CollectionServiceUtil.substring(parameters.getFirst(Constants.SOURCE_ID), "e", ".mle");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
-      if (StringUtils.isNotEmpty(HttpRequestUtil.parseTagFromTwoParams(parameters, Constants.SEGMENT_NAME,
-          Constants.SEGMENT_NAME_S))) {
-        campaignId = Objects.requireNonNull(HttpRequestUtil.parseTagFromTwoParams(parameters, Constants.SEGMENT_NAME,
-            Constants.SEGMENT_NAME_S)).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME)).trim();
       }
     }
 
