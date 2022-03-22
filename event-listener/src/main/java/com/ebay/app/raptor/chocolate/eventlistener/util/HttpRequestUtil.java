@@ -86,6 +86,9 @@ public class HttpRequestUtil {
     return "";
   }
 
+  /**
+   * Parse tag from two parameters
+   */
   public static String parseTagFromTwoParams(MultiValueMap<String, String> parameters, String param,
                                              String alternativeParam) {
     if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
@@ -94,6 +97,6 @@ public class HttpRequestUtil {
       return parameters.getFirst(alternativeParam);
     }
 
-    return null;
+    return "";
   }
 }
