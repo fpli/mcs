@@ -410,12 +410,6 @@
       <artifactId>chocolate-utp-common</artifactId>
     </dependency>
 
-    <!-- kotlin -->
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
-    </dependency>
-
     <!-- Test -->
     <dependency>
       <groupId>com.couchbase.mock</groupId>
@@ -563,7 +557,7 @@
         <groupId>com.spotify</groupId>
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
-      
+
       <!--<plugin>-->
         <!--<groupId>com.ebay.raptor.build</groupId>-->
         <!--<artifactId>maven-content-plugin</artifactId>-->

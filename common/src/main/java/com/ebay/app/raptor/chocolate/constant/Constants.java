@@ -170,36 +170,6 @@ public class Constants {
                   RoiTransactionEnum.REG_MOBILE_APP, RoiTransactionEnum.REG_SELL_MOBILE_APP)
   );
 
-  public static final ImmutableMultimap<String, String> nonEmailTagParamMap = new ImmutableMultimap.Builder<String, String>()
-          .put("adcamp_landingpage", "adcamp_landingpage")
-          .put("adcamp_locationsrc", "adcamp_locationsrc")
-          .put("adcamppu", "pu")
-          .put("bu", "bu")
-          .put("cbtrack", "cbtrack")
-          .put("chnl", "mkcid")
-          .put("crd", "crd")
-          .put("cs", "cs")
-          .put("ec", "ec")
-          .put("emid", "bu")
-          .put("emsid", "emsid")
-          .put("es", "es")
-          .put("euid", "euid")
-          .put("exe", "exe")
-          .put("ext", "ext")
-          .put("nqc", "nqc")
-          .put("nqt", "nqt")
-          .put("osub", "osub")
-          .put("placement-type", "placement-type")
-          .put("placement-type", "pt")
-          .put("rank", "rank")
-          .put("rpp_cid", "rpp_cid")
-          .put("segname", "segname")
-          .put("segname", "seg")
-          .put("yminstc", "yminstc")
-          .put("ymmmid", "ymmmid")
-          .put("ymsid", "ymsid")
-          .build();
-
   /**
    * mkt email soj tags
    */

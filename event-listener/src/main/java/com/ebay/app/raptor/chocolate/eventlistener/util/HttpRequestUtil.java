@@ -86,14 +86,17 @@ public class HttpRequestUtil {
     return "";
   }
 
-  public static String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
-                                          String shortenedParam) {
+  /**
+   * Parse tag from two parameters
+   */
+  public static String parseTagFromTwoParams(MultiValueMap<String, String> parameters, String param,
+                                             String alternativeParam) {
     if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
       return parameters.getFirst(param);
-    } else if (parameters.containsKey(shortenedParam) && parameters.getFirst(shortenedParam) != null) {
-      return parameters.getFirst(shortenedParam);
+    } else if (parameters.containsKey(alternativeParam) && parameters.getFirst(alternativeParam) != null) {
+      return parameters.getFirst(alternativeParam);
     }
 
-    return null;
+    return "";
   }
 }

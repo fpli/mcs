@@ -156,10 +156,10 @@ public class PerformanceMarketingCollector {
     }
     requestTracker.addTag("gclid", gclid, String.class);
 
-    //producereventts
+    // producereventts
     requestTracker.addTag("producereventts", baseEvent.getTimestamp(), Long.class);
 
-    //UFES Tag
+    // UFES Tag
     String ufesEdgTrkSvcHeader = baseEvent.getRequestHeaders().get(UFES_EDGTRKSVC_HDR);
     if (StringUtils.isNotBlank(ufesEdgTrkSvcHeader)) {
       requestTracker.addTag(UFES_EDGTRKSVC_HDR, ufesEdgTrkSvcHeader, String.class);
@@ -169,6 +169,9 @@ public class PerformanceMarketingCollector {
       socialMediaParamTags.forEach((key, val) ->
               addTagFromUrlQuery(baseEvent.getUrlParameters(), requestTracker, val, key, String.class));
     }
+
+    // channel id
+    requestTracker.addTag(TAG_CHANNEL, baseEvent.getChannelType().getValue(), String.class);
   }
 
   public String getSearchEngineFreeListingsRotationId(UserPrefsCtx userPrefsCtx) {

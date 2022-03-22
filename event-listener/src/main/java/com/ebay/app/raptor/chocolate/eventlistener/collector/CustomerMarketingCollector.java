@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
+import static com.ebay.app.raptor.chocolate.utp.UepPayloadHelper.IS_UEP;
+import static com.ebay.app.raptor.chocolate.utp.UepPayloadHelper.TRACKING_ID;
 
 /**
  * @author xiangli4
@@ -56,20 +59,6 @@ public abstract class CustomerMarketingCollector {
             = (IRequestScopeTracker) requestContext.getProperty(IRequestScopeTracker.NAME);
     // add common tags
     addCommonTags(requestTracker, baseEvent, PageIdEnum.CLICK.getId());
-    MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
-    // add isUFESRedirect if the click traffic is converted from Rover to Chocolate by UFES
-    if (parameters.containsKey(UFES_REDIRECT)
-            && Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT))) {
-      requestTracker.addTag(TAG_IS_UFES_REDIRECT, true, Boolean.class);
-    }
-    // status code
-    String statusCode = baseEvent.getRequestHeaders().get(NODE_REDIRECTION_HEADER_NAME);
-    if (StringUtils.isNotBlank(statusCode)) {
-      requestTracker.addTag(TAG_STATUS_CODE, statusCode, String.class);
-    }
-    // is from ufes
-    requestTracker.addTag(TAG_IS_UFES,
-            StringUtils.isNotBlank(baseEvent.getRequestHeaders().get(IS_FROM_UFES_HEADER)), Boolean.class);
   }
 
   /**
@@ -110,6 +99,31 @@ public abstract class CustomerMarketingCollector {
 
     // populate device info
     CollectionServiceUtil.populateDeviceDetectionParams(baseEvent.getUserAgentInfo(), requestTracker);
+
+    MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
+
+    // add isUFESRedirect if the click traffic is converted from Rover to Chocolate by UFES
+    if (parameters.containsKey(UFES_REDIRECT)
+        && Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT))) {
+      requestTracker.addTag(TAG_IS_UFES_REDIRECT, true, Boolean.class);
+    }
+    // status code
+    String statusCode = baseEvent.getRequestHeaders().get(NODE_REDIRECTION_HEADER_NAME);
+    if (StringUtils.isNotBlank(statusCode)) {
+      requestTracker.addTag(TAG_STATUS_CODE, statusCode, String.class);
+    }
+    // is from ufes
+    requestTracker.addTag(TAG_IS_UFES,
+        StringUtils.isNotBlank(baseEvent.getRequestHeaders().get(IS_FROM_UFES_HEADER)), Boolean.class);
+
+    // isUEP
+    String trackingId = HttpRequestUtil.parseTagFromTwoParams(parameters, TRACKING_ID, TRACKING_ID.toLowerCase());
+    if (StringUtils.isNotEmpty(trackingId)) {
+      requestTracker.addTag(IS_UEP, true, Boolean.class);
+    } else {
+      requestTracker.addTag(IS_UEP, false, Boolean.class);
+    }
+
   }
 
   /**
@@ -153,8 +167,9 @@ public abstract class CustomerMarketingCollector {
    */
   static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
                                  String urlParam, String tag, Class tagType) {
-    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
-      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    String value = HttpRequestUtil.parseTagFromTwoParams(parameters, urlParam, urlParam.toLowerCase());
+    if (StringUtils.isNotEmpty(value)) {
+      requestTracker.addTag(tag, value, tagType);
     }
   }
 

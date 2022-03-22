@@ -109,8 +109,13 @@ public class UnifiedTrackingMessageParser {
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
-    record.setAppVersion(event.getAppVersion());
-    record.setDeviceType(event.getDeviceType());
+    // Notification Send will send appVersion and deviceType
+    if (StringUtils.isNotEmpty(event.getAppVersion())) {
+      record.setAppVersion(event.getAppVersion());
+    }
+    if (StringUtils.isNotEmpty(event.getDeviceType())) {
+      record.setDeviceType(event.getDeviceType());
+    }
 
     // channel type
     record.setChannelType(event.getChannelType());
@@ -212,8 +217,8 @@ public class UnifiedTrackingMessageParser {
     MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
 
     // tracking id
-    record.setTrackingId(HttpRequestUtil.parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
-        UepPayloadHelper.TRACKING_ID_S));
+    record.setTrackingId(HttpRequestUtil.parseTagFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID.toLowerCase()));
 
     // user id
     String bu = baseEvent.getUrlParameters().getFirst(Constants.BEST_GUESS_USER);
@@ -454,10 +459,8 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
       campaignId = CollectionServiceUtil.substring(parameters.getFirst(Constants.SOURCE_ID), "e", ".mle");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
-      if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
-          Constants.SEGMENT_NAME_S))) {
-        campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
-            Constants.SEGMENT_NAME_S)).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME)).trim();
       }
     }
 
@@ -535,16 +538,6 @@ public class UnifiedTrackingMessageParser {
         addSojTags(payload, parameters, channelType, channelAction);
       }
       addTags(payload, parameters, snapshotId, shortSnapshotId);
-    }
-
-    if (!ChannelType.MRKT_EMAIL.equals(channelType) && !ChannelType.SITE_EMAIL.equals(channelType)
-            && !ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) && !ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
-      // add tags from parameters
-      for (Map.Entry<String, String> entry : nonEmailTagParamMap.entries()) {
-        if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-          payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
-        }
-      }
     }
 
     if (channelAction == ChannelAction.ROI) {
@@ -733,8 +726,9 @@ public class UnifiedTrackingMessageParser {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.channelParamTagMap
             .getOrDefault(channelType, ImmutableMultimap.<String, String>builder().build()).entries()) {
-      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
+      String value = HttpRequestUtil.parseTagFromTwoParams(parameters, entry.getValue(), entry.getValue().toLowerCase());
+      if (StringUtils.isNotEmpty(value)) {
+        payload.put(entry.getKey(), value);
       }
     }
 
