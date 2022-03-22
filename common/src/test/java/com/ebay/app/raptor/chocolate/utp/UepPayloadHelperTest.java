@@ -60,7 +60,7 @@ public class UepPayloadHelperTest {
     assertTrue(result.get("annotation.mesg.list").contains("\"reco.id\":\"262844489390\""));
     assertTrue(result.get("annotation.mesg.list").contains("\"reco.pos\":\"1\""));
 
-    // shortened params
+    // lowercase params
     clickUrl = "https://www.ebay.com/i/262844489390?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=45056203152&osub=6d3f46d4dac2fe3af48b0a2235752ade%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20210315090000&ch=osgood&trkid=0AB8FD6A-247ADC67D30-0177B1BC2479-000000000588F6FA&mesgid=3001&plmtid=700001&plmtpos=1&recoid=262844489390&recopos=1&sojTags=osub%3Dosub%2Cseg%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2CtrkId%3Dtrid%2CmesgId%3Dmid%2CplmtId%3Dpid%2CrecoId%3Drid%2CrecoPos%3Drpo%2Cchnl%3Dmkcid";
     result = helper.getUepPayload(clickUrl, ActionTypeEnum.CLICK, ChannelTypeEnum.MRKT_EMAIL);
     assertTrue(result.get("annotation.mesg.list").contains("\"mesg.id\":\"3001\""));
