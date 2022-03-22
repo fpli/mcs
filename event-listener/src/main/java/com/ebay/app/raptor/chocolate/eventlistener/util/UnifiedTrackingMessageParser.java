@@ -109,8 +109,13 @@ public class UnifiedTrackingMessageParser {
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
-    record.setAppVersion(event.getAppVersion());
-    record.setDeviceType(event.getDeviceType());
+    // Notification Send will send appVersion and deviceType
+    if (StringUtils.isNotEmpty(event.getAppVersion())) {
+      record.setAppVersion(event.getAppVersion());
+    }
+    if (StringUtils.isNotEmpty(event.getDeviceType())) {
+      record.setDeviceType(event.getDeviceType());
+    }
 
     // channel type
     record.setChannelType(event.getChannelType());
