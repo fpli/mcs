@@ -255,6 +255,9 @@ public class CollectionServiceUtilTest {
     targetUrl = "https://m.ebay.de/?_mwBanner=1&ul_alt=store&ul_noapp=true";
     assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
 
+    targetUrl = "https://www.ebay.ca/pages/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inPageWhitelist(targetUrl));
+
     targetUrl = "https://www.ebay.com/itm/12345678";
     assertFalse(CollectionServiceUtil.inPageWhitelist(targetUrl));
   }
@@ -300,26 +303,55 @@ public class CollectionServiceUtilTest {
   @Test
   public void testInRefererWhitelist() {
     String referer = "https://ebay.mtag.io/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
-    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.EPN, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://ebay.pissedconsumer.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://ebay.pissedconsumer.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://secureir.ebaystatic.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://secureir.ebaystatic.com/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://ebay.mtag.io/?abc=true";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://ebay.com/";
-    assertFalse(CollectionServiceUtil.inRefererWhitelist(ChannelType.DISPLAY, referer));
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://ocsnext.ebay.co.uk/ocs/home?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44210280665&segname=CH1234560_UK&crd=20220316030000&ch=osgood&sojTags=segname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://mesg.ebay.co.uk/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://m.ebay.co.uk/messaging?FolderId=0&messageId=155046577635&curIdx=1";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://mesgmy.ebay.com/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "https://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://ocsnext.ebay.co.uk/ocs/home?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44210280665&segname=CH1234560_UK&crd=20220316030000&ch=osgood&sojTags=segname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://mesg.ebay.co.uk/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://m.ebay.co.uk/messaging?FolderId=0&messageId=155046577635&curIdx=1";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://mesgmy.ebay.com/";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+
+    referer = "http://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
+    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
   }
 
   @Test
@@ -392,5 +424,83 @@ public class CollectionServiceUtilTest {
     assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, iphoneDeeplinkUrl, ipadMwebAgentInfo));
     assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, androidMwebAgentInfo));
     assertFalse(CollectionServiceUtil.isUlkDuplicateClick(ChannelType.SITE_EMAIL, ulkReferer, ipadDeeplinkUrl, dwebAgentInfo));
+  }
+
+  @Test
+  public void testInAdobePageWhitelist() {
+    UserAgentParser agentParser = new UserAgentParser();
+    UserAgentInfo iphoneAgentInfo = agentParser.parse("eBayiPhone/6.9.6");
+    UserAgentInfo androidAgentInfo = agentParser.parse("ebayUserAgent/eBayAndroid;6.9.6;Android;10;OnePlus;" +
+            "OnePlus6T;YES OPTUS;1080x2260;2.6");
+    UserAgentInfo ipadAgentInfo = agentParser.parse("eBayiPad/6.9.6");
+    UserAgentInfo iphoneMwebAgentInfo = agentParser.parse("Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) " +
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1");
+    UserAgentInfo ipadMwebAgentInfo = agentParser.parse("Mozilla/5.0 (iPad; CPU OS 11_0 like Mac OS X) " +
+            "AppleWebKit/604.1.34 (KHTML, like Gecko) Version/11.0 Mobile/15A5341f Safari/604.1");
+    UserAgentInfo androidMwebAgentInfo = agentParser.parse("Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Mobile Safari/537.36");
+    UserAgentInfo dwebAgentInfo = agentParser.parse("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
+
+
+    String targetUrl = "https://m.ebay.com/itm/234014894667?_mwBanner=1&mkevt=1&mkcid=8&mkpid=14&ufes_redirect=test&ul_noapp=true";
+    String referer = "https://www.ebay.com/";
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadMwebAgentInfo));
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.DISPLAY, referer, targetUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.PAID_SEARCH, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.de/?_mwBanner=1&mkevt=1&mkcid=8&bu=123456789&mkpid=14&ul_noapp=true";
+    referer = "https://www.ebay.com/";
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.com/itm/234014894667?_mwBanner=1&mkevt=1&mkcid=8&mkpid=1&ufes_redirect=test&ul_noapp=true";
+    referer = "https://www.ebay.com/";
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.com/itm/234014894667?_mwBanner=1&mkevt=1&mkcid=8&mkpid=14&ufes_redirect=test&ul_noapp=true";
+    referer = "https://www.ebay.com";
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadMwebAgentInfo));
+    assertTrue(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.com/itm/234014894667?_mwBanner=1&mkevt=1&mkcid=8&mkpid=14&ufes_redirect=test&ul_noapp=true";
+    referer = "https://www.ebay.com/itm/272818202748?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44923272962";
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidMwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, androidAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, ipadAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, dwebAgentInfo));
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.SITE_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
+
+    targetUrl = "https://m.ebay.com/itm/234014894667";
+    referer = "https://www.ebay.com/";
+    assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
   }
 }

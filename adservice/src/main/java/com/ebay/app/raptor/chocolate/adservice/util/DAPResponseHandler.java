@@ -18,6 +18,7 @@ import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.kernel.presentation.UrlUtils;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.kernel.util.RequestUtil;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -58,6 +59,9 @@ public class DAPResponseHandler {
   private static List<TwoParamsListEntry> mobileUserAgentList = new ArrayList<>();
 
   private static final String MOBILE_USER_AGENT_CONFIG_FILE = "/config/mobile_user_agent.txt";
+
+  private static final String TYPE_INFO = "Info";
+  private static final String STATUS_OK = "0";
 
   @Autowired
   private AdserviceCookie adserviceCookie;
@@ -316,6 +320,8 @@ public class DAPResponseHandler {
     String endpoint = (String) client.getConfiguration().getProperty(EndpointUri.KEY);
     String targetUri = endpoint + dapUri;
 
+    SpanEventHelper.writeEvent(TYPE_INFO, "CallDapIORequest", STATUS_OK, targetUri);
+
     long startTime = System.currentTimeMillis();
     String body = null;
     int status = -1;
@@ -470,6 +476,8 @@ public class DAPResponseHandler {
     mktEvent.setReferrer(referer);
 
     LOGGER.info("call MCS targetUrl {} referer {}", targetUrl, referer);
+
+    SpanEventHelper.writeEvent(TYPE_INFO, "CallMCSRequest", STATUS_OK, "targetUrl: " + targetUrl + ";referer: " + referer);
 
     MonitorUtil.info("SendToMCSAsync");
     // async call mcs to record ubi
