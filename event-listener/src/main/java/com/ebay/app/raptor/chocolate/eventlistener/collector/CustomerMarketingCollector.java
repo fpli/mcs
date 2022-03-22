@@ -8,6 +8,7 @@ import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
@@ -153,8 +154,9 @@ public abstract class CustomerMarketingCollector {
    */
   static void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
                                  String urlParam, String tag, Class tagType) {
-    if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
-      requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+    String value = HttpRequestUtil.parseTagFromTwoParams(parameters, urlParam, urlParam.toLowerCase());
+    if (StringUtils.isNotEmpty(value)) {
+      requestTracker.addTag(tag, value, tagType);
     }
   }
 
