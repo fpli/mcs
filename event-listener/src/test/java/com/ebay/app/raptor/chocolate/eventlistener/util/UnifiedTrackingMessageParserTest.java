@@ -120,7 +120,7 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals(message.getEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals(message.getProducerEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals("123456", message.getRlogId());
-    assertNull(message.getTrackingId());
+    assertEquals("",message.getTrackingId());
     assertEquals(Long.valueOf(0), message.getUserId());
     assertNull(message.getPublicUserId());
     assertNull(message.getGuid());
