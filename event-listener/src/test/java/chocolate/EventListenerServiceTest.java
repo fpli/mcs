@@ -6,15 +6,11 @@ import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
-import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClient;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClientV2;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
-import com.ebay.dukes.CacheFactory;
-import com.ebay.dukes.base.BaseDelegatingCacheClient;
-import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -32,7 +28,6 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -63,8 +58,6 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionService
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 import static com.ebay.traffic.chocolate.common.TestHelper.pollFromKafkaTopic;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by xiangli4 on 11/19/18.
@@ -1627,25 +1620,5 @@ public class EventListenerServiceTest {
     event.setPayload(eventPayload);
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
-  }
-
-  @Test
-  public void testSocialSpecialTag_withDeeplinking() {
-    Event event = new Event();
-    event.setReferrer("www.google.com");
-    event.setTargetUrl("ebay://link?nav=item.view&id=143707027917&mkrid=707-127634-2357-0&mkevt=1&_trksid=p2349624.m46890.l49286&mkcid=16&media=facebook&sssrc=pageid&ssuid=1234567&ssspo=7654321");
-
-    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(201, response.getStatus());
-  }
-
-  @Test
-  public void testSocialSpecialTag_withNonDeeplinking() {
-    Event event = new Event();
-    event.setReferrer("www.google.com");
-    event.setTargetUrl("https://www.ebay.com/itm/154632806780?mkcid=16&mkevt=1&mkrid=711-127632-2357-0&ssspo=iWiCELLQSL2&sssrc=2349624&ssuid=&var=&widget_ver=artemis&media=FB");
-
-    Response response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
-    assertEquals(201, response.getStatus());
   }
 }

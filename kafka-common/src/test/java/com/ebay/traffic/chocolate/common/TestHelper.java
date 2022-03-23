@@ -1111,7 +1111,6 @@ public class TestHelper {
       }
       end = System.currentTimeMillis();
     }
-
     return result;
   }
 }
