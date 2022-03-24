@@ -46,7 +46,7 @@ public class UnifiedTrackingMessageParserTest {
   }
 
   @Test
-  public void testParseUEPEvents() throws Exception {
+  public void testParseUEPEvents() {
     UnifiedTrackingEvent unifiedTrackingEvent = new UnifiedTrackingEvent();
     unifiedTrackingEvent.setPayload(new HashMap<>());
     UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
@@ -120,7 +120,7 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals(message.getEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals(message.getProducerEventTs(), Long.valueOf(currentTimeMillis));
     assertEquals("123456", message.getRlogId());
-    assertEquals("",message.getTrackingId());
+    assertNull(message.getTrackingId());
     assertEquals(Long.valueOf(0), message.getUserId());
     assertNull(message.getPublicUserId());
     assertNull(message.getGuid());

@@ -97,6 +97,6 @@ public class HttpRequestUtil {
       return parameters.getFirst(alternativeParam);
     }
 
-    return "";
+    return null;
   }
 }

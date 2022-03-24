@@ -684,6 +684,7 @@ public class UnifiedTrackingMessageParser {
       gclid = parameters.get(Constants.GCLID).get(0);
     }
     payload.put("gclid", gclid);
+    payload.put(TAG_CHANNEL, HttpRequestUtil.parseTagFromParams(parameters, MKCID));
   }
 
   /**

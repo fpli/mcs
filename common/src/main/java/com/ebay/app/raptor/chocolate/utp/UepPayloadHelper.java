@@ -247,6 +247,6 @@ public class UepPayloadHelper {
       return parameters.getFirst(shortenedParam);
     }
 
-    return "";
+    return null;
   }
 }
