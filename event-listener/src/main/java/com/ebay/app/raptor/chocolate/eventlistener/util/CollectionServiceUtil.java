@@ -103,8 +103,8 @@ public class CollectionServiceUtil {
   private static final List<String> ADOBE_PAGE_WHITELIST = Arrays.asList("itm");
 
   private static final List<String> REFERER_WHITELIST = Arrays.asList(
-          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com", "https://mesgmy.ebay", "https://mesg.ebay", "https://m.ebay", "https://ocsnext.ebay", "https://pages.ebay",
-          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com", "http://mesgmy.ebay", "http://mesg.ebay", "http://m.ebay", "http://ocsnext.ebay", "http://pages.ebay");
+          "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com", "https://mesgmy.ebay", "https://mesg.ebay", "https://m.ebay", "https://ocsnext.ebay",
+          "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com", "http://mesgmy.ebay", "http://mesg.ebay", "http://m.ebay", "http://ocsnext.ebay");
 
   /**
    * get app id from user agent info
