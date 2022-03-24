@@ -45,9 +45,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.deeplinksites;
 
 /**
  * Created by jialili1 on 11/5/20
@@ -58,6 +60,10 @@ public class UnifiedTrackingMessageParser {
 
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
       "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
+
+  private static final String ITEM = "itm";
+  private static final String ITEM_VIEW = "item.view";
+  private static final String ITEM_PRODUCT = "item.product";
 
   public UnifiedTrackingMessageParser() throws Exception {
     UnifiedTrackerFactory.getUnifiedTracker(getEnv());
@@ -103,8 +109,13 @@ public class UnifiedTrackingMessageParser {
     record.setGadid(event.getGadid());
     record.setDeviceId(event.getDeviceId());
     record.setUserAgent(event.getUserAgent());
-    record.setAppVersion(event.getAppVersion());
-    record.setDeviceType(event.getDeviceType());
+    // Notification Send will send appVersion and deviceType
+    if (StringUtils.isNotEmpty(event.getAppVersion())) {
+      record.setAppVersion(event.getAppVersion());
+    }
+    if (StringUtils.isNotEmpty(event.getDeviceType())) {
+      record.setDeviceType(event.getDeviceType());
+    }
 
     // channel type
     record.setChannelType(event.getChannelType());
@@ -206,8 +217,8 @@ public class UnifiedTrackingMessageParser {
     MultiValueMap<String, String> parameters = baseEvent.getUrlParameters();
 
     // tracking id
-    record.setTrackingId(HttpRequestUtil.parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
-        UepPayloadHelper.TRACKING_ID_S));
+    record.setTrackingId(HttpRequestUtil.parseTagFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
+        UepPayloadHelper.TRACKING_ID.toLowerCase()));
 
     // user id
     String bu = baseEvent.getUrlParameters().getFirst(Constants.BEST_GUESS_USER);
@@ -448,10 +459,8 @@ public class UnifiedTrackingMessageParser {
     } else if (ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
       campaignId = CollectionServiceUtil.substring(parameters.getFirst(Constants.SOURCE_ID), "e", ".mle");
     } else if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)) {
-      if (StringUtils.isNotEmpty(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
-          Constants.SEGMENT_NAME_S))) {
-        campaignId = Objects.requireNonNull(HttpRequestUtil.parseFromTwoParams(parameters, Constants.SEGMENT_NAME,
-            Constants.SEGMENT_NAME_S)).trim();
+      if (StringUtils.isNotEmpty(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME))) {
+        campaignId = Objects.requireNonNull(HttpRequestUtil.parseTagFromParams(parameters, Constants.SEGMENT_NAME)).trim();
       }
     }
 
@@ -531,16 +540,6 @@ public class UnifiedTrackingMessageParser {
       addTags(payload, parameters, snapshotId, shortSnapshotId);
     }
 
-    if (!ChannelType.MRKT_EMAIL.equals(channelType) && !ChannelType.SITE_EMAIL.equals(channelType)
-            && !ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) && !ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
-      // add tags from parameters
-      for (Map.Entry<String, String> entry : nonEmailTagParamMap.entries()) {
-        if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-          payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
-        }
-      }
-    }
-
     if (channelAction == ChannelAction.ROI) {
       addRoiSojTags(payload, roiEvent, String.valueOf(userId), snapshotId, shortSnapshotId);
     }
@@ -601,7 +600,7 @@ public class UnifiedTrackingMessageParser {
     }
 
     // parse itm from url and put itm to payload
-    parseItmTag(payload, baseEvent.getUrl());
+    parseItmTag(payload, baseEvent.getUrl(), parameters);
 
     // session sequence number
     payload.put(Constants.SEQ_NUM, "1");
@@ -637,18 +636,30 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.SESSION_SKEY, String.valueOf(sessionSkey));
     }
 
+    if (ChannelAction.CLICK.equals(channelAction) && ChannelType.SOCIAL_MEDIA.equals(channelType)) {
+      socialMediaParamTags.forEach((key, val) -> payload.put(key, HttpRequestUtil.parseTagFromParams(parameters, val)));
+    }
     return encodeTags(payload);
   }
 
-  private static void parseItmTag(Map<String, String> payload, String url) {
-    if (!payload.containsKey("itm")) {
+  private static void parseItmTag(Map<String, String> payload, String url, MultiValueMap<String, String> parameters) {
+    if (!payload.containsKey(ITEM)) {
       try {
-        URI uri = new URI(url);
-        String path = uri.getPath();
-        if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
-          String itemId = path.substring(path.lastIndexOf("/") + 1);
-          if (StringUtils.isNumeric(itemId)) {
-            payload.put("itm", itemId);
+        Matcher deeplinkMatcher = deeplinksites.matcher(url.toLowerCase());
+        if (deeplinkMatcher.find()) {
+          if (url.toLowerCase().contains(ITEM_VIEW)) {
+            payload.put(ITEM, HttpRequestUtil.parseTagFromParams(parameters, ID));
+          } else if (url.toLowerCase().contains(ITEM_PRODUCT)) {
+            payload.put(ITEM, HttpRequestUtil.parseTagFromParams(parameters, IID));
+          }
+        } else {
+          URI uri = new URI(url);
+          String path = uri.getPath();
+          if (StringUtils.isNotEmpty(path) && (path.startsWith("/itm/") || path.startsWith("/i/"))) {
+            String itemId = path.substring(path.lastIndexOf("/") + 1);
+            if (StringUtils.isNumeric(itemId)) {
+              payload.put(ITEM, itemId);
+            }
           }
         }
       } catch (Exception e) {
@@ -673,6 +684,7 @@ public class UnifiedTrackingMessageParser {
       gclid = parameters.get(Constants.GCLID).get(0);
     }
     payload.put("gclid", gclid);
+    payload.put(TAG_CHANNEL, HttpRequestUtil.parseTagFromParams(parameters, MKCID));
   }
 
   /**
@@ -715,8 +727,9 @@ public class UnifiedTrackingMessageParser {
     // add tags from parameters
     for (Map.Entry<String, String> entry : Constants.channelParamTagMap
             .getOrDefault(channelType, ImmutableMultimap.<String, String>builder().build()).entries()) {
-      if (parameters.containsKey(entry.getValue()) && parameters.getFirst(entry.getValue()) != null) {
-        payload.put(entry.getKey(), HttpRequestUtil.parseTagFromParams(parameters, entry.getValue()));
+      String value = HttpRequestUtil.parseTagFromTwoParams(parameters, entry.getValue(), entry.getValue().toLowerCase());
+      if (StringUtils.isNotEmpty(value)) {
+        payload.put(entry.getKey(), value);
       }
     }
 

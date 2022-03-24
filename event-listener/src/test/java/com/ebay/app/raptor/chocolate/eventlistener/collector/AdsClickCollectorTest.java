@@ -215,6 +215,7 @@ public class AdsClickCollectorTest {
                 .when(endUserContext).getUserAgent();
         Event event = new Event();
         event.setTargetUrl("http://www.ebay.com/itm?ab=1&uu=2&amdata=yui");
+        event.setReferrer("http://www.google.com");
         AdsCollectionSvcClient adsCollectionSvcClient = mock(AdsCollectionSvcClient.class);
         adsClickCollector.adsCollectionSvcClient = adsCollectionSvcClient;
         doNothing().when(adsCollectionSvcClient).invokeService(any(AdsCollectionSvcRequest.class), anyString(), any(MultivaluedMap.class));

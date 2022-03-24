@@ -128,6 +128,8 @@ public class Constants {
   // Deep Link native uri params
   public static final String NAV = "nav";
   public static final String ID = "id";
+
+  public static final String IID = "iid";
   // FLEX_FLD_17_TXT is used to mark the click whose original url is custom uri (ebay://)
   public static final String FLEX_FLD_17_TXT = "ff17";
 
@@ -167,36 +169,6 @@ public class Constants {
                   RoiTransactionEnum.BO_MOBILE_APP, RoiTransactionEnum.SELL_MOBILE_APP,
                   RoiTransactionEnum.REG_MOBILE_APP, RoiTransactionEnum.REG_SELL_MOBILE_APP)
   );
-
-  public static final ImmutableMultimap<String, String> nonEmailTagParamMap = new ImmutableMultimap.Builder<String, String>()
-          .put("adcamp_landingpage", "adcamp_landingpage")
-          .put("adcamp_locationsrc", "adcamp_locationsrc")
-          .put("adcamppu", "pu")
-          .put("bu", "bu")
-          .put("cbtrack", "cbtrack")
-          .put("chnl", "mkcid")
-          .put("crd", "crd")
-          .put("cs", "cs")
-          .put("ec", "ec")
-          .put("emid", "bu")
-          .put("emsid", "emsid")
-          .put("es", "es")
-          .put("euid", "euid")
-          .put("exe", "exe")
-          .put("ext", "ext")
-          .put("nqc", "nqc")
-          .put("nqt", "nqt")
-          .put("osub", "osub")
-          .put("placement-type", "placement-type")
-          .put("placement-type", "pt")
-          .put("rank", "rank")
-          .put("rpp_cid", "rpp_cid")
-          .put("segname", "segname")
-          .put("segname", "seg")
-          .put("yminstc", "yminstc")
-          .put("ymmmid", "ymmmid")
-          .put("ymsid", "ymsid")
-          .build();
 
   /**
    * mkt email soj tags
@@ -281,7 +253,12 @@ public class Constants {
     put(ChannelType.SITE_MESSAGE_CENTER, siteEmailParamTags);
   }};
 
-
+  public static final ImmutableMultimap<String, String> socialMediaParamTags = new ImmutableMultimap.Builder<String, String>()
+          .put("media", "media")
+          .put("sssrc", "sssrc")
+          .put("ssuid", "ssuid")
+          .put("ssspo", "ssspo")
+          .build();
 
   /**
    * client id - host map

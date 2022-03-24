@@ -36,32 +36,22 @@ import java.util.*;
 public class UepPayloadHelper {
   public static final String BEST_GUESS_USER = "bu";
   public static final String TRACKING_ID = "trkId";
-  public static final String TRACKING_ID_S = "trid";
   public static final String EXPERIMENT_ID = "exe";
-  public static final String TREATMENT_ID = "trt";
   public static final String EXPERIMENT_TYPE = "ext";
   public static final String MOB_TRK_ID = "osub";
   public static final String MESSAGE_ID = "mesgId";
-  public static final String MESSAGE_ID_S = "mid";
   public static final String PLACEMENT_ID = "plmtId";
-  public static final String PLACEMENT_ID_S = "pid";
   public static final String PLACEMENT_POS = "plmtPos";
-  public static final String PLACEMENT_POS_S = "ppo";
   public static final String RECO_ID = "recoId";
-  public static final String RECO_ID_S = "rid";
   public static final String RECO_POS = "recoPos";
-  public static final String RECO_POS_S = "rpo";
   public static final String FEEDBACK = "fdbk";
   public static final String IS_UEP = "isUEP";
   public static final String MXT = "mxt";
 
   // for ORS migration
-  public static final String EMAIL = "EMAIL";
-  public static final String MESSAGE_CENTER = "MESSAGE_CENTER";
   public static final String TIMESTAMP_CREATED = "timestamp.created";
   public static final String TIMESTAMP_UPDATED = "timestamp.updated";
   public static final String STATUS_SENT = "SENT";
-  public static final String C_URL = "cUrl";
   public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
   public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.ofHours(-7);
@@ -69,6 +59,7 @@ public class UepPayloadHelper {
   private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(DEFAULT_ZONE_OFFSET);
   private final DateTimeFormatter eventDateStringFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(DEFAULT_ZONE_OFFSET);
 
+  // for message name
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_PA = "TE1798";
   private static final String WHITELIST_PATTERN_MARKETING_EMAIL_ESPRESSO = "TE7";
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_AXO = "11403";
@@ -124,7 +115,7 @@ public class UepPayloadHelper {
     }
 
     // annotation.message.name
-    String segmentCode = parseFromTwoParams(parameters, Constants.SEGMENT_NAME, Constants.SEGMENT_NAME_S);
+    String segmentCode = parseTagFromParams(parameters, Constants.SEGMENT_NAME);
     if (segmentCode != null) {
       if (segmentCode.contains(WHITELIST_PATTERN_MARKETING_EMAIL_PA)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_PA);
@@ -170,20 +161,10 @@ public class UepPayloadHelper {
     // status, all SENT for click/open
     payload.put(MessageConstantsEnum.STATUS.getValue(), STATUS_SENT);
 
-//    // cUrl
-//    try {
-//      payload.put(C_URL, URLEncoder.encode(url, "UTF-8"));
-//    } catch (UnsupportedEncodingException e) {
-//      LOGGER.warn("Unsupported encoding: " + url, e);
-//    }
-    // tag_item, no need
-    // tag_intrId, no need
-    // tag_intrUnsub, no need
     // cnv.id no need in open/click
     // tracking id
-    String trackingId = getOrDefault(parseFromTwoParams(parameters, UepPayloadHelper.TRACKING_ID,
-        UepPayloadHelper.TRACKING_ID_S));
-//    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
+    String trackingId = getOrDefault(parseFromTwoParams(parameters, TRACKING_ID, TRACKING_ID.toLowerCase()));
+    payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
     // isUep
     if((ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) ||
         ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) ||
@@ -198,7 +179,6 @@ public class UepPayloadHelper {
     // experiment ids
     payload.put("exe", getOrDefault(parameters.getFirst(EXPERIMENT_ID)));
     payload.put("ext", getOrDefault(parameters.getFirst(EXPERIMENT_TYPE)));
-//    payload.put("trt", getOrDefault(parameters.getFirst(TREATMENT_ID)));
 
     // message list
     Message message = new Message();
@@ -206,9 +186,9 @@ public class UepPayloadHelper {
 
     if (actionTypeEnum.equals(ActionTypeEnum.CLICK)) {
       // message level
-      message.mesgId = parseFromTwoParams(parameters, MESSAGE_ID, MESSAGE_ID_S);
-      message.plmtId = parseFromTwoParams(parameters, PLACEMENT_ID, PLACEMENT_ID_S);
-      message.plmtPos = parseFromTwoParams(parameters, PLACEMENT_POS, PLACEMENT_POS_S);
+      message.mesgId = parseFromTwoParams(parameters, MESSAGE_ID, MESSAGE_ID.toLowerCase());
+      message.plmtId = parseFromTwoParams(parameters, PLACEMENT_ID, PLACEMENT_ID.toLowerCase());
+      message.plmtPos = parseFromTwoParams(parameters, PLACEMENT_POS, PLACEMENT_POS.toLowerCase());
       // feedback click
       String feedback = parameters.getFirst(FEEDBACK);
       if(StringUtils.isNotEmpty(feedback)) {
@@ -220,8 +200,8 @@ public class UepPayloadHelper {
 
       // recommendation level
       Recommendation recommendation = new Recommendation();
-      recommendation.recoId = parseFromTwoParams(parameters, RECO_ID, RECO_ID_S);
-      recommendation.recoPos = parseFromTwoParams(parameters, RECO_POS, RECO_POS_S);
+      recommendation.recoId = parseFromTwoParams(parameters, RECO_ID, RECO_ID.toLowerCase());
+      recommendation.recoPos = parseFromTwoParams(parameters, RECO_POS, RECO_POS.toLowerCase());
       // only include reco.list when valid
       if(StringUtils.isNotEmpty(recommendation.recoId) && StringUtils.isNotEmpty(recommendation.recoPos)) {
         List<Recommendation> recoLists = new ArrayList<>();
@@ -245,12 +225,26 @@ public class UepPayloadHelper {
     return payload;
   }
 
-  private String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
-                                          String shortenedParam) {
+  /**
+   * Parse tag from url query string
+   */
+  public static String parseTagFromParams(MultiValueMap<String, String> parameters, String param) {
     if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
       return parameters.getFirst(param);
-    } else if (parameters.containsKey(shortenedParam) && parameters.getFirst(shortenedParam) != null) {
-      return parameters.getFirst(shortenedParam);
+    }
+
+    return "";
+  }
+
+  /**
+   * Parse tag from two parameters
+   */
+  private String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
+                                          String alternativeParam) {
+    if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
+      return parameters.getFirst(param);
+    } else if (parameters.containsKey(alternativeParam) && parameters.getFirst(alternativeParam) != null) {
+      return parameters.getFirst(alternativeParam);
     }
 
     return null;

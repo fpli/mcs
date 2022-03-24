@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -45,7 +46,7 @@ public class UnifiedTrackingMessageParserTest {
   }
 
   @Test
-  public void testParseUEPEvents() throws Exception {
+  public void testParseUEPEvents() {
     UnifiedTrackingEvent unifiedTrackingEvent = new UnifiedTrackingEvent();
     unifiedTrackingEvent.setPayload(new HashMap<>());
     UnifiedTrackingMessage parse = UnifiedTrackingMessageParser.parse(unifiedTrackingEvent);
@@ -162,5 +163,102 @@ public class UnifiedTrackingMessageParserTest {
     assertTrue(UnifiedTrackingMessageParser.isBot("Mediapartners-Google"));
     assertFalse(UnifiedTrackingMessageParser.isBot("eBayAndroid/6.7.2"));
     assertFalse(UnifiedTrackingMessageParser.isBot(""));
+  }
+
+  @Test
+  public void testLowercaseParams() throws Exception {
+    UnifiedTrackingMessageParser utpParser = new UnifiedTrackingMessageParser();
+    long currentTimeMillis = System.currentTimeMillis();
+    ContainerRequestContext requestContext = Mockito.mock(ContainerRequestContext.class);
+    UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
+    Locale locale = new Locale("xx", "YY");
+    GeoCtx geoCtx = new GeoCtx(101);
+    Mockito.when(userPrefsCtx.getLangLocale()).thenReturn(locale);
+    Mockito.when(userPrefsCtx.getGeoContext()).thenReturn(geoCtx);
+    Mockito.when(requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
+    RequestTracingContext requestTracingContext = Mockito.mock(RequestTracingContext.class);
+    Mockito.when(requestTracingContext.getRlogId()).thenReturn("123456");
+    Mockito.when(requestContext.getProperty(RequestTracingContext.NAME)).thenReturn(requestTracingContext);
+    DomainRequestData domainRequestData = Mockito.mock(DomainRequestData.class);
+    Mockito.when(domainRequestData.getSiteId()).thenReturn(101);
+    Mockito.when(domainRequestData.getHost()).thenReturn("localhost");
+    Mockito.when(requestContext.getProperty(DomainRequestData.NAME)).thenReturn(domainRequestData);
+
+    IEndUserContext endUserContext = Mockito.mock(IEndUserContext.class);
+    Mockito.when(endUserContext.getIPAddress()).thenReturn("127.0.0.1");
+    UserAgentInfo agentInfo = new UserAgentParser().parse("ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;" +
+        "no-carrier;414x736;3.0");
+
+    String url = "https://www.ebay.com/i/313369033082?mkevt=1&mkpid=2&emsid=e90001.m43.l1123&mkcid=8&bu=45101843235&osub=0d6476007af14726a1eaca4dbd59f3fd%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20220321090000&ch=osgood&trkid=0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E&mesgid=3024&plmtid=700001&recoid=313369033082&recopos=1";
+    String referer = "https://www.google.com";
+    MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(url).build().getQueryParams();
+    long snapshotId = 0L;
+    long shortSnapshotId = 0L;
+    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    requestHeaders.put(Constants.IS_FROM_UFES_HEADER, "true");
+    requestHeaders.put(Constants.NODE_REDIRECTION_HEADER_NAME, "301");
+
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(currentTimeMillis);
+    baseEvent.setUrl(url);
+    baseEvent.setReferer(referer);
+    baseEvent.setChannelType(ChannelIdEnum.MRKT_EMAIL);
+    baseEvent.setActionType(ChannelActionEnum.CLICK);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setEndUserContext(endUserContext);
+    baseEvent.setUrlParameters(parameters);
+    requestHeaders.put("X-EBAY-C-TRACKING", "cguid=8b34ef1d1740a4d724970d78eec8ee4c644dc2df");
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setUuid(UUID.randomUUID().toString());
+
+    UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, snapshotId, shortSnapshotId);
+
+    assertNotNull(message.getEventId());
+    assertEquals("", message.getProducerEventId());
+    assertEquals(message.getEventTs(), Long.valueOf(currentTimeMillis));
+    assertEquals(message.getProducerEventTs(), Long.valueOf(currentTimeMillis));
+    assertEquals("123456", message.getRlogId());
+    assertEquals("0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E", message.getTrackingId());
+    assertEquals(Long.valueOf(2390648398L), message.getUserId());
+    assertNull(message.getPublicUserId());
+    assertNull(message.getGuid());
+    assertNull(message.getDeviceId());
+    assertNull(message.getUserAgent());
+    assertEquals("MRKT_EMAIL",  message.getChannelType());
+    assertEquals("CLICK",  message.getActionType());
+    assertEquals("kana",  message.getPartner());
+    assertEquals("TE80101_T_AGM",  message.getCampaignId());
+    assertEquals("",  message.getRotationId());
+    assertEquals(Integer.valueOf(101), message.getSiteId());
+    assertEquals(url, message.getUrl());
+    assertEquals(referer, message.getReferer());
+    assertNull(message.getUserAgent());
+    assertEquals("Other", message.getDeviceFamily());
+    assertEquals("iOS", message.getDeviceType());
+    assertNull(message.getBrowserFamily());
+    assertNull(message.getBrowserVersion());
+    assertEquals("iOS", message.getOsFamily());
+    assertEquals("11.2", message.getOsVersion());
+    assertEquals("1462", message.getAppId());
+    assertEquals("5.19.0", message.getAppVersion());
+    assertEquals("CHOCOLATE", message.getService());
+    assertEquals("localhost", message.getServer());
+    assertNull(message.getRemoteIp());
+    assertEquals(Integer.valueOf(2547208), message.getPageId());
+    assertEquals(Integer.valueOf(101), message.getGeoId());
+    assertFalse(message.getIsBot());
+    assertEquals("xx-YY", message.getPayload().get("lang_cd"));
+    assertEquals("true", message.getPayload().get("isUfes"));
+    assertEquals("301", message.getPayload().get("statusCode"));
+    assertEquals("8", message.getPayload().get("chnl"));
+    assertEquals("true", message.getPayload().get("isUEP"));
+    assertEquals("0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E", message.getPayload().get("trkId"));
+    assertEquals("0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E", message.getPayload().get("tracking.id"));
+    assertEquals("3024", message.getPayload().get("mesgId"));
+    assertEquals("700001", message.getPayload().get("plmtId"));
+    assertEquals("313369033082", message.getPayload().get("recoId"));
+    assertEquals("1", message.getPayload().get("recoPos"));
+
   }
 }
