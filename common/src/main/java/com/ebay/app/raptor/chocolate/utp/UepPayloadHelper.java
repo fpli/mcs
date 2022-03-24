@@ -240,13 +240,13 @@ public class UepPayloadHelper {
    * Parse tag from two parameters
    */
   private String parseFromTwoParams(MultiValueMap<String, String> parameters, String param,
-                                          String shortenedParam) {
+                                          String alternativeParam) {
     if (parameters.containsKey(param) && parameters.getFirst(param) != null) {
       return parameters.getFirst(param);
-    } else if (parameters.containsKey(shortenedParam) && parameters.getFirst(shortenedParam) != null) {
-      return parameters.getFirst(shortenedParam);
+    } else if (parameters.containsKey(alternativeParam) && parameters.getFirst(alternativeParam) != null) {
+      return parameters.getFirst(alternativeParam);
     }
 
-    return "";
+    return null;
   }
 }
