@@ -300,16 +300,19 @@ public class UnifiedTrackingMessageParser {
 
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(baseEvent.getUserAgentInfo());
-    // format UEP payload
-    Map<String, String> uepPayload =
-            UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType),
-                channelTypeEnum);
+
     Map<String, String> fullPayload = getPayload(payload, baseEvent, parameters, appId, channelType, channelAction,
             snapshotId, shortSnapshotId, baseEvent.getRoiEvent(), userId, trackingHeader);
 
     // append UEP payload
-    if (uepPayload != null && uepPayload.size() > 0) {
-      fullPayload.putAll(uepPayload);
+    if ((ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)
+        || ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType))) {
+      Map<String, String> uepPayload =
+          UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType),
+              channelTypeEnum);
+      if (uepPayload != null && uepPayload.size() > 0) {
+        fullPayload.putAll(uepPayload);
+      }
     }
 
     record.setPayload(deleteNullOrEmptyValue(fullPayload));
@@ -532,7 +535,8 @@ public class UnifiedTrackingMessageParser {
     if (channelAction != ChannelAction.ROI) {
       // add tags in url param "sojTags" into applicationPayload
       if (ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.SITE_EMAIL.equals(channelType)
-              || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)) {
+          || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType)
+          || ChannelType.GCX_EMAIL.equals(channelType) || ChannelType.GCX_MESSAGE_CENTER.equals(channelType) ) {
         parseTagFromParamByChannel(payload, baseEvent, parameters, channelType);
       } else {
         addSojTags(payload, parameters, channelType, channelAction);

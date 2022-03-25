@@ -245,12 +245,23 @@ public class Constants {
           .put("xt", XT)
           .build();
 
+  /**
+   * GCX email tags
+   */
+  public static final ImmutableMultimap<String, String> gcxEmailParamTags = new ImmutableMultimap.Builder<String, String>()
+      .put("bu", BEST_GUESS_USER)
+      .put("chnl", MKCID)
+      .put("trkId", "trkId")
+      .build();
+
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
           = new HashMap<ChannelType, ImmutableMultimap<String, String>>() {{
     put(ChannelType.MRKT_EMAIL, mktEmailParamTags);
     put(ChannelType.MRKT_MESSAGE_CENTER, mktEmailParamTags);
     put(ChannelType.SITE_EMAIL, siteEmailParamTags);
     put(ChannelType.SITE_MESSAGE_CENTER, siteEmailParamTags);
+    put(ChannelType.GCX_EMAIL, gcxEmailParamTags);
+    put(ChannelType.GCX_MESSAGE_CENTER, gcxEmailParamTags);
   }};
 
   public static final ImmutableMultimap<String, String> socialMediaParamTags = new ImmutableMultimap.Builder<String, String>()
