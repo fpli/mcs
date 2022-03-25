@@ -336,7 +336,7 @@ public class CollectionServiceUtilTest {
     assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "https://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://ocsnext.ebay.co.uk/ocs/home?mkevt=1&mkpid=2&emsid=0&mkcid=8&bu=44210280665&segname=CH1234560_UK&crd=20220316030000&ch=osgood&sojTags=segname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2Cchnl%3Dmkcid";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
@@ -351,7 +351,7 @@ public class CollectionServiceUtilTest {
     assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
 
     referer = "http://pages.ebay.ca/help/buy/return-item.html?norover=1&mkevt=1&mkrid=706-156598-900813-2&mkcid=2&keyword=latest&crlp=_&MT_ID=&geo_id=&rlsatarget=kwd-82120261275936:loc-32&adpos=&device=c&mktype=&loc=163392&poi=&abcId=&cmpgn=392111909&sitelnk=5&adgroupid=1313917436564721&network=o&matchtype=p&msclkid=129091f9b3e91c5a8289f3ed22c63a19";
-    assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
+    assertFalse(CollectionServiceUtil.inRefererWhitelist(referer));
   }
 
   @Test
