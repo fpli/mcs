@@ -300,9 +300,6 @@ public class MiniKafkaCluster {
       }
     }
 
-    @Override
-    public void waitObject(Object obj, Supplier<Boolean> condition, long deadlineMs) throws InterruptedException {
 
-    }
   }
 }
