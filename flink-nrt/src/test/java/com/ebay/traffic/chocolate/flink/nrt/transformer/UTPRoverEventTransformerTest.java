@@ -122,6 +122,10 @@ public class UTPRoverEventTransformerTest {
   @Test
   public void getTrackingId() {
     assertEquals("456", transformer.getTrackingId());
+    // lowercase params
+    genericRecord.put("urlQueryString", new Utf8("/rover/2/0/8?bu=1234567&osub=0d6476007af14726a1eaca4dbd59f3fd%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20220321090000&ch=osgood&trkid=0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E&mesgid=3024&plmtid=700001&recoid=313369033082&recopos=1"));
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+    assertEquals("0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E", transformer.getTrackingId());
   }
 
   @Test
@@ -375,5 +379,10 @@ public class UTPRoverEventTransformerTest {
     genericRecord.put("seqNum", "2");
     transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
     assertEquals("2", transformer.getPayload().get("seqNum"));
+    // lowercase params
+    genericRecord.put("urlQueryString", new Utf8("/rover/2/0/8?bu=1234567&osub=0d6476007af14726a1eaca4dbd59f3fd%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20220321090000&ch=osgood&trkid=0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E&mesgid=3024&plmtid=700001&recoid=313369033082&recopos=1"));
+    transformer = new UTPRoverEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+    assertEquals("0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E", transformer.getPayload().get("tracking.id"));
+    assertEquals("true", transformer.getPayload().get("isUEP"));
   }
 }

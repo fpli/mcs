@@ -329,7 +329,13 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.EPN) {
       return null;
     }
-    return PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
+    String trackingId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString, TransformerConstants.TRACKING_ID);
+    if (StringUtils.isEmpty(trackingId)) {
+      trackingId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString,
+          TransformerConstants.TRACKING_ID.toLowerCase());
+    }
+
+    return trackingId;
   }
 
   @SuppressWarnings("UnstableApiUsage")
