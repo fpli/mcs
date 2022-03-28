@@ -7,7 +7,9 @@ import com.couchbase.client.java.datastructures.MutationOptionBuilder
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.dukes.{CacheClient, CacheSpecificationsStore}
 import com.ebay.dukes.base.BaseDelegatingCacheClient
+import com.ebay.dukes.builder.DefaultCacheFactoryBuilder
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient
+import com.ebay.dukes.dal3.dsc.DukesEnableFountCB
 import com.ebay.dukes.fountclient.{ApplicationConfiguration, FountCacheFactory, FountCacheSpecificationsStoreProvider}
 import org.slf4j.LoggerFactory
 
@@ -24,8 +26,6 @@ object CorpCouchbaseClientV2 {
   @transient var dataSource: String = properties.getProperty("chocolate.corp.couchbase.dataSource")
 
   @transient private lazy val factory = {
-
-    /*
     com.ebay.dukes.builder.FountCacheFactoryBuilder.newBuilder()
       .cache(dataSource)
       .dbEnv(properties.getProperty("chocolate.corp.couchbase.dbEnv"))
@@ -34,31 +34,20 @@ object CorpCouchbaseClientV2 {
       .pool(properties.getProperty("chocolate.corp.couchbase.pool"))
       .poolType(properties.getProperty("chocolate.corp.couchbase.poolType"))
       .appName(properties.getProperty("chocolate.corp.couchbase.appName"))
+      .identityFileDirectoryLocation(null)
+      .forceClearTextPasswords(true)
       .build()
-*/
-    val appConfig = new ApplicationConfiguration(
-      properties.getProperty("chocolate.corp.couchbase.dbEnv"),
-      properties.getProperty("chocolate.corp.couchbase.deploymentSlot"),
-      properties.getProperty("chocolate.corp.couchbase.dnsRegion"),
-      properties.getProperty("chocolate.corp.couchbase.pool"),
-      properties.getProperty("chocolate.corp.couchbase.poolType"),
-      properties.getProperty("chocolate.corp.couchbase.appName"),
-      null, true)
-    val store: CacheSpecificationsStore = FountCacheSpecificationsStoreProvider.config(appConfig, null, dataSource).getCacheSpecificationsStore
-    FountCacheFactory.createFactory(store)
-
-
-
   }
 
   @transient var getBucketFunc: () => (Option[CacheClient], Bucket) = getBucket
+  @transient var getCacheClientFunc: () => CacheClient = getCacheClient
 
   /**
-    * Insert or append data into Corp Couchbase.
-    *
-    * @param key     key of data
-    * @param mapData value of data organized in Map[String, Any]
-    */
+   * Insert or append data into Corp Couchbase.
+   *
+   * @param key     key of data
+   * @param mapData value of data organized in Map[String, Any]
+   */
   def upsertMap(key: String, mapData: Map[String, _]): Unit = {
     try {
       val jsonObject = JsonObject.empty()
@@ -77,8 +66,8 @@ object CorpCouchbaseClientV2 {
   }
 
   /**
-    * get bucket
-    */
+   * get bucket
+   */
   def getBucket(): (Option[CacheClient], Bucket) = {
     val cacheClient: CacheClient = factory.getClient(dataSource)
     val baseClient: BaseDelegatingCacheClient = cacheClient.asInstanceOf[BaseDelegatingCacheClient]
@@ -86,9 +75,13 @@ object CorpCouchbaseClientV2 {
     (Option(cacheClient), cbCacheClient.getCouchbaseClient)
   }
 
+  def getCacheClient(): CacheClient = {
+    factory.getClient(dataSource)
+  }
+
   /**
-    * return cacheClient to factory
-    */
+   * return cacheClient to factory
+   */
   def returnClient(cacheClient: Option[CacheClient]): Unit = {
     try {
       if (cacheClient.isDefined) {
@@ -103,8 +96,8 @@ object CorpCouchbaseClientV2 {
   }
 
   /**
-    * Close corp couchbase connection.
-    */
+   * Close corp couchbase connection.
+   */
   def close(): Unit = {
     try {
       factory.shutdown()

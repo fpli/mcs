@@ -1,7 +1,10 @@
 package com.ebay.traffic.chocolate.sparknrt.epnnrt;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PubDomainInfo implements Serializable {
  // private String ams_pub_domain_id;
   private String ams_publisher_id;

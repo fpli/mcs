@@ -118,10 +118,10 @@ object BullseyeUtilsV2 {
           .asString
 
         if (response.isNotError) {
-          logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
+          //logger.error(s"bullseye response for cguid $cguid, guid $guid with correct: $response")
           Some(response)
         } else {
-          logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
+          //logger.error(s"bullseye response for cguid $cguid, guid $guid with error: $response")
           token = generateToken2
           logger.warn(s"get new token: $token")
           metrics.meterByGauge("BullsEyeErrorTess", 1)
@@ -131,7 +131,7 @@ object BullseyeUtilsV2 {
     } catch {
       case e: Exception => {
         metrics.meterByGauge("BullsEyeErrorResultResponse", 1)
-        logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
+        //logger.error("error when parse last view item : CGUID:" + cguid + " response: " + e)
         None
       }
     }
@@ -258,7 +258,7 @@ object BullseyeUtilsV2 {
       }
     } catch {
       case _: Exception =>
-        logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + result.toString)
+        //logger.error("error when parse last view item : CGUID:" + cguid + " , GUID:" + guid + " response: " + result.toString)
         ("", "")
     }
   }
