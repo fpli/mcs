@@ -13,6 +13,7 @@ import org.apache.http.Header;
 import org.apache.log4j.PropertyConfigurator;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -224,7 +225,7 @@ public class DumpRotationToHadoop {
 
     SearchRequest searchRequest = new SearchRequest();
     searchRequest.source(searchSourceBuilder);
-    SearchResponse searchResponse = esRestHighLevelClient.search(searchRequest, new Header[0]);
+    SearchResponse searchResponse = esRestHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
     SearchHits hits = searchResponse.getHits();
     SearchHit[] searchHits = hits.getHits();
 

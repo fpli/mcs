@@ -3,16 +3,23 @@ package com.ebay.traffic.chocolate.sparknrt.epnnrtV2
 import java.io.UnsupportedEncodingException
 import java.net.{MalformedURLException, URISyntaxException, URL, URLDecoder}
 import java.text.SimpleDateFormat
+import java.util
+import java.util.Properties
 import java.util.regex.Pattern
 import java.util.{Properties, StringJoiner}
 
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum
 import com.ebay.kernel.util.HeaderMultiValue
+import com.ebay.dukes.base.JacksonTranscoder
+import com.ebay.dukes.nukv.trancoders.StringTranscoder
+import com.ebay.dukes.{CacheClient, OperationFuture}
 import com.ebay.traffic.chocolate.sparknrt.couchbaseV2.CorpCouchbaseClientV2
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.{Gson, JsonParser}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.conf.Configuration
@@ -60,6 +67,7 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
 
   lazy val JSON_STRING_AMS_PUBLISHER_ID = "{\"ams_publisher_id\":\""
 
+  lazy val TIMEOUT_PER_REQUEST = 2000
   val cbData = asyncCouchbaseGet(df)
 
   /**
@@ -286,7 +294,7 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   val getUserIdUdf = udf((userId: String, guid: String) => getUserIdByGuid(userId, guid))
   val getRelatedInfoFromUriUdf = udf((uri: String, index: Int, key: String) => getRelatedInfoFromUri(uri, index, key))
   val getChannelIdUdf = udf((channelType: String) => getChannelId(channelType))
-  val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClick(guid, uri))
+  val fixGuidUsingRoverLastClickUdf = udf((guid: String, uri: String) => fixGuidUsingRoverLastClickV2(guid, uri))
   val getGuidListUdf = udf((requestHeaders: String) => getGuidList(requestHeaders))
   //  val getClientData
   val getClientDataUdf = udf((user_agent: String,requestHeaders: String) => getClientData(user_agent, requestHeaders))
@@ -1097,8 +1105,6 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     val publisherStatus = getPublisherStatus(publisherId)
     val res = getPrgrmIdAdvrtsrIdFromAMSClick(rotationId)
     val filter_yn_ind = getFilter_Yn_Ind(rt_rule_flag, nrt_rule_flag, action)
-
-    logger.error("campaign_sts="+campaign_sts+" progPubMapStatus="+progPubMapStatus+" publisherStatus="+publisherStatus+" res="+res+" filter_yn_ind="+filter_yn_ind)
     if (!res(1).equals("")) {
       config_flag = res(1).toInt & 1
     }
@@ -1211,20 +1217,16 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
 
     val start = System.currentTimeMillis
 
-    publisher_map = batchGetPublisherStatus(publisher_list)
-    campaign_map = batchGetCampaignStatus(campaign_list)
-    prog_map = batchGetProgMapStatus(progmap_list)
-    clickFilter_map = batchGetAdvClickFilterMap(publisher_list)
-    pubDomain_map = batchGetPubDomainMap(publisher_list)
+    publisher_map = batchGetPublisherStatusV2(publisher_list)
+    campaign_map = batchGetCampaignStatusV2(campaign_list)
+    prog_map = batchGetProgMapStatusV2(progmap_list)
+    clickFilter_map = batchGetAdvClickFilterMapV2(publisher_list)
+    pubDomain_map = batchGetPubDomainMapV2(publisher_list)
 
-    logger.error("automation get map publisher {}"+publisher_map)
-    logger.error("automation get map campaign {}"+campaign_map)
-    logger.error("automation get map prog {}"+prog_map)
-    logger.error("automation get map clickFilter {}"+clickFilter_map)
-    logger.error("automation get map pubDomain_map {}"+pubDomain_map)
-
-    metrics.mean("NrtCouchbaseLatencyTess", System.currentTimeMillis() - start)
-
+    val sum: Int = pubDomain_map.size + campaign_map.size + prog_map.size + clickFilter_map.size + pubDomain_map.size
+    val l: Long = System.currentTimeMillis() - start
+    metrics.mean("NrtCouchbaseLatencyFailOver", l)
+    metrics.mean("NrtCouchbaseLatencyFailOver_avg", l / sum)
 
     (publisher_map, campaign_map, prog_map, clickFilter_map, pubDomain_map)
   }
@@ -1268,6 +1270,55 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     res
   }
 
+  def batchGetPublisherStatusV2(list: Array[String]): HashMap[String, String] = {
+    val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
+    val start: Long = System.currentTimeMillis()
+    var end: Long = start
+    var res = new HashMap[String, String]
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val result: util.List[OperationFuture[PublisherInfo]] = new util.ArrayList[OperationFuture[PublisherInfo]]
+      list
+        .foreach(key => {
+          val value: OperationFuture[PublisherInfo] = cacheClient.asyncGet("EPN_publisher_" + key, new JacksonTranscoder[PublisherInfo](classOf[PublisherInfo]))
+          result.add(value)
+        })
+      while (end - start < timeoutLimit && !result.isEmpty) {
+        val iterator: util.Iterator[OperationFuture[PublisherInfo]] = result.iterator
+        while (iterator.hasNext) {
+          val future: OperationFuture[PublisherInfo] = iterator.next()
+          if (future.isDone) {
+            try {
+              val publisherInfo: PublisherInfo = future.get()
+              if (publisherInfo != null) {
+                res = res + (publisherInfo.getAms_publisher_id -> publisherInfo.getApplication_status_enum)
+              }
+            } catch {
+              case e: Exception =>
+                logger.error("Corp Couchbase error while publisher status " + e)
+                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+            }
+            iterator.remove()
+          } else {
+            Thread.sleep(1)
+          }
+        }
+        end = System.currentTimeMillis()
+      }
+      if (result.size() != list.length) {
+        for (i <- list.indices) {
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> "")
+        }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error("Corp Couchbase error while publisher status " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+    }
+    CorpCouchbaseClientV2.returnClient(Option(cacheClient))
+    res
+  }
   def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClientV2.getBucketFunc()
@@ -1304,6 +1355,58 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
       }
     }
     CorpCouchbaseClientV2.returnClient(cacheClient)
+    res
+  }
+
+  def batchGetCampaignStatusV2(list: Array[String]): HashMap[String, String] = {
+    val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
+    val start: Long = System.currentTimeMillis()
+    var end: Long = start
+    var res = new HashMap[String, String]
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val result: util.List[OperationFuture[PublisherCampaignInfo]] = new util.ArrayList[OperationFuture[PublisherCampaignInfo]]
+      list
+        .foreach(key => {
+          val value: OperationFuture[PublisherCampaignInfo] = cacheClient.asyncGet("EPN_pubcmpn_" + key, new JacksonTranscoder[PublisherCampaignInfo](classOf[PublisherCampaignInfo]))
+          result.add(value)
+        })
+      var flag = false
+      while (end - start < timeoutLimit && !result.isEmpty) {
+        val iterator: util.Iterator[OperationFuture[PublisherCampaignInfo]] = result.iterator
+        while (iterator.hasNext) {
+          val future: OperationFuture[PublisherCampaignInfo] = iterator.next()
+          if (future.isDone) {
+            try {
+              val campaign_sts: PublisherCampaignInfo = future.get()
+              if (campaign_sts != null) {
+                flag = true
+                res = res + (campaign_sts.getAms_publisher_campaign_id -> campaign_sts.getStatus_enum)
+              }
+              iterator.remove()
+            } catch {
+              case e: Exception =>
+                logger.error("Corp Couchbase error while getting campaign status " + e)
+                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+            }
+          } else {
+            Thread.sleep(1)
+          }
+        }
+        end = System.currentTimeMillis()
+      }
+      if (flag && (res.size != list.length)) {
+        for (i <- list.indices) {
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> "")
+        }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error("Corp Couchbase error while getting campaign status " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+    }
+    CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
   }
 
@@ -1348,6 +1451,58 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     res
   }
 
+  def batchGetProgMapStatusV2(list: Array[String]): HashMap[String, String] = {
+    val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
+    val start: Long = System.currentTimeMillis()
+    var end: Long = start
+    import scala.collection.JavaConversions._
+    var res = new HashMap[String, String]
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val result: util.List[OperationFuture[ProgPubMapInfo]] = new util.ArrayList[OperationFuture[ProgPubMapInfo]]
+      list
+        .foreach(key => {
+          val value: OperationFuture[ProgPubMapInfo] = cacheClient.asyncGet("EPN_ppm_" + key, new JacksonTranscoder[ProgPubMapInfo](classOf[ProgPubMapInfo]))
+          result.add(value)
+        })
+      var flag = false
+      while (end - start < timeoutLimit && !result.isEmpty) {
+        val iterator: util.Iterator[OperationFuture[ProgPubMapInfo]] = result.iterator
+        while (iterator.hasNext) {
+          val future: OperationFuture[ProgPubMapInfo] = iterator.next()
+          if (future.isDone) {
+            try {
+              val progPubMap: ProgPubMapInfo = future.get()
+              if (progPubMap != null) {
+                flag = true
+                res = res + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> progPubMap.getStatus_enum)
+              }
+            } catch {
+              case e: Exception =>
+                logger.error("Corp Couchbase error while getting progmap status " + e)
+                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+            }
+            iterator.remove()
+          } else {
+            Thread.sleep(1)
+          }
+        }
+        end = System.currentTimeMillis()
+      }
+      if (flag && (res.size() != list.length)) {
+        for (i <- list.indices) {
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> "")
+        }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error("Corp Couchbase error while getting progmap status " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+    }
+    CorpCouchbaseClientV2.returnClient(Option(cacheClient))
+    res
+  }
 
   def batchGetAdvClickFilterMap(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
     var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
@@ -1391,6 +1546,63 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     res
   }
 
+  def batchGetAdvClickFilterMapV2(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
+    val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
+    val start: Long = System.currentTimeMillis()
+    var end: Long = start
+    import scala.collection.JavaConversions._
+    var res = new HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]]
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val result: util.List[OperationFuture[Object]] = new util.ArrayList[OperationFuture[Object]]
+      list
+        .foreach(key => {
+          val value: OperationFuture[Object] = cacheClient.asyncGet("EPN_amspubfilter_" + key, StringTranscoder.getInstance())
+          result.add(value)
+        })
+      while (end - start < timeoutLimit && !result.isEmpty) {
+        val iterator: util.Iterator[OperationFuture[Object]] = result.iterator
+        while (iterator.hasNext) {
+          val future: OperationFuture[Object] = iterator.next()
+          if (future.isDone) {
+            try {
+              val jsonObject: Object = future.get()
+              if (jsonObject != null) {
+                var objectList: ListBuffer[PubAdvClickFilterMapInfo] = ListBuffer.empty[PubAdvClickFilterMapInfo]
+                val mapper = new ObjectMapper()
+                val infoList: util.List[PubAdvClickFilterMapInfo] = mapper.readValue(jsonObject.toString, new TypeReference[util.List[PubAdvClickFilterMapInfo]]() {
+                })
+                for (info <- infoList) {
+                  objectList += info
+                }
+                res = res + (infoList.head.getAms_publisher_id -> objectList)
+              }
+            } catch {
+              case e: Exception =>
+                logger.error("Corp Couchbase error while getting advClickFilterMap " + e)
+                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+            }
+            iterator.remove()
+          } else {
+            Thread.sleep(1)
+          }
+        }
+        end = System.currentTimeMillis()
+      }
+      if (res.size() != list.length) {
+        for (i <- list.indices) {
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> ListBuffer.empty[PubAdvClickFilterMapInfo])
+        }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error("Corp Couchbase error while getting advClickFilterMap " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+    }
+    CorpCouchbaseClientV2.returnClient(Option(cacheClient))
+    res
+  }
   def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
     var res = new HashMap[String, ListBuffer[PubDomainInfo]]
     val (cacheClient, bucket) = CorpCouchbaseClientV2.getBucketFunc()
@@ -1434,6 +1646,63 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     res
   }
 
+  def batchGetPubDomainMapV2(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
+    val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
+    val start: Long = System.currentTimeMillis()
+    var end: Long = start
+    import scala.collection.JavaConversions._
+    var res = new HashMap[String, ListBuffer[PubDomainInfo]]
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val result: util.List[OperationFuture[Object]] = new util.ArrayList[OperationFuture[Object]]
+      list
+        .foreach(key => {
+          val value: OperationFuture[Object] = cacheClient.asyncGet("EPN_amspubdomain_" + key, StringTranscoder.getInstance())
+          result.add(value)
+        })
+      while (end - start < timeoutLimit && !result.isEmpty) {
+        val iterator: util.Iterator[OperationFuture[Object]] = result.iterator
+        while (iterator.hasNext) {
+          val future: OperationFuture[Object] = iterator.next()
+          if (future.isDone) {
+            try {
+              val jsonObject: Object = future.get()
+              if (jsonObject != null) {
+                var objectList: ListBuffer[PubDomainInfo] = ListBuffer.empty[PubDomainInfo]
+                val mapper = new ObjectMapper()
+                val infoList: util.List[PubDomainInfo] = mapper.readValue(jsonObject.toString, new TypeReference[util.List[PubDomainInfo]]() {
+                })
+                for (info <- infoList) {
+                  objectList += info
+                }
+                res = res + (infoList.head.getAms_publisher_id -> objectList)
+              }
+            } catch {
+              case e: Exception =>
+                logger.error("Corp Couchbase error while getting pubDomainMap " + e)
+                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+            }
+            iterator.remove()
+          } else {
+            Thread.sleep(1)
+          }
+        }
+        end = System.currentTimeMillis()
+      }
+      if (res.size() != list.length) {
+        for (i <- list.indices) {
+          if (!res.contains(list(i)))
+            res = res + (list(i) -> ListBuffer.empty[PubDomainInfo])
+        }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error("Corp Couchbase error while getting pubDomainMap " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+    }
+    CorpCouchbaseClientV2.returnClient(Option(cacheClient))
+    res
+  }
   /**
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
@@ -1545,6 +1814,40 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     fixedGuid
   }
 
+  def fixGuidUsingRoverLastClickV2(guid: String, uri: String): String = {
+    var fixedGuid: String = guid
+    var roverLastClickGuid: String = ""
+    // rewrite couchbase datasource property
+    CorpCouchbaseClientV2.dataSource = properties.getProperty("epnnrt.datasource")
+    val cacheClient: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+    try {
+      val chocoTag: String = getQueryParam(uri, CHOCO_TAG)
+      if (StringUtils.isNotEmpty(chocoTag)) {
+        val start: Long = System.currentTimeMillis
+        val chocoTagKey: String = CB_CHOCO_TAG_PREFIX + chocoTag
+        val o: Map[String, String] = cacheClient.get(chocoTagKey, new JacksonTranscoder[Map[String, String]](classOf[Map[String, String]]))
+        if (o != null) {
+          logger.info("get guid successfully " + guid)
+          roverLastClickGuid = o.getOrElse("guid", "")
+        }
+        metrics.mean("GetRoverLastGuidCouchbaseLatencyFailOver", System.currentTimeMillis() - start)
+      }
+    } catch {
+      case e: Exception => {
+        logger.error("Corp Couchbase error while getting chocoTag guid mapping " + e)
+        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+      }
+    } finally {
+      CorpCouchbaseClientV2.returnClient(Option(cacheClient))
+    }
+
+    if (StringUtils.isNotEmpty(roverLastClickGuid)) {
+      metrics.meterByGauge("GetChocoTagGuidMappingFromCBFailOver", 1)
+      fixedGuid = roverLastClickGuid
+    }
+
+    fixedGuid
+  }
   /**
     * Determine if the url is ebay sites url
     * @param uri uri

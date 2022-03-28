@@ -29,10 +29,10 @@ __config = {
     'name': dag_name,
     'java_class': 'com.ebay.traffic.chocolate.sparknrt.sinkV2.DedupeAndSinkV2',
     'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
-    'executor_cores': '1',
-    'driver_memory': '4G',
-    'executor_memory': '6G',
-    'num_executors': '20',
+    'executor_cores': '3',
+    'driver_memory': '8G',
+    'executor_memory': '12G',
+    'num_executors': '30',
 
     'application_args': [
         '--appName', 'dedupe_epn_v2',
@@ -42,7 +42,7 @@ __config = {
         '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events',
         '--partitions', '1',
         '--maxConsumeSize', '60000',
-        '--couchbaseDedupe', 'true'
+        '--couchbaseDedupe', 'false'
     ]
 }
 

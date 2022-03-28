@@ -2,13 +2,13 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 from datetime import timedelta
 from airflow import DAG
 
-dag_name = 'dedupeAndSinkDuplicateItmClickListener_v2.py'
-dag_id = 'dedupeAndSinkDuplicateItmClickListener_v2.py'
+dag_name = 'dedupe_epn_couchbase'
+dag_id = 'dedupe_epn_couchbase'
 
 default_args = {
     'owner': 'yuhxiao',
     'start_date': '2021-02-19',
-    'email': ['Marketing-Tracking-oncall@ebay.com','DL-eBay-Chocolate-GC@ebay.com'],
+    'email': ['yuhxiao@ebay.com'],
     'email_on_success': True,
     'email_on_failure': True,
     'email_on_retry': True,
@@ -19,7 +19,7 @@ default_args = {
 
 dag = DAG(
     dag_id=dag_id,
-    schedule_interval='*/10 * * * *',
+    schedule_interval='*/8 * * * *',
     default_args=default_args,
     catchup=False,
     max_active_runs=1
@@ -27,19 +27,19 @@ dag = DAG(
 
 __config = {
     'name': dag_name,
-    'java_class': 'com.ebay.traffic.chocolate.sparknrt.sinkListenerV2.DedupeAndSinkListenerV2',
-    'application': '/datashare/mkttracking/jobs/tracking/spark-nrt/lib_hotfix0923/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
+    'java_class': 'com.ebay.traffic.chocolate.sparknrt.sinkV2.DedupeAndSinkV2',
+    'application': '/datashare/mkttracking/jobs/tracking/spark-nrt-v2/lib/chocolate-spark-nrt-3.8.0-RELEASE-fat.jar',
     'executor_cores': '1',
     'driver_memory': '4G',
     'executor_memory': '6G',
     'num_executors': '20',
 
     'application_args': [
-        '--appName', 'dedupeAndSinkDuplicateItmClickListener_v2.py',
-        '--channel', 'DUPLICATE_CLICK_LISTENER',
-        '--kafkaTopic', 'marketing.tracking.ssl.listened-duplicate-itm-click',
-        '--workDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-workdir-duplicate-click',
-        '--outputDir', 'viewfs://apollo-rno/apps/b_marketing_tracking/tracking-events-duplicate-click',
+        '--appName', 'dedupe_epn_couchbase',
+        '--channel', 'EPN',
+        '--kafkaTopic', 'marketing.tracking.ssl.filtered-epn',
+        '--workDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events-workdir',
+        '--outputDir', 'viewfs://apollo-rno/user/b_marketing_tracking/tracking-events',
         '--partitions', '1',
         '--maxConsumeSize', '60000',
         '--couchbaseDedupe', 'true'
@@ -47,13 +47,13 @@ __config = {
 }
 
 spark_submit_operator = SparkSubmitOperator(
-    task_id='dedupeAndSinkDuplicateItmClickListener_v2.py',
+    task_id='dedupe_epn_couchbase',
     pool='spark_pool',
     conn_id='hdlq-commrce-mkt-tracking-high-mem',
-    files='file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/dedupe_and_sink_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/couchbase_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/kafka-listener_v2.properties,'
-          'file:///datashare/mkttracking/jobs/tracking/spark-nrt/conf/sherlockio.properties,'
+    files='file:///datashare/mkttracking/jobs/tracking/spark-nrt-v2/conf/dedupe_and_sink_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/spark-nrt-v2/conf/couchbase_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/spark-nrt-v2/conf/kafka_v2.properties,'
+          'file:///datashare/mkttracking/jobs/tracking/spark-nrt-v2/conf/sherlockio.properties,'
           'file:///datashare/mkttracking/exports/apache/confs/hive/conf/hive-site.xml,'
           'file:///datashare/mkttracking/exports/apache/confs/hadoop/conf/ssl-client.xml',
     conf={

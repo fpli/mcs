@@ -8,6 +8,7 @@ import java.{lang, util}
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, ListenerMessage}
+import com.ebay.dukes.CacheClient
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDDV2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
 import com.ebay.traffic.chocolate.sparknrt.couchbaseV2.CorpCouchbaseClientV2
@@ -139,7 +140,7 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
           writers.put(date, writer)
         }
         // write message
-        dedupeByCBAndWriteMessage(message, writer)
+        dedupeByCBAndWriteMessageV2(message, writer)
       }
 
       flushMetric
@@ -182,7 +183,7 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
     kafkaRDD.commitOffsets()
     kafkaRDD.close()
 
-    writeSnapshort2Cb(metaFiles)
+    writeSnapshot2CbV2(metaFiles)
 
     // delete the dir
     fs.delete(new Path(baseDir), true)
@@ -203,6 +204,33 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
           writeMessage(writer, message)
         }
         CorpCouchbaseClientV2.returnClient(cacheClient)
+      } catch {
+        case e: Exception =>
+          logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+          metrics.meterByGauge("CBDedupeException",1)
+          writeMessage(writer, message)
+          couchbaseDedupe = false
+      }
+    } else {
+      writeMessage(writer, message)
+    }
+  }
+
+  /**
+   * Dedupe by couchbase to click and roi. Write result to file.
+   * @param message listener message
+   * @param writer file writer
+   */
+  private def dedupeByCBAndWriteMessageV2(message: ListenerMessage, writer: ParquetWriter[GenericRecord]) = {
+    // couchbase dedupe only apply on click
+    if ((message.getChannelAction == ChannelAction.CLICK || message.getChannelAction == ChannelAction.ROI) && couchbaseDedupe) {
+      try {
+        val cacheClient:CacheClient= CorpCouchbaseClientV2.getCacheClientFunc()
+        val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
+        if (cacheClient.get(key)==null) {
+          writeMessage(writer, message)
+        }
+        CorpCouchbaseClientV2.returnClient(Option.apply(cacheClient))
       } catch {
         case e: Exception =>
           logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
@@ -259,6 +287,43 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
     }
   }
 
+  /**
+   * Write snapshort id as key to couchbase
+   *
+   * @param metaFiles meta files
+   */
+  private def writeSnapshot2CbV2(metaFiles: MetaFiles) = {
+    // insert new keys to couchbase for next round's dedupe
+    if (metaFiles != null && couchbaseDedupe && metaFiles.metaFiles != null && metaFiles.metaFiles.length > 0) {
+      val datesFiles = metaFiles.metaFiles
+      if (datesFiles != null && datesFiles.length > 0) {
+        datesFiles.foreach(dateFiles => {
+          val df = this.readFilesAsDFEx(dateFiles.files)
+          df.filter($"channel_action" === "CLICK" || $"channel_action" === "ROI")
+            .repartition(30)
+            .select("short_snapshot_id")
+            .foreachPartition(partition => {
+              // each partition insert cb by batch, limit the size to send to 5000 records
+              partition.grouped(5000).foreach(
+                group => {
+                  try {
+                    val client: CacheClient = CorpCouchbaseClientV2.getCacheClientFunc()
+                    group.foreach(record => {
+                      client.set(DEDUPE_KEY_PREFIX +record.get(0).toString, couchbaseTTL, JsonObject.empty())
+                    })
+                  } catch {
+                    case e: Exception =>
+                      logger.error("Couchbase exception. Skip couchbase dedupe for this batch", e)
+                      metrics.meterByGauge("CBDedupeException",1)
+                      couchbaseDedupe = false
+                  }
+                }
+              )
+            })
+        })
+      }
+    }
+  }
   /**
     * Output message to files
     * @param message
