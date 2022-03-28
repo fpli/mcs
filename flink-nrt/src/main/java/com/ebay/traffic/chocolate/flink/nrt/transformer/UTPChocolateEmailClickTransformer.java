@@ -320,7 +320,7 @@ public class UTPChocolateEmailClickTransformer {
   }
 
   protected String getTrackingId() {
-    return queryParams.getFirst(TransformerConstants.TRACKING_ID);
+    return applicationPayload.get(TransformerConstants.TRACKING_ID);
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -339,7 +339,7 @@ public class UTPChocolateEmailClickTransformer {
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
-    String encryptedUserId = sojTags.get(TransformerConstants.EMID);
+    String encryptedUserId = applicationPayload.get(TransformerConstants.EMID);
     if (encryptedUserId == null) {
       encryptedUserId = queryParams.getFirst(TransformerConstants.BEST_GUESS_USER_ID);
     }
