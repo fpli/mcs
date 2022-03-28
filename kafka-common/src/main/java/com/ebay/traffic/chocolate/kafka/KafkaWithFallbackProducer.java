@@ -3,7 +3,6 @@ package com.ebay.traffic.chocolate.kafka;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.clients.consumer.ConsumerGroupMetadata;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
@@ -19,7 +18,6 @@ import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -210,17 +208,15 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
   }
 
   @Override
-  public synchronized void close(Duration duration) {
+  public synchronized void close(long timeout, TimeUnit timeUnit) {
     try {
-      producer1.close(duration);
+      producer1.close(timeout, timeUnit);
     } catch (Exception e) {
-      LOG.warn("Error while producer1 close, ERROR :", e);
     }
 
     try {
-      producer2.close(duration);
+      producer2.close(timeout, timeUnit);
     } catch (Exception e) {
-      LOG.warn("Error while producer2 close, ERROR :", e);
     }
 
     if (timer != null) {
@@ -242,12 +238,7 @@ public class KafkaWithFallbackProducer<K, V extends GenericRecord> implements Pr
 
   @Override
   public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, String consumerGroupId) throws
-    ProducerFencedException {
-
-  }
-
-  @Override
-  public void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> map, ConsumerGroupMetadata consumerGroupMetadata) throws ProducerFencedException {
+          ProducerFencedException {
 
   }
 
