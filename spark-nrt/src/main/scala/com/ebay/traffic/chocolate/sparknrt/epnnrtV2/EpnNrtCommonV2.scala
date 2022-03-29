@@ -1825,10 +1825,10 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
       if (StringUtils.isNotEmpty(chocoTag)) {
         val start: Long = System.currentTimeMillis
         val chocoTagKey: String = CB_CHOCO_TAG_PREFIX + chocoTag
-        val o: Map[String, String] = cacheClient.get(chocoTagKey, new JacksonTranscoder[Map[String, String]](classOf[Map[String, String]]))
+        val o: util.HashMap[String, String] = cacheClient.get(chocoTagKey, new JacksonTranscoder[util.HashMap[String, String]](classOf[util.HashMap[String, String]]))
         if (o != null) {
           logger.info("get guid successfully " + guid)
-          roverLastClickGuid = o.getOrElse("guid", "")
+          roverLastClickGuid = o.getOrDefault("guid", "")
         }
         metrics.mean("GetRoverLastGuidCouchbaseLatencyFailOver", System.currentTimeMillis() - start)
       }
