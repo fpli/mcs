@@ -84,4 +84,31 @@ public class CustomizedSchemeRequestHandlerTest {
         assertEquals("ebay://link?nav=home&id=154347659933&mkevt=1&mkcid=4&mkrid=710-53481-19255-0", event.getTargetUrl());
         assertEquals(referer, event.getReferrer());
     }
+
+    @Test
+    public void testCustomizedSchemeRequestHandler_withDuplicatedMkcid() {
+        String targetURL = "ebay://link?nav=item.view&id=185038555159&mkcid=16&mkcid=4&mkrid=711-127632-2357-0&mkrid=711-58542-18990-20-3&var=692814868220&ul_alt=store&sabg=770ee4d017f0ab9e2a6aa0e2ffe9083d&sabc=770ee8c217f0a1201592dd40ffaa0be2&mkevt=1&ufes_redirect=true";
+        String referer = "www.google.com";
+        Event event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
+        assertEquals("ebay://link?nav=item.view&id=185038555159&mkcid=16&bannercid=4&mkrid=711-127632-2357-0&bannerrid=711-58542-18990-20-3&var=692814868220&ul_alt=store&sabg=770ee4d017f0ab9e2a6aa0e2ffe9083d&sabc=770ee8c217f0a1201592dd40ffaa0be2&mkevt=1&ufes_redirect=true", event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
+    }
+
+    @Test
+    public void testCustomizedSchemeRequestHandler_withInvalidMkrid() {
+        String targetURL = "ebay://link?nav=item.view&id=185038555159&mkcid=16&mkcid=4&mkrid=711-127632-2357-0&mkrid=711-58542-54321-20-3&var=692814868220&ul_alt=store&sabg=770ee4d017f0ab9e2a6aa0e2ffe9083d&sabc=770ee8c217f0a1201592dd40ffaa0be2&mkevt=1&ufes_redirect=true";
+        String referer = "www.google.com";
+        Event event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
+        assertEquals(targetURL, event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
+    }
+
+    @Test
+    public void testCustomizedSchemeRequestHandler_withReverseOrder() {
+        String targetURL = "ebay://link?nav=item.view&id=185038555159&mkcid=4&mkcid=16&mkrid=711-58542-18990-20-3&mkrid=711-127632-2357-0&var=692814868220&ul_alt=store&sabg=770ee4d017f0ab9e2a6aa0e2ffe9083d&sabc=770ee8c217f0a1201592dd40ffaa0be2&mkevt=1&ufes_redirect=true";
+        String referer = "www.google.com";
+        Event event = customizedSchemeRequestHandler.parseCustomizedSchemeEvent(targetURL, referer);
+        assertEquals("ebay://link?nav=item.view&id=185038555159&bannercid=4&mkcid=16&bannerrid=711-58542-18990-20-3&mkrid=711-127632-2357-0&var=692814868220&ul_alt=store&sabg=770ee4d017f0ab9e2a6aa0e2ffe9083d&sabc=770ee8c217f0a1201592dd40ffaa0be2&mkevt=1&ufes_redirect=true", event.getTargetUrl());
+        assertEquals(referer, event.getReferrer());
+    }
 }

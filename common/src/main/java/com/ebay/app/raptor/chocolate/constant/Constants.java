@@ -45,7 +45,8 @@ public class Constants {
   public static final String TAG_UTP_ID = "utpid";
   public static final String TAG_BU = "bu";
   public static final String TAG_TRACK_ID = "trkId";
-
+  public static final String BANNERCID = "bannercid";
+  public static final String BANNERRID = "bannerrid";
 
   // Session relatives
   public static final String SESSION_ID = "sessionId";
