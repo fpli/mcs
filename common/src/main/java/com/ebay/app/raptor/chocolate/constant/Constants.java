@@ -154,6 +154,8 @@ public class Constants {
   public static final String SLASH = "/";
   public static final String HYPHEN = "-";
 
+  public static final String TYPE_INFO = "Info";
+  public static final String STATUS_OK = "0";
   /**
    * Performance marketing channels
    */

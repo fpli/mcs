@@ -10,8 +10,10 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
@@ -129,6 +131,7 @@ public class CustomizedSchemeRequestHandler {
   }
 
   private String handleDuplicatedParams(String url) {
+    SpanEventHelper.writeLog(TYPE_INFO, "handleDuplicatedParamsInput", url, STATUS_OK);
     try {
       URIBuilder uriBuilder = new URIBuilder(url);
       List<NameValuePair> queryParams = uriBuilder.getQueryParams();
@@ -139,23 +142,31 @@ public class CustomizedSchemeRequestHandler {
       MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
       List<String> mkrids = deeplinkParameters.get(MKRID);
       List<String> mkcids = deeplinkParameters.get(MKCID);
-      List<String> needToReplacedRid = ListUtils.retainAll(mkrids, smartBannerRids);
-
-      if (needToReplacedRid.size() == 1 && mkcids.contains(ChannelIdEnum.SOCIAL_MEDIA.getValue())
-              && mkcids.contains(ChannelIdEnum.DAP.getValue())) {
-        BasicNameValuePair duplicatedCid = new BasicNameValuePair(MKCID, ChannelIdEnum.DAP.getValue());
-        queryParams.add(queryParams.indexOf(duplicatedCid),
-                new BasicNameValuePair(BANNERCID, ChannelIdEnum.DAP.getValue()));
-        queryParams.remove(duplicatedCid);
-
-        String ridVal = needToReplacedRid.get(0);
-        BasicNameValuePair duplicatedRid = new BasicNameValuePair(MKRID, ridVal);
-        queryParams.add(queryParams.indexOf(duplicatedRid), new BasicNameValuePair(BANNERRID, ridVal));
-        queryParams.remove(duplicatedRid);
+      if (CollectionUtils.isEmpty(mkrids) || CollectionUtils.isEmpty(mkcids)) {
+        return url;
       }
-      return uriBuilder.setParameters(queryParams).build().toString();
+      if (mkcids.contains(ChannelIdEnum.SOCIAL_MEDIA.getValue()) && mkcids.contains(ChannelIdEnum.DAP.getValue())) {
+        List<String> needToReplacedRid = ListUtils.retainAll(mkrids, smartBannerRids);
+        if (needToReplacedRid.size() == 1) {
+          BasicNameValuePair duplicatedCid = new BasicNameValuePair(MKCID, ChannelIdEnum.DAP.getValue());
+          queryParams.add(queryParams.indexOf(duplicatedCid),
+                  new BasicNameValuePair(BANNERCID, ChannelIdEnum.DAP.getValue()));
+          queryParams.remove(duplicatedCid);
+
+          String ridVal = needToReplacedRid.get(0);
+          BasicNameValuePair duplicatedRid = new BasicNameValuePair(MKRID, ridVal);
+          queryParams.add(queryParams.indexOf(duplicatedRid), new BasicNameValuePair(BANNERRID, ridVal));
+          queryParams.remove(duplicatedRid);
+
+          MonitorUtil.info("handleDuplicatedParamsSuccess", 1);
+          String resUrl = uriBuilder.setParameters(queryParams).build().toString();
+          SpanEventHelper.writeLog(TYPE_INFO, "handleDuplicatedParamsSuccess", resUrl, STATUS_OK);
+          return resUrl;
+        }
+      }
     } catch (Exception ex) {
-      LOGGER.error("Error while handling duplicated parameters, error : ", ex);
+      LOGGER.error("Error while handling duplicated parameters, url: {}, Error: ", url, ex);
+      SpanEventHelper.writeWarning("handldDuplicatedParamsError", ex);
     }
     return url;
   }
