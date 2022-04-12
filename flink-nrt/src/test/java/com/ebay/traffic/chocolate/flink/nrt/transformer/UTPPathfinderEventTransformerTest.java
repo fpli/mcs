@@ -50,6 +50,7 @@ public class UTPPathfinderEventTransformerTest {
                 properties.getProperty(PropertyConstants.SHERLOCKIO_ENDPOINT),
                 properties.getProperty(PropertyConstants.SHERLOCKIO_USER));
         applicationMap = new HashMap<>();
+        applicationMap.put(new Utf8("mlch"), new Utf8("1"));
         clientData = new HashMap<>();
         genericRecord = new GenericData.Record(schema);
         rheosEvent = new RheosEvent(schema);
