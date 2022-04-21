@@ -728,7 +728,7 @@ public class UTPImkTransformer {
   }
 
   protected String getClientData() {
-    return payload.get("clientData");
+    return payload.getOrDefault("clientData", StringConstants.EMPTY);
   }
 
   protected String getMgvalue() {
