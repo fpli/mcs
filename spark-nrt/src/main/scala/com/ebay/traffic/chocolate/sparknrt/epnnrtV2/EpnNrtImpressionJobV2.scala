@@ -131,16 +131,13 @@ class EpnNrtImpressionJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params,
           val imp_metaFile = new MetaFiles(Array(DateFiles(date, imp_files)))
 
           retry(3) {
-            deleteMetaTmpDir(epnNrtResultMetaImpTempDir)
-            outputMetadata.writeOutputMeta(imp_metaFile, epnNrtResultMetaImpTempDir, "epnnrt_imp", Array(".epnnrt"))
             deleteMetaTmpDir(epnNrtScpMetaImpTempDir)
-            outputMetadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            outputMetadata.writeOutputMeta(imp_metaFile, epnNrtScpMetaImpTempDir, "epnnrt_scp_imp", Array(".epnnrt_reno", ".epnnrt_hercules"))
             logger.info("successfully write EPN NRT impression output meta to HDFS")
             metrics.meterByGauge("OutputMetaSuccessfulTess", params.partitions, Field.of[String, AnyRef]("channelAction", "IMPRESSION"))
           }
 
           //rename meta files
-          renameMeta(epnNrtResultMetaImpTempDir, epnNrtResultMetaImpDir)
           renameMeta(epnNrtScpMetaImpTempDir, epnNrtScpMetaImpDir)
         }
       })

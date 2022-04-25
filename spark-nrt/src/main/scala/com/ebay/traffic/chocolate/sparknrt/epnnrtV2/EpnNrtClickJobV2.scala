@@ -133,7 +133,7 @@ class EpnNrtClickJobV2(params: ParameterV2) extends BaseEpnNrtJobV2(params, para
 
           retry(3) {
             deleteMetaTmpDir(epnNrtScpMetaClickTempDir)
-            outputMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_etl", ".epnnrt_reno", ".epnnrt_hercules"))
+            outputMetadata.writeOutputMeta(click_metaFile, epnNrtScpMetaClickTempDir, "epnnrt_scp_click", Array(".epnnrt_reno", ".epnnrt_hercules"))
             metrics.meterByGauge("OutputMetaSuccessfulTess", params.partitions * 2, Field.of[String, AnyRef]("channelAction", "CLICK"))
             logger.info("successfully write EPN NRT Click output meta to HDFS, job finished")
           }
