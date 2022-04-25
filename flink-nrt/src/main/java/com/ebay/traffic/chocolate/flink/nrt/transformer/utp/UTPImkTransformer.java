@@ -296,6 +296,9 @@ public class UTPImkTransformer {
     if (ChannelTypeEnum.PLA.getValue().equals(channelType)) {
       return RvrChnlTypeCdEnum.PAID_SEARCH.getCd();
     }
+    if (ChannelTypeEnum.PAID_SEARCH.getValue().equals(channelType)) {
+      return RvrChnlTypeCdEnum.PAID_SEARCH.getCd();
+    }
     if (ChannelTypeEnum.TEXT.getValue().equals(channelType)) {
       return RvrChnlTypeCdEnum.PAID_SEARCH.getCd();
     }

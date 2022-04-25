@@ -333,7 +333,7 @@ public class UnifiedTrackingMessageParser {
   private static ChannelTypeEnum getChannelType(ChannelType channelType) {
     switch (channelType) {
       case PAID_SEARCH:
-        return ChannelTypeEnum.PLA;
+        return ChannelTypeEnum.PAID_SEARCH;
       case DISPLAY:
         return ChannelTypeEnum.DISPLAY;
       case SOCIAL_MEDIA:
