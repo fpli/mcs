@@ -12,6 +12,10 @@
     <name>chocolate filter</name>
     <description>Chocolate Filter on Raptor IO</description>
 
+    <properties>
+        <cosusercontext.component.version>0.14.2-RELEASE</cosusercontext.component.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
