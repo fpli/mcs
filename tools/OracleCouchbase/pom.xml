@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.14.3-RELEASE</version>
+    <version>0.14.4-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
 

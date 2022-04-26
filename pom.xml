@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.14.3-RELEASE</version>
+    <version>0.14.4-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -18,7 +18,6 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <CodeCacheSize>512m</CodeCacheSize>
     <encoding>UTF-8</encoding>
-    <ep.component.version>0.13.7-RELEASE</ep.component.version>
     <scala.version>2.11.8</scala.version>
     <scala.compat.version>2.11</scala.compat.version>
     <slf4j.version>1.7.7</slf4j.version>
@@ -45,7 +44,7 @@
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
     <besproducer.component.version>0.14.5-RELEASE</besproducer.component.version>
-    <utp.version>1.2.7-RELEASE</utp.version>
+    <utp.version>1.3.3-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
     
     
