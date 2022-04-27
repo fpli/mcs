@@ -17,11 +17,11 @@ import java.io.Serializable;
 public class DAPRvrId implements Serializable, Comparable<DAPRvrId> {
   private static final long serialVersionUID = 4054679458793664663L;
 
-  // MAX sequence number 5bits=31
-  private static final int MAX_SEQ_NUM = ((1 << 5) - 1);
+  // MAX sequence number 4bits=15
+  private static final int MAX_SEQ_NUM = ((1 << 4) - 1);
   private static final long MAX_SEQ_NUM_BITS = Long.toBinaryString(MAX_SEQ_NUM).length();
-  // MAX driver id 7bits = 127
-  private static final int MAX_DRIVER_ID = ((1 << 7) - 1);
+  // MAX driver id 8bits = 255
+  private static final int MAX_DRIVER_ID = ((1 << 8) - 1);
   private static final long MAX_DRIVER_BITS = Long.toBinaryString(MAX_DRIVER_ID).length();
   // MAX timestamp 41bits = 2199023255551
   private static final long MAX_TIMESTAMP = (1L << 41) - 1;

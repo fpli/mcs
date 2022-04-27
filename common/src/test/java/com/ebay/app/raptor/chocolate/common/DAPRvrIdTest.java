@@ -19,13 +19,13 @@ public class DAPRvrIdTest {
     // timestamp
     assertEquals(1617077445036L, dapRvrId.getRepresentation() >> 12);
     // driver id
-    assertEquals(5L, (dapRvrId.getRepresentation() >> 5) & (0b1111111));
+    assertEquals(5L, (dapRvrId.getRepresentation() >> 4) & (0b11111111));
     // sequence
-    assertEquals(0L, dapRvrId.getRepresentation() & 0b11111);
+    assertEquals(0L, dapRvrId.getRepresentation() & 0b1111);
   }
 
   @Test
   public void getMaxDriverId() {
-    assertEquals(127, DAPRvrId.getMaxDriverId());
+    assertEquals(255, DAPRvrId.getMaxDriverId());
   }
 }
