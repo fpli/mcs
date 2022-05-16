@@ -60,9 +60,9 @@ public class ThirdpartyWhitelistCache {
   private static final Integer PROTOCOL_SUFFIX_TYPE_ID = 6;
   
   /**
-   * Involve domain type id
+   * non Ebay DC type id
    */
-  private static final Integer INVOLVE_DOMAIN_TYPE_ID = 7;
+  private static final Integer NON_EBAY_DC_TYPE_ID = 7;
   
   /**
    * Full domain whitelist
@@ -80,9 +80,9 @@ public class ThirdpartyWhitelistCache {
   private static List<ThirdpartyWhitelist> protocolWhitelist = new ArrayList<>();
   
   /**
-   * involve domain whitelist
+   * non Ebay DC whitelist
    */
-  private static List<ThirdpartyWhitelist> involveWhitelist = new ArrayList<>();
+  private static List<ThirdpartyWhitelist> nonEbayDCWhitelist = new ArrayList<>();
   
 
   ThirdpartyWhitelistCache(ThirdpartyWhitelistRepo thirdpartyWhitelistRepo) {
@@ -138,10 +138,10 @@ public class ThirdpartyWhitelistCache {
       if (CollectionUtils.isNotEmpty(partialDomainWhitelists)) {
         partialWhitelist = partialDomainWhitelists;
       }
-      List<ThirdpartyWhitelist> involveDomainWhitelists = whitelists.stream()
-        .filter(whitelist -> INVOLVE_DOMAIN_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
-      if (CollectionUtils.isNotEmpty(involveDomainWhitelists)) {
-        involveWhitelist = involveDomainWhitelists;
+      List<ThirdpartyWhitelist> nonEbayDCWhitelists = whitelists.stream()
+        .filter(whitelist -> NON_EBAY_DC_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
+      if (CollectionUtils.isNotEmpty(nonEbayDCWhitelists)) {
+        nonEbayDCWhitelist = nonEbayDCWhitelists;
       }
     }
   }
@@ -220,14 +220,14 @@ public class ThirdpartyWhitelistCache {
   }
   
   /**
-   * Check the involve domain list, domain should be contain involve domain
+   * Check the Non Ebay DC whitelist, domain should be contain Non Ebay DC
    */
-  public boolean isInInvolveWhitelist(String value) {
+  public boolean isInNonEbayDCWhitelist(String value) {
     if (value == null || value.length() == 0) {
       return false;
     }
     
-    Iterator<ThirdpartyWhitelist> iter = involveWhitelist.iterator();
+    Iterator<ThirdpartyWhitelist> iter = nonEbayDCWhitelist.iterator();
     while (iter.hasNext()) {
       String dest = iter.next().getValue();
       if (value.contains(dest) && isValidDomain(value)) {

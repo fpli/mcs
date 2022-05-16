@@ -481,7 +481,7 @@ public class AdserviceResourceTest {
   
   
   @Test
-  public void involveHostnameRedirect() {
+  public void nonEbayDCRedirect() {
     // Site email parameters
     Map<String, String> parameters = new HashMap<>();
     parameters.put("mkevt", "1");
@@ -493,7 +493,7 @@ public class AdserviceResourceTest {
     parameters.put("euid", "c527526a795a414cb4ad11bfaba21b5d");
     parameters.put("ext", "56623");
   
-    // involve Hostname Redirect test
+    // Non Ebay DC Redirect test
     parameters.put("mpre", "https://ebay.live/fr/upcoming-events/181?utm_source=la_newsletter&utm_medium=email&utm_campaign=&utm_content=event");
     Response response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
