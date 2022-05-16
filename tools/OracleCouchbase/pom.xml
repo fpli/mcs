@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.14.4-RELEASE</version>
+    <version>0.15.0-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
 
@@ -25,6 +25,7 @@
     <curator.version>4.0.1</curator.version>
     <couchbase.client.version>2.7.2</couchbase.client.version>
     <dukes.component.version>1.6.26.raptorio</dukes.component.version>
+    <trustfabric.handler.server.version>0.14.1-RELEASE</trustfabric.handler.server.version>
     <dukes.version>1.6.26.raptorio</dukes.version>
     <raptor.dal.verion>2.2.0-RELEASE</raptor.dal.verion>
     <rheos.version>0.0.7-SNAPSHOT</rheos.version>
