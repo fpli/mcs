@@ -171,6 +171,9 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     // 3rd party
     if (!ebaysites.matcher(redirectUrl.toLowerCase()).find()) {
       redirectionEvent.setIsEbayDomain(false);
+    }else if (LookupManager.isInInvolveWhitelist(redirectUrl)) {
+      // domain in third party whitelist
+      redirectionEvent.setIsEbayDomain(false);
     }
     // ebay page
     else {

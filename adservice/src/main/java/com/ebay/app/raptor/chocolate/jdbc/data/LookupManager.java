@@ -33,6 +33,10 @@ public class LookupManager {
     if (lookupPartialWhitelist(destHost)) {
       return true;
     }
+  
+    if (lookupInvolveWhitelist(destHost)) {
+      return true;
+    }
 
     return false;
   }
@@ -71,5 +75,18 @@ public class LookupManager {
   private static boolean lookupPartialWhitelist(String destination) {
     return ThirdpartyWhitelistCache.getInstance().isInParitialWhitelist(destination);
   }
-
+  
+  private static boolean lookupInvolveWhitelist(String destination) {
+    return ThirdpartyWhitelistCache.getInstance().isInInvolveWhitelist(destination);
+  }
+  
+  public static boolean isInInvolveWhitelist(String destination) {
+    final String destHost = getHostFromUrl(destination);
+    if (lookupInvolveWhitelist(destHost)) {
+      return true;
+    }
+  
+    return false;
+  }
+  
 }

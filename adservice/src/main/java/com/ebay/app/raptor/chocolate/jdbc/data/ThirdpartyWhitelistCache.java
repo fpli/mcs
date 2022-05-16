@@ -58,7 +58,12 @@ public class ThirdpartyWhitelistCache {
    * Protocol suffix type id
    */
   private static final Integer PROTOCOL_SUFFIX_TYPE_ID = 6;
-
+  
+  /**
+   * Involve domain type id
+   */
+  private static final Integer INVOLVE_DOMAIN_TYPE_ID = 7;
+  
   /**
    * Full domain whitelist
    */
@@ -73,6 +78,12 @@ public class ThirdpartyWhitelistCache {
    * Protocol suffix whitelist
    */
   private static List<ThirdpartyWhitelist> protocolWhitelist = new ArrayList<>();
+  
+  /**
+   * involve domain whitelist
+   */
+  private static List<ThirdpartyWhitelist> involveWhitelist = new ArrayList<>();
+  
 
   ThirdpartyWhitelistCache(ThirdpartyWhitelistRepo thirdpartyWhitelistRepo) {
     this.thirdpartyWhitelistRepo = thirdpartyWhitelistRepo;
@@ -126,6 +137,11 @@ public class ThirdpartyWhitelistCache {
               .filter(whitelist -> PARTIAL_DOMAIN_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
       if (CollectionUtils.isNotEmpty(partialDomainWhitelists)) {
         partialWhitelist = partialDomainWhitelists;
+      }
+      List<ThirdpartyWhitelist> involveDomainWhitelists = whitelists.stream()
+        .filter(whitelist -> INVOLVE_DOMAIN_TYPE_ID.equals(whitelist.getTypeId())).collect(Collectors.toList());
+      if (CollectionUtils.isNotEmpty(involveDomainWhitelists)) {
+        involveWhitelist = involveDomainWhitelists;
       }
     }
   }
@@ -202,5 +218,23 @@ public class ThirdpartyWhitelistCache {
     Matcher m = domainPattern.matcher(in);
     return m.matches();
   }
-
+  
+  /**
+   * Check the involve domain list, domain should be contain involve domain
+   */
+  public boolean isInInvolveWhitelist(String value) {
+    if (value == null || value.length() == 0) {
+      return false;
+    }
+    
+    Iterator<ThirdpartyWhitelist> iter = involveWhitelist.iterator();
+    while (iter.hasNext()) {
+      String dest = iter.next().getValue();
+      if (value.contains(dest) && isValidDomain(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
 }
