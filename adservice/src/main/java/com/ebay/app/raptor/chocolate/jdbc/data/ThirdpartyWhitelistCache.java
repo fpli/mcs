@@ -220,7 +220,7 @@ public class ThirdpartyWhitelistCache {
   }
   
   /**
-   * Check the Non Ebay DC whitelist, domain should be contain Non Ebay DC
+   * Check the Non Ebay DC whitelist, domain should contain the non-eBay-DC domain
    */
   public boolean isInNonEbayDCWhitelist(String value) {
     if (value == null || value.length() == 0) {
