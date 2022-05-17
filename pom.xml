@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.14.4-RELEASE</version>
+    <version>0.15.0-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -36,14 +36,14 @@
     <metrics.version>1.2.6-RELEASE</metrics.version>
     <jackson.version>2.9.7</jackson.version>
     <powermock.version>1.6.6</powermock.version>
-    <besconsumer.component.version>0.14.5-RELEASE</besconsumer.component.version>
+    
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
     
     <sonar.scoverage.reportPath>target/scoverage.xml</sonar.scoverage.reportPath>
     <sonar.core.codeCoveragePlugin>scoverage</sonar.core.codeCoveragePlugin>
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
-    <besproducer.component.version>0.14.5-RELEASE</besproducer.component.version>
+    
     <utp.version>1.3.3-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
     
