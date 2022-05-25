@@ -1,22 +1,17 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
-import com.ebay.app.raptor.chocolate.constant.Constants;
-import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.util.DeviceInfoParser;
 import com.ebay.traffic.chocolate.flink.nrt.util.GenericRecordUtils;
-import com.ebay.traffic.chocolate.flink.nrt.util.PulsarParseUtils;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
-import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.chocolate.utp.common.ServiceEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics;
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import io.ebay.rheos.schema.event.RheosEvent;
@@ -24,13 +19,11 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.avro.util.Utf8;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
@@ -58,6 +51,10 @@ public class UTPPathfinderEventTransformer {
     private static final int PAGE_ID_UPGRADE_LAUNCH = 3203764;
     // 2050535 is only first launch after a download/install
     private static final int PAGE_ID_FIRST_LAUNCH = 2050535;
+    // 2051248 App Open
+    private static final int PAGE_ID_APP_OPEN = 2051248;
+    // 2367320 Deeplink Open
+    private static final int PAGE_ID_DEEPLINK_OPEN = 2367320;
 
     private static final String PAGE_NAME_BATCH_TRACK = "Ginger.tracking.v1.batchtrack.POST";
 
@@ -73,7 +70,7 @@ public class UTPPathfinderEventTransformer {
     /**
      * Used to cache method object to improve reflect performance
      */
-    private static final Map<String, Method>  FIELD_GET_METHOD_CACHE = new ConcurrentHashMap<>(16);
+    private static final Map<String, Method> FIELD_GET_METHOD_CACHE = new ConcurrentHashMap<>(16);
 
     /**
      * Map field name to get method name, eg. batch_id -> getBatchId
@@ -107,8 +104,9 @@ public class UTPPathfinderEventTransformer {
             SherlockioMetrics.getInstance().meter("NoPageId", 1, Field.of(TOPIC, sourceTopic));
             return false;
         }
-        if (pageId != PAGE_ID_APP_DOWNLOAD && pageId != PAGE_ID_FIRST_LAUNCH && pageId != PAGE_ID_UPGRADE_LAUNCH) {
-            SherlockioMetrics.getInstance().meter("NotInstallEvent", 1, Field.of(TOPIC, sourceTopic));
+        if (pageId != PAGE_ID_APP_DOWNLOAD && pageId != PAGE_ID_FIRST_LAUNCH && pageId != PAGE_ID_UPGRADE_LAUNCH &&
+                pageId != PAGE_ID_APP_OPEN && pageId != PAGE_ID_DEEPLINK_OPEN) {
+            SherlockioMetrics.getInstance().meter("NotValidEvent", 1, Field.of(TOPIC, sourceTopic));
             return false;
         }
 
@@ -119,7 +117,7 @@ public class UTPPathfinderEventTransformer {
             SherlockioMetrics.getInstance().meter("NoUrlQueryString", 1, Field.of(TOPIC, sourceTopic));
             return false;
         }
-    
+
         channelType = ChannelTypeEnum.GENERIC;
         if (pageId == PAGE_ID_FIRST_LAUNCH) {
             String mlch = applicationPayload.get("mlch");
@@ -153,9 +151,13 @@ public class UTPPathfinderEventTransformer {
             case PAGE_ID_APP_DOWNLOAD:
                 return ActionTypeEnum.APPDOWNLOAD;
             case PAGE_ID_FIRST_LAUNCH:
-                return ActionTypeEnum.LAUNCH;
+                return ActionTypeEnum.FIRST_LAUNCH;
             case PAGE_ID_UPGRADE_LAUNCH:
                 return ActionTypeEnum.UPGRADE_LAUNCH;
+            case PAGE_ID_APP_OPEN:
+                return ActionTypeEnum.APP_OPEN;
+            case PAGE_ID_DEEPLINK_OPEN:
+                return ActionTypeEnum.DEEPLINK_OPEN;
             default:
                 throw new IllegalArgumentException(String.format("Invalid pageId %d", pageId));
         }
@@ -229,7 +231,7 @@ public class UTPPathfinderEventTransformer {
     }
 
     protected long getEventTs() {
-        return  (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
+        return (Long) sourceRecord.get(TransformerConstants.EVENT_TIMESTAMP);
     }
 
     protected long getProducerEventTs() {
@@ -398,8 +400,8 @@ public class UTPPathfinderEventTransformer {
 
     protected Map<String, String> getPayload() {
         Map<String, String> payload = getDataQualityPayload();
-        if (actionTypeEnum == actionTypeEnum.APPDOWNLOAD || actionTypeEnum == actionTypeEnum.LAUNCH ||
-                actionTypeEnum == actionTypeEnum.UPGRADE_LAUNCH) {
+        if (actionTypeEnum == ActionTypeEnum.APPDOWNLOAD || actionTypeEnum == ActionTypeEnum.FIRST_LAUNCH ||
+                actionTypeEnum == ActionTypeEnum.UPGRADE_LAUNCH || actionTypeEnum == ActionTypeEnum.APP_OPEN || actionTypeEnum == ActionTypeEnum.DEEPLINK_OPEN) {
             payload.put("p", String.valueOf(pageId));
 
             for (String key : INSTALL_PAYLOAD_TAG_LIST) {
