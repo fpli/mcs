@@ -2,7 +2,7 @@ job:
   name: utp-pathfinder-event-transform-app
 
 source:
-  topic: behavior.pulsar.customized.tracking.install,behavior.pulsar.customized.tracking.install.bot
+  topic: behavior.pulsar.customized.tracking.install,behavior.pulsar.customized.tracking.install.bot,behavior.pulsar.customized.app-open,behavior.pulsar.customized.app-open.bot
   name: source
   uid: source
   properties: |-
