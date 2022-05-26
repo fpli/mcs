@@ -60,7 +60,6 @@
     <module>filter</module>
     <module>spark-nrt</module>
     <module>tools</module>
-    <module>ingester</module>
     <module>flink-nrt</module>
   </modules>
 
