@@ -173,7 +173,7 @@ public class UTPPathfinderEventTransformerTest {
 
     @Test
     public void getActionType() {
-        assertEquals(ActionTypeEnum.LAUNCH.getValue(), transformer.getActionType());
+        assertEquals(ActionTypeEnum.FIRST_LAUNCH.getValue(), transformer.getActionType());
     }
 
     @Test
@@ -347,5 +347,10 @@ public class UTPPathfinderEventTransformerTest {
 
     @Test
     public void getPayload() {
+        genericRecord.put("clientIP", new Utf8("localhost"));
+        applicationMap.put(new Utf8("deeplink"), new Utf8("ebay%3A%2F%2Flink%2F%3Fnav%3Ditem.view%26id%3D134124111480%26channel%3Dpush%26ntype%3Dbns%26isnotif%3D1"));
+        transformer = new UTPPathfinderEventTransformer("", 0, 0L, genericRecord, rheosEvent, schemaVersion);
+        assertEquals("localhost",transformer.getPayload().getOrDefault("clientIP",""));
+        assertEquals("ebay%3A%2F%2Flink%2F%3Fnav%3Ditem.view%26id%3D134124111480%26channel%3Dpush%26ntype%3Dbns%26isnotif%3D1",transformer.getPayload().getOrDefault("deeplink",""));
     }
 }
