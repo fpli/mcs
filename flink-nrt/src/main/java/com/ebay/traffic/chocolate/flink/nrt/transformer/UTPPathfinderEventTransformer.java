@@ -65,7 +65,7 @@ public class UTPPathfinderEventTransformer {
 
     private static final String GET_METHOD_PREFIX = "get";
 
-    private static List<String> INSTALL_PAYLOAD_TAG_LIST = Arrays.asList("usecase", "formFactor", "dm", "dn", "rlutype", "deviceAdvertisingOptOut", "ec", "mlch", "mdnd", "maup", "mrollp", "androidid", "referrer", "uit", "carrier", "rq");
+    private static List<String> INSTALL_PAYLOAD_TAG_LIST = Arrays.asList("usecase", "formFactor", "dm", "dn", "rlutype", "deviceAdvertisingOptOut", "ec", "mlch", "mdnd", "maup", "mrollp", "androidid", "referrer", "uit", "carrier", "rq","deeplink");
 
     /**
      * Used to cache method object to improve reflect performance
@@ -413,6 +413,7 @@ public class UTPPathfinderEventTransformer {
             payload.put("cobrand", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.COBRAND));
             payload.put("eventFamily", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.EVENT_FAMILY));
             payload.put("eventAction", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.EVENT_ACTION));
+            payload.put("clientIP",GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.CLIENT_IP));
         }
 
         return payload;
