@@ -36,7 +36,7 @@ sink:
     outputFileConfig:
       partPrefix: utp
       partSuffix: .snappy.parquet
-    path: hdfs://apollo-rno-ns01/apps/b_marketing_tracking/utp/utp_event
+    path: hdfs://apollo-router/apps/b_marketing_tracking/utp/utp_event
     name: sink-rno
     uid: sink-rno
   hercules:

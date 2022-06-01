@@ -5,14 +5,12 @@
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.kernel.util.HeaderMultiValue;
-import com.ebay.kernel.util.RequestUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Iterator;

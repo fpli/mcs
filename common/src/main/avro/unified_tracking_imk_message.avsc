@@ -230,10 +230,6 @@
       "type": "string"
     },
     {
-      "name": "client_data",
-      "type": "string"
-    },
-    {
       "name": "flex_field_vrsn_num",
       "type": "int"
     },
@@ -346,6 +342,11 @@
     {
       "name": "upd_user",
       "type": "string"
+    },
+    {
+      "name": "client_data",
+      "type": "string",
+      "default": ""
     }
   ]
 }

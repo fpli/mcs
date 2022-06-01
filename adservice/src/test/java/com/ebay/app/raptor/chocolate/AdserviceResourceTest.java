@@ -478,4 +478,86 @@ public class AdserviceResourceTest {
             .get();
     assertEquals(200, response.getStatus());
   }
+  
+  
+  @Test
+  public void nonEbayDCRedirect() {
+    // Site email parameters
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("mkevt", "1");
+    parameters.put("mkcid", "7");
+    parameters.put("mkpid", "0");
+    parameters.put("emsid", "e11051.m44.l1139");
+    parameters.put("sojTags", "bu%3Dbu");
+    parameters.put("bu", "43551630917");
+    parameters.put("euid", "c527526a795a414cb4ad11bfaba21b5d");
+    parameters.put("ext", "56623");
+  
+    // Non Ebay DC Redirect test
+    parameters.put("mpre", "https://ebay.live/fr/upcoming-events/181?utm_source=la_newsletter&utm_medium=email&utm_campaign=&utm_content=event");
+    Response response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebay.live/fr/upcoming-events/181?utm_source=la_newsletter&utm_medium=email&utm_campaign=&utm_content=event", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebay2022surveyrules.prizelogic.com/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebay2022surveyrules.prizelogic.com/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebay2022surveyrulesuk.prizelogic.com/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebay2022surveyrulesuk.prizelogic.com/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebay2022surveyrulesde.prizelogic.com/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebay2022surveyrulesde.prizelogic.com/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://www.ebay-deine-stadt.de/hofer-land");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://www.ebay-deine-stadt.de/hofer-land", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://i.ebayimg.com/images/g/eYEAAOSwNyxh4Sfl/s-l200.jpg");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://i.ebayimg.com/images/g/eYEAAOSwNyxh4Sfl/s-l200.jpg", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebayestimation.fr/?utm_source=email&utm_medium=estimate_newsletter&utm_campaign=service_promotion&utm_content=creative_a");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebayestimation.fr/?utm_source=email&utm_medium=estimate_newsletter&utm_campaign=service_promotion&utm_content=creative_a", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebay2022surveyrulesfr.prizelogic.com/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebay2022surveyrulesfr.prizelogic.com/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://www.crececonebay.com/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://www.crececonebay.com/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebaymag.com/?locale=en&utm_source=ebaymag_promo_EN&utm_medium=email&utm_campaign=400_free_listings");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebaymag.com/?locale=en&utm_source=ebaymag_promo_EN&utm_medium=email&utm_campaign=400_free_listings", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://ebayextra.it/");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://ebayextra.it/", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://www.ebayextra.it?utm_source=ebay&utm_medium=email&utm_campaign=espresso&utm_content=top-link/&campaign-id=90001&run-date=20220306020000&TemplateId=7dfbdcf2-502d-46fc-b3db-7014ab4df5f0&TemplateVersion=292&co=10010&placement-type=naviextra&user-id=44265741220&instance=1646557200&site-id=101&TrackingCode=TE78005_T_ALL&placement-type-name=naviextra");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://www.ebayextra.it?utm_source=ebay&utm_medium=email&utm_campaign=espresso&utm_content=top-link/&campaign-id=90001&run-date=20220306020000&TemplateId=7dfbdcf2-502d-46fc-b3db-7014ab4df5f0&TemplateVersion=292&co=10010&placement-type=naviextra&user-id=44265741220&instance=1646557200&site-id=101&TrackingCode=TE78005_T_ALL&placement-type-name=naviextra", response.getLocation().toString());
+    
+    parameters.put("mpre", "https://www.ebayinc.com/company/privacy-center/fr/#subsite-dropdown");
+    response = getAdserviceResponse(REDIRECT_PATH, parameters);
+    assertEquals(301, response.getStatus());
+    assertEquals("mpre", "https://www.ebayinc.com/company/privacy-center/fr/#subsite-dropdown", response.getLocation().toString());
+  
+  }
 }

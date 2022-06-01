@@ -10,7 +10,14 @@ import com.ebay.app.raptor.chocolate.eventlistener.constant.Errors;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.monitoring.Field;
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -22,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
@@ -39,15 +47,22 @@ public class CustomizedSchemeRequestHandler {
   private static final String VIEWITEM = "item.view";
   private static final String CLICKEVENTFLAG = "1";
 
+  private static final ImmutableList<String> smartBannerRids = ImmutableList.of("711-58542-18990-20",
+          "711-58542-18990-20-1",
+          "711-58542-18990-20-2",
+          "711-58542-18990-20-3",
+          "711-58542-18990-19",
+          "711-58542-18990-19-1");
+
   // XC-1797, extract and decode actual target url from referrer parameter in targetUrl, only accept the url when the domain of referrer parameter belongs to ebay sites
   // XC-3349, for native uri with Chocolate parameters, re-construct Chocolate url based on native uri and track (only support /itm page)
   public Event parseCustomizedSchemeEvent(String targetUrl, String referer) {
-
+    targetUrl = handleDuplicatedParams(targetUrl);
     UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
 
     MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
 
-    if (deeplinkParameters.containsKey(MKEVT) && deeplinkParameters.containsKey(MKCID)){
+    if (deeplinkParameters.containsKey(MKEVT) && deeplinkParameters.containsKey(MKCID)) {
       String mkevt = deeplinkParameters.get(Constants.MKEVT).get(0);
       ChannelIdEnum channelType = ChannelIdEnum.parse(deeplinkParameters.get(Constants.MKCID).get(0));
 
@@ -60,7 +75,7 @@ public class CustomizedSchemeRequestHandler {
       }
 
       // this case is only for ePN facebook publisher
-      if (channelType == ChannelIdEnum.EPN & deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
+      if (channelType == ChannelIdEnum.EPN && deeplinkParameters.containsKey(MKRID) && deeplinkParameters.containsKey(NAV) && deeplinkParameters.containsKey(ID)) {
 
         String pageType = deeplinkParameters.get(NAV).get(0);
         String itemId = deeplinkParameters.get(ID).get(0);
@@ -69,8 +84,7 @@ public class CustomizedSchemeRequestHandler {
           String viewItemChocolateURL = CollectionServiceUtil.constructViewItemChocolateURLForDeepLink(deeplinkParameters);
           if (!StringUtils.isEmpty(viewItemChocolateURL)) {
             MonitorUtil.info("IncomingEPNViewItemAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
-            Event event = constructDeeplinkEvent(viewItemChocolateURL, referer);
-            return event;
+            return constructDeeplinkEvent(viewItemChocolateURL, referer);
           } else {
             LOGGER.warn(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
             MonitorUtil.info(Errors.ERROR_INVALID_CHOCOLATE_PARAMS_DEEPLINK);
@@ -79,15 +93,14 @@ public class CustomizedSchemeRequestHandler {
         }
       } else {
         MonitorUtil.info("IncomingAppDeepLinkWithChocolateParamsSuccess", 1, Field.of(CHANNEL_TYPE, channelType.toString()));
-        Event event = constructDeeplinkEvent(targetUrl, referer);
-        return event;
+        return constructDeeplinkEvent(targetUrl, referer);
       }
     } else if (deeplinkParameters.containsKey(REFERRER)) {
       MonitorUtil.info("IncomingAppDeepLinkWithReferrerParams", 1);
       String deeplinkTargetUrl = deeplinkParameters.get(REFERRER).get(0);
 
       try {
-        if(deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
+        if (deeplinkTargetUrl.startsWith(HTTPS_ENCODED) || deeplinkTargetUrl.startsWith(HTTP_ENCODED)) {
           deeplinkTargetUrl = URLDecoder.decode(deeplinkTargetUrl, StandardCharsets.UTF_8.name());
         }
       } catch (Exception ex) {
@@ -99,8 +112,7 @@ public class CustomizedSchemeRequestHandler {
       if (deeplinkEbaySitesMatcher.find()) {
         MonitorUtil.info("IncomingAppDeepLinkWithValidTargetURLSuccess");
         deeplinkTargetUrl = CollectionServiceUtil.constructReferrerChocolateURLForDeepLink(deeplinkTargetUrl);
-        Event event = constructDeeplinkEvent(deeplinkTargetUrl, referer);
-        return event;
+        return constructDeeplinkEvent(deeplinkTargetUrl, referer);
       } else {
         LOGGER.warn(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
         MonitorUtil.info(Errors.ERROR_INVALID_TARGET_URL_DEEPLINK);
@@ -116,5 +128,46 @@ public class CustomizedSchemeRequestHandler {
     event.setTargetUrl(targetUrl);
     event.setReferrer(referer);
     return event;
+  }
+
+  private String handleDuplicatedParams(String url) {
+    SpanEventHelper.writeLog(TYPE_INFO, "handleDuplicatedParamsInput", url, STATUS_OK);
+    try {
+      URIBuilder uriBuilder = new URIBuilder(url);
+      List<NameValuePair> queryParams = uriBuilder.getQueryParams();
+      if (queryParams == null || queryParams.size() == 0) {
+        return url;
+      }
+      UriComponents deeplinkUriComponents = UriComponentsBuilder.fromUriString(url).build();
+      MultiValueMap<String, String> deeplinkParameters = deeplinkUriComponents.getQueryParams();
+      List<String> mkrids = deeplinkParameters.get(MKRID);
+      List<String> mkcids = deeplinkParameters.get(MKCID);
+      if (CollectionUtils.isEmpty(mkrids) || CollectionUtils.isEmpty(mkcids)) {
+        return url;
+      }
+      if (mkcids.contains(ChannelIdEnum.SOCIAL_MEDIA.getValue()) && mkcids.contains(ChannelIdEnum.DAP.getValue())) {
+        List<String> needToReplacedRid = ListUtils.retainAll(mkrids, smartBannerRids);
+        if (needToReplacedRid.size() == 1) {
+          BasicNameValuePair duplicatedCid = new BasicNameValuePair(MKCID, ChannelIdEnum.DAP.getValue());
+          queryParams.add(queryParams.indexOf(duplicatedCid),
+                  new BasicNameValuePair(BANNERCID, ChannelIdEnum.DAP.getValue()));
+          queryParams.remove(duplicatedCid);
+
+          String ridVal = needToReplacedRid.get(0);
+          BasicNameValuePair duplicatedRid = new BasicNameValuePair(MKRID, ridVal);
+          queryParams.add(queryParams.indexOf(duplicatedRid), new BasicNameValuePair(BANNERRID, ridVal));
+          queryParams.remove(duplicatedRid);
+
+          MonitorUtil.info("handleDuplicatedParamsSuccess", 1);
+          String resUrl = uriBuilder.setParameters(queryParams).build().toString();
+          SpanEventHelper.writeLog(TYPE_INFO, "handleDuplicatedParamsSuccess", resUrl, STATUS_OK);
+          return resUrl;
+        }
+      }
+    } catch (Exception ex) {
+      LOGGER.error("Error while handling duplicated parameters, url: {}, Error: ", url, ex);
+      SpanEventHelper.writeWarning("handldDuplicatedParamsError", ex);
+    }
+    return url;
   }
 }

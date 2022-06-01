@@ -270,6 +270,9 @@ public class UTPImkTransformApp {
       if (ChannelTypeEnum.PLA.getValue().equals(channelType)) {
         return true;
       }
+      if (ChannelTypeEnum.PAID_SEARCH.getValue().equals(channelType)) {
+        return true;
+      }
       if (ChannelTypeEnum.TEXT.getValue().equals(channelType)) {
         return true;
       }
@@ -325,6 +328,12 @@ public class UTPImkTransformApp {
                       new com.codahale.metrics.Histogram(
                               new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES)))));
       latencyByChannel.put(
+              new Tuple2<>(ChannelTypeEnum.PAID_SEARCH.getValue(), ActionTypeEnum.CLICK.getValue()),
+              getRuntimeContext().getMetricGroup().histogram("utpPaidSearchClickLatency",
+                      new DropwizardHistogramWrapper(
+                              new com.codahale.metrics.Histogram(
+                                      new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES)))));
+      latencyByChannel.put(
               new Tuple2<>(ChannelTypeEnum.TEXT.getValue(), ActionTypeEnum.CLICK.getValue()),
               getRuntimeContext().getMetricGroup().histogram("utpTextClickLatency",
                       new DropwizardHistogramWrapper(
@@ -365,6 +374,10 @@ public class UTPImkTransformApp {
       numUTPImkRecordsInRateByChannel.put(
               new Tuple2<>(ChannelTypeEnum.PLA.getValue(), ActionTypeEnum.CLICK.getValue()),
               getRuntimeContext().getMetricGroup().meter("numUTPPlaClickRecordsInRate",
+                      new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
+      numUTPImkRecordsInRateByChannel.put(
+              new Tuple2<>(ChannelTypeEnum.PAID_SEARCH.getValue(), ActionTypeEnum.CLICK.getValue()),
+              getRuntimeContext().getMetricGroup().meter("numUTPPaidSearchClickRecordsInRate",
                       new DropwizardMeterWrapper(new com.codahale.metrics.Meter())));
       numUTPImkRecordsInRateByChannel.put(
               new Tuple2<>(ChannelTypeEnum.TEXT.getValue(), ActionTypeEnum.CLICK.getValue()),

@@ -33,6 +33,10 @@ public class LookupManager {
     if (lookupPartialWhitelist(destHost)) {
       return true;
     }
+  
+    if (lookupNonEbayDCWhitelist(destHost)) {
+      return true;
+    }
 
     return false;
   }
@@ -71,5 +75,18 @@ public class LookupManager {
   private static boolean lookupPartialWhitelist(String destination) {
     return ThirdpartyWhitelistCache.getInstance().isInParitialWhitelist(destination);
   }
-
+  
+  private static boolean lookupNonEbayDCWhitelist(String destination) {
+    return ThirdpartyWhitelistCache.getInstance().isInNonEbayDCWhitelist(destination);
+  }
+  
+  public static boolean isInNonEbayDCWhitelist(String destination) {
+    final String destHost = getHostFromUrl(destination);
+    if (lookupNonEbayDCWhitelist(destHost)) {
+      return true;
+    }
+  
+    return false;
+  }
+  
 }
