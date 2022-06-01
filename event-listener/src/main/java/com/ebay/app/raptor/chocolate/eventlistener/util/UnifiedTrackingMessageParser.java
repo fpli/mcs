@@ -742,14 +742,6 @@ public class UnifiedTrackingMessageParser {
       }
     }
 
-    if (parameters.containsKey(Constants.BEST_GUESS_USER)) {
-      String bu = parameters.get(Constants.BEST_GUESS_USER).get(0);
-      Long encryptedUserId = Longs.tryParse(bu);
-      if (encryptedUserId != null) {
-        payload.put("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)));
-      }
-    }
-
     if (ChannelType.MRKT_EMAIL.equals(channelType)) {
       try {
         if (parameters.containsKey(REDIRECT_URL_SOJ_TAG) && parameters.get(REDIRECT_URL_SOJ_TAG).get(0) != null) {

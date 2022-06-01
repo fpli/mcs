@@ -40,7 +40,7 @@ public class GCXCollector {
             // channel id
             addTagFromUrlQuery(parameters, requestTracker, MKCID, TAG_CHANNEL, String.class);
             //bu
-            addTagFromUrlQuery(parameters, requestTracker, BEST_GUESS_USER, TAG_BU, String.class);
+            addTagFromUrlQuery(parameters, requestTracker, BEST_GUESS_USER, TAG_EMID, String.class);
             //trkId
             addTagFromUrlQuery(parameters, requestTracker, TAG_TRACK_ID, TAG_TRACK_ID, String.class);
             // event family

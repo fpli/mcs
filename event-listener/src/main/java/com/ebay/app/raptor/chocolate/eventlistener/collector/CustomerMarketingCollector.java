@@ -10,7 +10,6 @@ import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
-import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.tracking.api.IRequestScopeTracker;
@@ -18,7 +17,6 @@ import com.ebay.tracking.util.TrackerTagValueUtil;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -170,17 +168,6 @@ public abstract class CustomerMarketingCollector {
     String value = HttpRequestUtil.parseTagFromTwoParams(parameters, urlParam, urlParam.toLowerCase());
     if (StringUtils.isNotEmpty(value)) {
       requestTracker.addTag(tag, value, tagType);
-    }
-  }
-
-  static void addDecrytpedUserIDFromBu(MultiValueMap<String, String> parameters,
-                                       IRequestScopeTracker requestTracker) {
-    if (parameters.containsKey(BEST_GUESS_USER)) {
-      String bu = parameters.get(BEST_GUESS_USER).get(0);
-      Long encryptedUserId = Longs.tryParse(bu);
-      if (encryptedUserId != null) {
-        requestTracker.addTag("u", String.valueOf(EncryptUtil.decryptUserId(encryptedUserId)), String.class);
-      }
     }
   }
 

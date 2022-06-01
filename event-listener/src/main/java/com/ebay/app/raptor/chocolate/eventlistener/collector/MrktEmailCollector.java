@@ -73,8 +73,7 @@ public class MrktEmailCollector extends CustomerMarketingCollector {
       if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
         requestTracker.addTag("fbprefetch", true, Boolean.class);
       }
-      // decrypted user id
-      addDecrytpedUserIDFromBu(parameters, requestTracker);
+
       // Adobe email redirect url
       try {
         if (parameters.containsKey(REDIRECT_URL_SOJ_TAG)

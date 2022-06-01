@@ -70,8 +70,6 @@ public class SiteEmailCollector extends CustomerMarketingCollector {
       if (CollectionServiceUtil.isFacebookPrefetchEnabled(baseEvent.getRequestHeaders())) {
         requestTracker.addTag("fbprefetch", true, Boolean.class);
       }
-      // decrypted user id
-      addDecrytpedUserIDFromBu(parameters, requestTracker);
     }
   }
 }

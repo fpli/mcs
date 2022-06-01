@@ -83,7 +83,6 @@ public class UTPChocolateEmailClickTransformer {
           .put("adcamp_landingpage", "adcamp_landingpage")
           .put("adcamp_locationsrc", "adcamp_locationsrc")
           .put("adcamppu", "pu")
-          .put("bu", "bu")
           .put("cbtrack", "cbtrack")
           .put("chnl", "mkcid")
           .put("crd", "crd")
