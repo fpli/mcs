@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.app.raptor.chocolate.eventlistener.util.HttpRequestUtil;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
@@ -23,8 +24,9 @@ public class GCXCollector {
 
     private void addTagFromUrlQuery(MultiValueMap<String, String> parameters, IRequestScopeTracker requestTracker,
                                     String urlParam, String tag, Class tagType) {
-        if (parameters.containsKey(urlParam) && parameters.get(urlParam).get(0) != null) {
-            requestTracker.addTag(tag, parameters.get(urlParam).get(0), tagType);
+        String value = HttpRequestUtil.parseTagFromTwoParams(parameters, urlParam, urlParam.toLowerCase());
+        if (StringUtils.isNotEmpty(value)) {
+            requestTracker.addTag(tag, value, tagType);
         }
     }
 
@@ -40,7 +42,7 @@ public class GCXCollector {
             // channel id
             addTagFromUrlQuery(parameters, requestTracker, MKCID, TAG_CHANNEL, String.class);
             //bu
-            addTagFromUrlQuery(parameters, requestTracker, BEST_GUESS_USER, TAG_BU, String.class);
+            addTagFromUrlQuery(parameters, requestTracker, BEST_GUESS_USER, TAG_EMID, String.class);
             //trkId
             addTagFromUrlQuery(parameters, requestTracker, TAG_TRACK_ID, TAG_TRACK_ID, String.class);
             // event family

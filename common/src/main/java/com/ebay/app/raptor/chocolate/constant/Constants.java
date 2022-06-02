@@ -43,7 +43,7 @@ public class Constants {
   public static final String TAG_CHANNEL = "chnl";
   public static final String TAG_REF = "ref";
   public static final String TAG_UTP_ID = "utpid";
-  public static final String TAG_BU = "bu";
+  public static final String TAG_EMID = "emid";
   public static final String TAG_TRACK_ID = "trkId";
   public static final String BANNERCID = "bannercid";
   public static final String BANNERRID = "bannerrid";
@@ -218,13 +218,12 @@ public class Constants {
    */
   public static final ImmutableMultimap<String, String> siteEmailParamTags = new ImmutableMultimap.Builder<String, String>()
           .put("adg", "adg")
-          .put("bu", "bu")
           .put("chnl", MKCID)
           .put("ch", "ch")
           .put("crd", "crd")
           .put("du", "du")
           .put("ec", "ec")
-          .put("emid", "bu")
+          .put("emid", BEST_GUESS_USER)
           .put("emsid", SOURCE_ID)
           .put("eprlogid", "eprlogid")
           .put("es", "es")
@@ -252,7 +251,7 @@ public class Constants {
    * GCX email tags
    */
   public static final ImmutableMultimap<String, String> gcxEmailParamTags = new ImmutableMultimap.Builder<String, String>()
-      .put("bu", BEST_GUESS_USER)
+      .put("emid", BEST_GUESS_USER)
       .put("chnl", MKCID)
       .put("trkId", "trkId")
       .build();
