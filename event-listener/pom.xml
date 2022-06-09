@@ -18,7 +18,17 @@
     <coreauth.component.version>0.14.5-RELEASE</coreauth.component.version>
     
   </properties>
-
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.ebay.traffic</groupId>
+        <artifactId>chocolate-event-listener-bom</artifactId>
+        <version>1.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>com.ebay.raptorio.component</groupId>
@@ -229,7 +239,6 @@
     <dependency>
       <groupId>com.ebay.opendal</groupId>
       <artifactId>OpenDAL-core</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <artifactId>KernelDAL</artifactId>
@@ -438,7 +447,6 @@
     <dependency>
       <groupId>com.ebay.lookup</groupId>
       <artifactId>userlookup</artifactId>
-      <version>100.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.asynchttpclient</groupId>
