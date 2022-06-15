@@ -313,8 +313,8 @@ public class UnifiedTrackingMessageParser {
     if ((ChannelType.MRKT_EMAIL.equals(channelType) || ChannelType.MRKT_MESSAGE_CENTER.equals(channelType)
         || ChannelType.SITE_EMAIL.equals(channelType) || ChannelType.SITE_MESSAGE_CENTER.equals(channelType))) {
       Map<String, String> uepPayload =
-          UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), ActionTypeEnum.valueOf(actionType),
-              channelTypeEnum);
+          UepPayloadHelper.getInstance().getUepPayload(baseEvent.getUrl(), null,
+              ActionTypeEnum.valueOf(actionType), channelTypeEnum);
       if (uepPayload != null && uepPayload.size() > 0) {
         fullPayload.putAll(uepPayload);
       }
@@ -645,9 +645,20 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.SESSION_SKEY, String.valueOf(sessionSkey));
     }
 
+    // social tags
     if (ChannelAction.CLICK.equals(channelAction) && ChannelType.SOCIAL_MEDIA.equals(channelType)) {
       socialMediaParamTags.forEach((key, val) -> payload.put(key, HttpRequestUtil.parseTagFromParams(parameters, val)));
     }
+
+    // email best guess user id, decrypted from bu parameter
+    String bu = baseEvent.getUrlParameters().getFirst(Constants.BEST_GUESS_USER);
+    if (StringUtils.isNotEmpty(bu)) {
+      long emailUserId = EncryptUtil.decryptUserId(Long.parseLong(bu));
+      payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
+    } else {
+      payload.put(Constants.EMAIL_USER_ID, "0");
+    }
+
     return encodeTags(payload);
   }
 

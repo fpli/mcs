@@ -99,19 +99,28 @@ public class UepPayloadHelper {
    * @param actionTypeEnum action type
    * @return the payload
    */
-  public Map<String, String> getUepPayload(String url, ActionTypeEnum actionTypeEnum, ChannelTypeEnum channelTypeEnum) {
+  public Map<String, String> getUepPayload(String url, Long userId, ActionTypeEnum actionTypeEnum,
+                                           ChannelTypeEnum channelTypeEnum) {
     Map<String, String> payload = new HashMap<>();
     UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
     MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-    String bu = parameters.getFirst(BEST_GUESS_USER);
-    if (StringUtils.isNotEmpty(bu)) {
-      Long encryptedUserId = Longs.tryParse(bu);
-      if (encryptedUserId != null) {
-        long userId = EncryptUtil.decryptUserId(encryptedUserId);
-        payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
-      }
+
+    // userid
+    // Use real click user id first.
+    // If it's not Pulsar event, use email best guess user id instead.
+    if (userId != null) {
+      payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(userId));
     } else {
-      payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
+      String bu = parameters.getFirst(BEST_GUESS_USER);
+      if (StringUtils.isNotEmpty(bu)) {
+        Long encryptedUserId = Longs.tryParse(bu);
+        if (encryptedUserId != null) {
+          long emailUserId = EncryptUtil.decryptUserId(encryptedUserId);
+          payload.put(MessageConstantsEnum.USER_ID.getValue(), String.valueOf(emailUserId));
+        }
+      } else {
+        payload.put(MessageConstantsEnum.USER_ID.getValue(), "0");
+      }
     }
 
     // annotation.message.name

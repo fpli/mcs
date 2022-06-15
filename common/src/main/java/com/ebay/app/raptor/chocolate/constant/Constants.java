@@ -44,6 +44,7 @@ public class Constants {
   public static final String TAG_REF = "ref";
   public static final String TAG_UTP_ID = "utpid";
   public static final String TAG_EMID = "emid";
+  public static final String EMAIL_USER_ID = "emailUserId";
   public static final String TAG_TRACK_ID = "trkId";
   public static final String BANNERCID = "bannercid";
   public static final String BANNERRID = "bannerrid";
