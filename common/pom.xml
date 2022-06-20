@@ -55,7 +55,16 @@
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-starter</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.ebay.raptorio.component</groupId>
+          <artifactId>raptor-config-client-api</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-config-client-api</artifactId>
+      <version>0.2.0-NO_SNAPSHOT_IN_PROD</version>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
