@@ -538,8 +538,13 @@ public class UTPChocolateEmailClickTransformer {
     // email best guess user id, decrypted from emid tag
     String emid = applicationPayload.get(TransformerConstants.EMID);
     if (StringUtils.isNotEmpty(emid)) {
-      long emailUserId = EncryptUtil.decryptUserId(Long.parseLong(emid));
-      payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
+      Long emidLong = Longs.tryParse(emid);
+      if (emidLong != null) {
+        long emailUserId = EncryptUtil.decryptUserId(emidLong);
+        payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
+      } else {
+        payload.put(Constants.EMAIL_USER_ID, "0");
+      }
     } else {
       payload.put(Constants.EMAIL_USER_ID, "0");
     }
