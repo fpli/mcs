@@ -29,14 +29,16 @@ public class AAMain {
     String toEmail = args[2];
     String runPeriod = args[3];
     String time = TimeUtil.getHour(System.currentTimeMillis());
+    String cluster = args[4];
 
     logger.info("current time is: " + time);
     logger.info("current date is: " + date);
     logger.info("toEmail is: " + toEmail);
     logger.info("runPeriod is: " + runPeriod);
+    logger.info("cluster is: " + cluster);
 
     logger.info("init SendEmail start--");
-    SendEmail.getInstance().init(emailHostName, toEmail, date, time, runPeriod);
+    SendEmail.getInstance().init(emailHostName, toEmail, date, time, runPeriod, cluster);
     logger.info("init SendEmail end--");
 
     SendEmail.getInstance().send();

@@ -5,40 +5,38 @@ import com.ebay.traffic.chocolate.html.HourlyEmailHtml;
 
 public class HTMLParse {
 
-    public static String parse(String runPeriod) {
+    public static String parse(String runPeriod, String cluster) {
         switch (runPeriod) {
             case "daily":
                 return parseDaily();
             case "hourly":
-                return parseHourly();
+                return parseHourly(cluster);
             default:
                 return "page is wrong!";
         }
     }
 
     public static String parseDaily() {
-
-        StringBuffer html = new StringBuffer();
-        html.append(DailyEmailHtml.getESAlertHtml("daily"));
+        StringBuilder html = new StringBuilder();
+        html.append(DailyEmailHtml.getSherlockAlertHtml("daily"));
         html.append(DailyEmailHtml.getHdfsCompareHtml());
-        html.append(DailyEmailHtml.getTDRotationCountHtml());
-        html.append(DailyEmailHtml.getTDIMKCountHtml());
+        html.append(DailyEmailHtml.getDailyDoneFileHtml());
+//        html.append(DailyEmailHtml.getTDRotationCountHtml());
+//        html.append(DailyEmailHtml.getTDIMKCountHtml());
         html.append(DailyEmailHtml.getEPNDailyReportHtml());
-        html.append(DailyEmailHtml.getDailyTrackingEventCompareHtml());
+//        html.append(DailyEmailHtml.getDailyTrackingEventCompareHtml());
         return html.toString();
     }
 
-    public static String parseHourly() {
-        StringBuffer html = new StringBuffer();
-        html.append(HourlyEmailHtml.getESAlertHtml("hourly"));
+    public static String parseHourly(String cluster) {
+        StringBuilder html = new StringBuilder();
+        html.append(HourlyEmailHtml.getSherlockAlertHtml("hourly"));
         html.append(HourlyEmailHtml.getDoneFileHtml());
         html.append(HourlyEmailHtml.getHourlyEPNClusterFileVerifyHtml());
-//        html.append(HourlyEmailHtml.getRotationAlertHtml());
         html.append(HourlyEmailHtml.getEPNHourlyReportHtml());
-        html.append(HourlyEmailHtml.getAzkabanReportHtml());
-        html.append(HourlyEmailHtml.getAirflowReportHtml());
+        html.append(HourlyEmailHtml.getAirflowReportHtml(cluster));
+        html.append(HourlyEmailHtml.getWorkerReportHtml(cluster));
         html.append(HourlyEmailHtml.getIMKHourlyCountHtml());
-
         return html.toString();
     }
 

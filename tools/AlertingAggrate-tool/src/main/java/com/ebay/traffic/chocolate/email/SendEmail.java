@@ -22,16 +22,18 @@ public class SendEmail {
   public String date;
   public String time;
   public String runPeriod;
+  public String cluster;
 
   private SendEmail() {
   }
 
-  public void init(String emailHostServer, String toEmail, String date, String time, String runPeriod) {
+  public void init(String emailHostServer, String toEmail, String date, String time, String runPeriod, String cluster) {
     this.emailHostServer = emailHostServer;
     this.toEmail = toEmail;
     this.date = date;
     this.time = time;
     this.runPeriod = runPeriod;
+    this.cluster = cluster;
   }
 
   public static SendEmail getInstance() {
@@ -95,7 +97,7 @@ public class SendEmail {
       }
 
       // set message entity
-      message.setContent(HTMLParse.parse(runPeriod), "text/html");
+      message.setContent(HTMLParse.parse(runPeriod,cluster), "text/html");
 
       logger.info("Start to sent message to: " + toEmail);
       System.out.println("Start to sent message to: " + toEmail);

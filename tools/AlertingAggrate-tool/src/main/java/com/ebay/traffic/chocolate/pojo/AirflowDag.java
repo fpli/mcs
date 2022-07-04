@@ -2,58 +2,117 @@ package com.ebay.traffic.chocolate.pojo;
 
 public class AirflowDag {
 
-    private String dagName;
-    private String success;
-    private String running;
-    private String failed;
-    private String threshold;
-    private String status;
+    private String id;
+    private String type;
+    private String alert;
+    private String projectName;
+    private String lastStartDate;
+    private long lastRunningTime;
+    private int total;
+    private int success;
+    private int failed;
+    private int running;
+    private String flag;
+    private String state;
 
-    public String getDagName() {
-        return dagName;
+    public String getId() {
+        return id;
     }
 
-    public void setDagName(String dagName) {
-        this.dagName = dagName;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getSuccess() {
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getAlert() {
+        return alert;
+    }
+
+    public void setAlert(String alert) {
+        this.alert = alert;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getLastStartDate() {
+        return lastStartDate;
+    }
+
+    public void setLastStartDate(String lastStartDate) {
+        this.lastStartDate = lastStartDate;
+    }
+
+    public long getLastRunningTime() {
+        return lastRunningTime;
+    }
+
+    public void setLastRunningTime(long lastRunningTime) {
+        this.lastRunningTime = lastRunningTime;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public int getSuccess() {
         return success;
     }
 
-    public void setSuccess(String success) {
+    public void setSuccess(int success) {
         this.success = success;
     }
 
-    public String getRunning() {
-        return running;
-    }
-
-    public void setRunning(String running) {
-        this.running = running;
-    }
-
-    public String getFailed() {
+    public int getFailed() {
         return failed;
     }
 
-    public void setFailed(String failed) {
+    public void setFailed(int failed) {
         this.failed = failed;
     }
 
-    public String getThreshold() {
-        return threshold;
+    public int getRunning() {
+        return running;
     }
 
-    public void setThreshold(String threshold) {
-        this.threshold = threshold;
+    public void setRunning(int running) {
+        this.running = running;
     }
 
-    public String getStatus() {
-        return status;
+    public String getFlag() {
+        return flag;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setFlag(String flag) {
+        this.flag = flag;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    @Override
+    public String toString(){
+        return "id:" + id + ";" +"type:" + type + ";" +"alert:" + alert + ";" +"projectName:" + projectName + ";" +"lastStartDate:" + lastStartDate + ";" +"lastRunningTime:" + lastRunningTime + ";" +"total:" + total + ";" +"success:" + success + ";" +"failed:" + failed + ";" +"running:" + running + ";" +"flag:" + flag + ";" +"state:" + state + ";";
     }
 }

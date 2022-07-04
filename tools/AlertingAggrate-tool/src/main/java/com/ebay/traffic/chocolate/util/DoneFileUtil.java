@@ -14,20 +14,8 @@ public class DoneFileUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(DoneFileUtil.class);
 
-    public static DoneFile getImkEventDoneFileDetail(String clusterName, String path) {
-        DoneFile doneFile = getDalayDelayInfo("imk_rvr_trckng_event_hourly", path);
-        doneFile.setClusterName(clusterName);
-        return doneFile;
-    }
-
-    public static DoneFile getAmsClickDoneFileDetail(String clusterName, String path) {
-        DoneFile doneFile = getDalayDelayInfo("ams_click_hourly", path);
-        doneFile.setClusterName(clusterName);
-        return doneFile;
-    }
-
-    public static DoneFile getAmsImpressionDoneFileDetail(String clusterName, String path) {
-        DoneFile doneFile = getDalayDelayInfo("ams_imprsn_hourly", path);
+    public static DoneFile getDoneFileDetail(String tableName, String clusterName, String path) {
+        DoneFile doneFile = getDalayDelayInfo(tableName, path);
         doneFile.setClusterName(clusterName);
         return doneFile;
     }
@@ -133,12 +121,14 @@ public class DoneFileUtil {
 
     public static ArrayList<DoneFile> getDoneFileInfos() {
         ArrayList<DoneFile> list = new ArrayList<>();
-        list.add(getImkEventDoneFileDetail("apollo-rno", "apollo"));
-        list.add(getAmsClickDoneFileDetail("apollo-rno", "apollo"));
-        list.add(getAmsImpressionDoneFileDetail("apollo-rno", "apollo"));
-        list.add(getImkEventDoneFileDetail("hercules-lvs", "hercules"));
-        list.add(getAmsClickDoneFileDetail("hercules-lvs", "hercules"));
-        list.add(getAmsImpressionDoneFileDetail("hercules-lvs", "hercules"));
+        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly","apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("ams_click_hourly","apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("ams_imprsn_hourly","apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("utp_event_hourly","apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly","hercules", "hercules"));
+        list.add(getDoneFileDetail("ams_click_hourly","hercules", "hercules"));
+        list.add(getDoneFileDetail("ams_imprsn_hourly","hercules", "hercules"));
+        list.add(getDoneFileDetail("utp_event_hourly","hercules", "hercules"));
         return list;
     }
 
