@@ -18,9 +18,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +41,8 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
   private static final String REDIRECT_SERVER_DOMAIN = "www.ebayadservices.com";
   private static final String REDIRECT_URL_SOJ_TAG = "adcamp_landingpage";
   private static final String REDIRECT_SRC_SOJ_TAG = "adcamp_locationsrc";
+  private static final String THIRD_PARTY = "third_party";
+  private static final List<String> THIRD_PARTY_VALUE = Arrays.asList("true");
 
   private static Pattern ebaysites = Pattern.compile("^(http[s]?:\\/\\/)?(?!rover)([\\w-.]+\\.)?(ebay(objects|motors|promotion|development|static|express|liveauctions|rtm)?)\\.[\\w-.]+($|\\/(?!ulk\\/).*)", Pattern.CASE_INSENSITIVE);
 
@@ -62,6 +68,7 @@ abstract public class BaseRedirectStrategy implements RedirectStrategy {
     checkEbayDomain(redirectionEvent.getRedirectUrl(), parameters);
 
     if (!redirectionEvent.getIsEbayDomain()) {
+      parameters.put(THIRD_PARTY, THIRD_PARTY_VALUE);
       callMcs(request, parameters, mktClient, endpoint, guid, adguid);
     }
 

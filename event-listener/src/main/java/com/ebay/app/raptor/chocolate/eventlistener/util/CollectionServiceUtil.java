@@ -11,6 +11,7 @@ import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,7 +88,10 @@ public class CollectionServiceUtil {
   private static final String CLICK_EVENT_FLAG = "1";
   private static final String PRM_CLICK_ROTATION_ID = "14362-130847-18990-0";
   private static final String ADOBE_PARTNER_NAME = "adobe";
-
+  private static final String THIRD_PARTY = "third_party";
+  private static final List<String> THIRD_PARTY_VALUE = Arrays.asList("true");
+  
+  
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
 
@@ -628,6 +634,19 @@ public class CollectionServiceUtil {
     }
 
     return true;
+  }
+  
+  /**
+   * Identify third party clicks
+   * @param parameters
+   * @return
+   */
+  public static boolean isThirdParityClick(MultiValueMap<String, String> parameters){
+    List third_party_values = parameters.get(THIRD_PARTY);
+    if (CollectionUtils.isNotEmpty(third_party_values) && "true".equals(third_party_values.get(0))) {
+      return true;
+    }
+    return false;
   }
 
   /**

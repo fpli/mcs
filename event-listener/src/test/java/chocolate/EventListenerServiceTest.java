@@ -1621,4 +1621,13 @@ public class EventListenerServiceTest {
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
+  
+  @Test
+  public void testThirdPartyClick() {
+    Event event = new Event();
+    event.setReferrer("");
+    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7&third_party=true");
+    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+  }
 }
