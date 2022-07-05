@@ -14,7 +14,6 @@
   <properties>
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
     <swagger.codegen.version>3.0.0</swagger.codegen.version>
-    <trustfabric.handler.server.version>0.14.1-RELEASE</trustfabric.handler.server.version>
     <coreauth.component.version>0.14.5-RELEASE</coreauth.component.version>
     
   </properties>
