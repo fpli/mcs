@@ -642,7 +642,7 @@ public class CollectionServiceUtil {
    * @return
    */
   public static boolean isThirdParityClick(MultiValueMap<String, String> parameters){
-    List third_party_values = parameters.get(THIRD_PARTY);
+    List<String> third_party_values = parameters.get(THIRD_PARTY);
     if (CollectionUtils.isNotEmpty(third_party_values) && "true".equals(third_party_values.get(0))) {
       return true;
     }
