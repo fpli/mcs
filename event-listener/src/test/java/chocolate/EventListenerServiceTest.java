@@ -1626,7 +1626,7 @@ public class EventListenerServiceTest {
   public void testThirdPartyClick() {
     Event event = new Event();
     event.setReferrer("");
-    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7&third_party=true");
+    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7");
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
