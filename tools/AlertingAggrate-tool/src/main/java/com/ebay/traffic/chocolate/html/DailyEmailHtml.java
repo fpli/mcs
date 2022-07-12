@@ -80,4 +80,23 @@ public class DailyEmailHtml {
       return "getDailyTrackingEventCompareHtml";
     }
   }
+
+  public static String getSherlockAlertHtml(String runPeriod) {
+    try {
+      return SherlockMetricTable.parseSherlockAlertProjects(SherlockAlertUtil.getSherlockAlertInfos(runPeriod));
+    } catch (Exception e) {
+      e.printStackTrace();
+      logger.error(e.getMessage());
+      return "getSherlockAlertHtml";
+    }
+  }
+
+  public static String getDailyDoneFileHtml() {
+    try {
+      return "Daily Done File Monitor\n" + DailyDoneFileTable.parseDoneFileProject(DailyDoneFileUtil.getDoneFileInfos());
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return "getDailyDoneFileHtmlError";
+    }
+  }
 }

@@ -342,7 +342,7 @@ public class CollectionService {
             urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
 
     // 3rd party click flag
-    boolean isThirdParty = CollectionServiceUtil.isThirdPartyClick(urlRefChannel.getLeft());
+    boolean isThirdParty = CollectionServiceUtil.isThirdParityClick(parameters);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
             Field.of(LANDING_PAGE_TYPE, landingPageType));

@@ -1,5 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
+import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
@@ -55,6 +57,7 @@ public class UTPChocolateEmailClickTransformer {
   protected Map<String, String> applicationPayload;
   protected Map<String, String> clientData;
   private String url;
+  private long userId;
   private long eventTs;
   private MultiValueMap<String, String> queryParams;
   private ChannelTypeEnum channelType;
@@ -83,6 +86,7 @@ public class UTPChocolateEmailClickTransformer {
           .put("adcamp_landingpage", "adcamp_landingpage")
           .put("adcamp_locationsrc", "adcamp_locationsrc")
           .put("adcamppu", "pu")
+          .put("bu", "bu")
           .put("cbtrack", "cbtrack")
           .put("chnl", "mkcid")
           .put("crd", "crd")
@@ -107,6 +111,7 @@ public class UTPChocolateEmailClickTransformer {
           .put("segname", "segname")
           .put("sid", "emsid")
           .put("trkId", "trkId")
+          .put("u", "u")
           .put("yminstc", "yminstc")
           .put("ymmmid", "ymmmid")
           .put("ymsid", "ymsid")
@@ -168,6 +173,7 @@ public class UTPChocolateEmailClickTransformer {
     applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
     clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
     url = parseUrl();
+    userId = parseUserId();
 
     queryParams = parseQueryParams();
 
@@ -328,12 +334,7 @@ public class UTPChocolateEmailClickTransformer {
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getUserId() {
-    Utf8 userId = (Utf8) sourceRecord.get(USER_ID);
-    if (userId == null) {
-      return 0L;
-    }
-    Long parse = Longs.tryParse(userId.toString());
-    return parse != null ? parse : 0L;
+    return userId;
   }
 
   protected String getPublicUserId() {
@@ -342,17 +343,11 @@ public class UTPChocolateEmailClickTransformer {
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getEncryptedUserId() {
-    String encryptedUserId = applicationPayload.get(TransformerConstants.EMID);
-    if (encryptedUserId == null) {
-      encryptedUserId = queryParams.getFirst(TransformerConstants.BEST_GUESS_USER_ID);
+    if (userId != 0) {
+      return EncryptUtil.encryptUserId(userId);
     }
 
-    if (encryptedUserId == null) {
-      return 0L;
-    }
-
-    Long parse = Longs.tryParse(encryptedUserId);
-    return parse != null ? parse : 0L;
+    return 0;
   }
 
   protected String getGuid() {
@@ -505,7 +500,7 @@ public class UTPChocolateEmailClickTransformer {
     payload.putAll(sojTags);
     // add uep tags
     Map<String, String> uepPayload =
-            UepPayloadHelper.getInstance().getUepPayload(url, actionTypeEnum, channelType);
+            UepPayloadHelper.getInstance().getUepPayload(url, userId, actionTypeEnum, channelType);
     if (MapUtils.isNotEmpty(uepPayload)) {
       payload.putAll(uepPayload);
     }
@@ -539,7 +534,21 @@ public class UTPChocolateEmailClickTransformer {
       payload.put("sessionSkey", String.valueOf(sessionSkey));
     }
     payload.put("sessionId", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SESSION_ID));
-    // Get xt from url as this tag hasn't been written to Pulsar
+
+    // email best guess user id, decrypted from emid tag
+    String emid = applicationPayload.get(TransformerConstants.EMID);
+    if (StringUtils.isNotEmpty(emid)) {
+      Long emidLong = Longs.tryParse(emid);
+      if (emidLong != null) {
+        long emailUserId = EncryptUtil.decryptUserId(emidLong);
+        payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
+      } else {
+        payload.put(Constants.EMAIL_USER_ID, "0");
+      }
+    } else {
+      payload.put(Constants.EMAIL_USER_ID, "0");
+    }
+
     return payload;
   }
 
@@ -554,6 +563,16 @@ public class UTPChocolateEmailClickTransformer {
       dqTags.put("dq-pulsar-eventId", sourceRheosEvent.getEventId());
     }
     return dqTags;
+  }
+
+  private long parseUserId() {
+    Utf8 userId = (Utf8) sourceRecord.get(USER_ID);
+    if (userId == null) {
+      return 0L;
+    }
+    Long parse = Longs.tryParse(userId.toString());
+
+    return parse != null ? parse : 0L;
   }
 
 }

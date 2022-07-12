@@ -1,6 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
 import com.ebay.app.raptor.chocolate.constant.Constants;
+import com.ebay.app.raptor.chocolate.util.EncryptUtil;
 import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
@@ -44,6 +45,7 @@ public class UTPRoverEventTransformer {
   protected Map<String, String> applicationPayload;
   protected Map<String, String> clientData;
   private String urlQueryString;
+  private long userId;
   private ChannelTypeEnum channelType;
   private ActionTypeEnum actionTypeEnum;
   private Map<String, String> sojTags;
@@ -94,6 +96,7 @@ public class UTPRoverEventTransformer {
           .put("segname", "segname")
           .put("sid", "emsid")
           .put("trkId", "trkId")
+          .put("u", "u")
           .put("yminstc", "yminstc")
           .put("ymmmid", "ymmmid")
           .put("ymsid", "ymsid")
@@ -149,6 +152,7 @@ public class UTPRoverEventTransformer {
     applicationPayload = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.APPLICATION_PAYLOAD);
     clientData = GenericRecordUtils.getMap(sourceRecord, TransformerConstants.CLIENT_DATA);
     urlQueryString = parseUrlQueryString();
+    userId = parseUserId();
     if (urlQueryString == null) {
       SherlockioMetrics.getInstance().meter("NoUrlQueryString", 1, Field.of(TOPIC, sourceTopic));
       return false;
@@ -344,12 +348,7 @@ public class UTPRoverEventTransformer {
 
   @SuppressWarnings("UnstableApiUsage")
   protected long getUserId() {
-    Utf8 userId = (Utf8) sourceRecord.get(USER_ID);
-    if (userId == null) {
-      return 0L;
-    }
-    Long parse = Longs.tryParse(userId.toString());
-    return parse != null ? parse : 0L;
+    return parseUserId();
   }
 
   protected String getPublicUserId() {
@@ -364,18 +363,12 @@ public class UTPRoverEventTransformer {
     if (channelType == ChannelTypeEnum.EPN) {
       return 0L;
     }
-    String encryptedUserId = sojTags.get(TransformerConstants.EMID);
-    if (encryptedUserId == null) {
-      encryptedUserId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString,
-          TransformerConstants.BEST_GUESS_USER_ID);
+    // Email channels
+    if (userId != 0) {
+      return EncryptUtil.encryptUserId(userId);
     }
 
-    if (encryptedUserId == null) {
-      return 0L;
-    }
-
-    Long parse = Longs.tryParse(encryptedUserId);
-    return parse != null ? parse : 0L;
+    return 0L;
   }
 
   protected String getGuid() {
@@ -539,7 +532,8 @@ public class UTPRoverEventTransformer {
       payload.putAll(sojTags);
       // add uep tags
       Map<String, String> uepPayload =
-          UepPayloadHelper.getInstance().getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), actionTypeEnum, channelType);
+          UepPayloadHelper.getInstance().getUepPayload(String.format("%s%s", ROVER_HOST, urlQueryString), userId,
+              actionTypeEnum, channelType);
       if (MapUtils.isNotEmpty(uepPayload)) {
         payload.putAll(uepPayload);
       }
@@ -596,6 +590,19 @@ public class UTPRoverEventTransformer {
     }
     payload.put("sessionId", GenericRecordUtils.getStringFieldOrEmpty(sourceRecord, TransformerConstants.SESSION_ID));
 
+    // email best guess user id, decrypted from bu parameter
+    String encryptedUserId = sojTags.get(TransformerConstants.EMID);
+    if (encryptedUserId == null) {
+      encryptedUserId = PulsarParseUtils.getParameterFromUrlQueryString(urlQueryString,
+          TransformerConstants.BEST_GUESS_USER_ID);
+    }
+    if (StringUtils.isNotEmpty(encryptedUserId)) {
+      long emailUserId = EncryptUtil.decryptUserId(Long.parseLong(encryptedUserId));
+      payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
+    } else {
+      payload.put(Constants.EMAIL_USER_ID, "0");
+    }
+
     return payload;
   }
 
@@ -610,6 +617,15 @@ public class UTPRoverEventTransformer {
       dqTags.put("dq-pulsar-eventId", sourceRheosEvent.getEventId());
     }
     return dqTags;
+  }
+
+  private long parseUserId() {
+    Utf8 userId = (Utf8) sourceRecord.get(USER_ID);
+    if (userId == null) {
+      return 0L;
+    }
+    Long parse = Longs.tryParse(userId.toString());
+    return parse != null ? parse : 0L;
   }
 
 }
