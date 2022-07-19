@@ -219,6 +219,7 @@ public class CollectionService {
             && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))
             && parameters.containsKey(MKSRC)
             && (SITE_MC_CHNL_ID.equals(parameters.get(MKSRC).get(0)) || MRKT_MC_CHNL_ID.equals(parameters.get(MKSRC).get(0)))) {
+      MonitorUtil.info("OverwriteChannelIdForUFESMC");
       finalUrl = CollectionServiceUtil.replaceUrlParam(finalUrl, MKCID, parameters.get(MKSRC).get(0));
       uriComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
       parameters = uriComponents.getQueryParams();
