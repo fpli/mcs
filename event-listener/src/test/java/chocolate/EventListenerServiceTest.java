@@ -483,6 +483,11 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://www.ebay.com/i/1234123132?mkevt=1&mkcid=25&smsid=111&did=222");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
+
+    // Overwrite mkcid if the url is redirected from UFES and contains mksrc, this is for Message Center case
+    event.setTargetUrl("https://www.ebay.co.uk/usr/ms4887074?bu=12345678&segname=017SP8_B1C8516-00&crd=20220528093000&ch=osgood&mksrc=27&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Durl%2Cch%3Dch&mkevt=1&mkcid=8&mkpid=2&emsid=0&ufes_redirect=true&ul_noapp=true");
+    response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
+    assertEquals(201, response.getStatus());
   }
 
   @Test
