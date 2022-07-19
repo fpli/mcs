@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<projects>
+    <project name="Chocolate-RT-all-channels-data">
+        <metric name="Filter Kafka Lag" query='sum(increase(FilterKafkaConsumerLag_sum{_namespace_="chocofil"}[2m]))/sum(increase(FilterKafkaConsumerLag_count{_namespace_="chocofil"}[2m]))' threshold="100" thresholdFactor="200.0" alert="false"/>
+        <metric name="Dedupe kafka lag" query='sum(sum_over_time(SparkKafkaConsumerLag{_namespace_="chocolate"}[5m]))/1000' threshold="5000" thresholdFactor="6.0" alert="false"/>
+    </project>
+    <project name="Chocolate-RT-epn-data">
+        <metric name="Filter Latency" query='sum(increase(FilterLatency_sum{_namespace_="chocofil",channelType="EPN"}[2m]))/sum(increase(FilterLatency_count{_namespace_="chocofil",channelType="EPN"}[2m]))' threshold="1000" thresholdFactor="200.0" alert="false"/>
+    </project>
+    <project name="Chocolate-ETL-EPN">
+        <metric name="EPN ETL processedMeta" query='sum(sum_over_time(MetaFileCountTess{_namespace_="chocolate"}[1h]))' threshold="5" thresholdFactor="0.1" alert="true"/>
+    </project>
+</projects>

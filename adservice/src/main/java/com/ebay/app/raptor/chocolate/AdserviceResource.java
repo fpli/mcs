@@ -261,9 +261,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       ImageResponseHandler.sendImageResponse(response);
 
       // send open events to adobe
-      if (!StringUtils.isEmpty(partner) && EmailPartnerIdEnum.ADOBE.getPartner().equals(partner)) {
-        sendOpenEventToAdobe(params);
-      }
+//      if (!StringUtils.isEmpty(partner) && EmailPartnerIdEnum.ADOBE.getPartner().equals(partner)) {
+//        sendOpenEventToAdobe(params);
+//      }
 
       stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, channelType),
         Field.of(Constants.PARTNER, partner));

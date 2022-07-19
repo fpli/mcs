@@ -38,7 +38,6 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -187,6 +186,8 @@ public class UtpMonitorApp {
             String isUep = nullVerifier(getUEP(message.getPayload()));
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
+            String uxe = nullVerifier(getUxe(message.getPayload()));
+            String uxt = nullVerifier(getUxt(message.getPayload()));
             try {
                 /*
                 getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
@@ -246,7 +247,9 @@ public class UtpMonitorApp {
                                     Field.of("messageId", messageId.get(i)),
                                     Field.of("cnvId", cnvId),
                                     Field.of("site", site),
-                                    Field.of("is1stMId", i == 0 ? "true" : "false")
+                                    Field.of("is1stMId", i == 0 ? "true" : "false"),
+                                    Field.of("uxe", uxe),
+                                    Field.of("uxt", uxt)
                             );
                         }
                     } catch (Exception e) {
@@ -410,4 +413,13 @@ public class UtpMonitorApp {
             return "EXCEPTION";
         }
     }
+    
+    public static String getUxe(Map<String, String> payload) {
+        return payload.getOrDefault("!uxe", "NULL");
+    }
+    
+    public static String getUxt(Map<String, String> payload) {
+        return payload.getOrDefault("!uxt", "NULL");
+    }
+    
 }

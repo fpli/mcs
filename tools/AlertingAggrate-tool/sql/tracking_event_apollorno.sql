@@ -20,4 +20,4 @@ set hive.merge.smallfiles.avgsize=128000000;
 set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/trackingEvent/apollorno' select dt ,COUNT(1) from choco_data.TRACKING_EVENT WHERE dt>date_sub(current_date,10) AND dt<current_date GROUP BY dt ORDER BY dt;
+INSERT OVERWRITE LOCAL DIRECTORY '/datashare/mkttracking/jobs/tools/AlertingAggrate-tool/data_check/trackingEvent/apollorno' select dt ,COUNT(1) from choco_data.TRACKING_EVENT WHERE dt>date_sub(current_date,10) AND dt<current_date GROUP BY dt ORDER BY dt;

@@ -85,12 +85,12 @@ public class AdobeRedirectStrategy extends BaseRedirectStrategy {
     }
 
     // get response from Adobe Server, if the url in response is valid, return it as redirect url
-    String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
-    if (isValidRedirectUrl(adobeRedirectUrl)) {
-      redirectionEvent.setRedirectSource(EmailPartnerIdEnum.ADOBE.getPartner());
-      redirectionEvent.setRedirectUrl(adobeRedirectUrl);
-      return;
-    }
+//    String adobeRedirectUrl = getRedirectUrlByAdobe(parameters);
+//    if (isValidRedirectUrl(adobeRedirectUrl)) {
+//      redirectionEvent.setRedirectSource(EmailPartnerIdEnum.ADOBE.getPartner());
+//      redirectionEvent.setRedirectUrl(adobeRedirectUrl);
+//      return;
+//    }
 
     // generate redirect url by country
     if (parameters.containsKey(ADOBE_COUNTRY)) {

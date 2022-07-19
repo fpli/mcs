@@ -3,6 +3,9 @@ package com.ebay.traffic.chocolate.flink.nrt.util;
 import com.ebay.traffic.chocolate.flink.nrt.app.UtpMonitorApp;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class DuplicateParameterMonitorTest {
 
     @Test
@@ -35,6 +38,14 @@ public class DuplicateParameterMonitorTest {
         assert UtpMonitorApp.getDuplicateValue(url,"mkcid").equals("DEFAULT");
     }
 
-
+    @Test
+    public void testPayload() {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("!uxe","100949");
+        payload.put("!uxt","237608");
+    
+        assert  UtpMonitorApp.getUxe(payload).equals("100949");
+        assert  UtpMonitorApp.getUxt(payload).equals("237608");
+    }
 
 }

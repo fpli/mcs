@@ -21,4 +21,4 @@ set hive.merge.size.per.task=128000000;
 SET hive.auto.convert.join=false;
 set mapred.task.timeout=1200000;
 
-INSERT OVERWRITE LOCAL DIRECTORY '/home/_choco_admin/trackingEvent/herculeslvs' select dt ,COUNT(1) count from IM_TRACKING.TRACKING_EVENT WHERE dt>date_sub(current_date,10) AND dt<current_date GROUP BY dt ORDER BY dt;
+INSERT OVERWRITE LOCAL DIRECTORY '/datashare/mkttracking/jobs/tools/AlertingAggrate-tool/data_check/trackingEvent/herculeslvs' select dt ,COUNT(1) count from IM_TRACKING.TRACKING_EVENT WHERE dt>date_sub(current_date,10) AND dt<current_date GROUP BY dt ORDER BY dt;

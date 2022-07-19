@@ -1,6 +1,8 @@
 package com.ebay.traffic.chocolate.html;
 
 import com.ebay.traffic.chocolate.parse.EPNReportUtil;
+import com.ebay.traffic.chocolate.report.AirflowReport;
+import com.ebay.traffic.chocolate.report.FlowerReport;
 import com.ebay.traffic.chocolate.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,12 +74,31 @@ public class HourlyEmailHtml {
         }
     }
 
-    public static String getAirflowReportHtml() {
+    public static String getAirflowReportHtml(String cluster) {
         try {
-            return AirflowUtil.getAirflowReportHtml();
+            return AirflowTable.parse(AirflowReport.getAirflowList(cluster));
         } catch (Exception e) {
             logger.error(e.getMessage());
             return "getAirflowReportHtml";
+        }
+    }
+
+    public static String getWorkerReportHtml(String cluster) {
+        try {
+            return "Airflow worker Monitor \n" + FlowerTable.parse(FlowerReport.getAirflowWorkerList(cluster));
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return "getAirflowReportHtml";
+        }
+    }
+
+    public static String getSherlockAlertHtml(String runPeriod) {
+        try {
+            return SherlockMetricTable.parseSherlockAlertProjects(SherlockAlertUtil.getSherlockAlertInfos(runPeriod));
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return "getSherlockAlertHtml";
         }
     }
 }

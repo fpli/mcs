@@ -1,9 +1,6 @@
 package com.ebay.traffic.chocolate.xml;
 
-import com.ebay.traffic.chocolate.pojo.AirflowMetric;
-import com.ebay.traffic.chocolate.pojo.Azkaban;
-import com.ebay.traffic.chocolate.pojo.Metric;
-import com.ebay.traffic.chocolate.pojo.Project;
+import com.ebay.traffic.chocolate.pojo.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -92,34 +89,36 @@ public class XMLUtil {
         return map;
     }
 
-    public static HashMap<String, ArrayList<AirflowMetric>> readAirflowMap(String fileName) {
-        HashMap<String, ArrayList<AirflowMetric>> map = new HashMap<>();
-
+    public static LinkedList<DagProject> readAirflowMap(String fileName) {
+        LinkedList<DagProject> projectList = new LinkedList<>();
         SAXReader reader = new SAXReader();
         try {
             Document document = reader.read(new File(fileName));
             Element projects = document.getRootElement();
             Iterator it = projects.elementIterator();
             while (it.hasNext()) {
-                ArrayList<AirflowMetric> list = new ArrayList<>();
+                ArrayList<AirflowDag> list = new ArrayList<>();
                 Element project = (Element) it.next();
-                String subjectArea = project.attribute("name").getValue();
-                List<Element> metrics = project.elements("metric");
-                for (Element elem : metrics) {
-                    AirflowMetric dag = new AirflowMetric();
-                    dag.setSubjectArea(subjectArea);
-                    dag.setDagName(elem.attribute("dag").getValue());
-                    dag.setTotal(elem.attribute("total").getValue());
-                    dag.setThreshold(elem.attribute("threshold").getValue());
+                String projectName = project.attribute("name").getValue();
+                List<Element> ls = project.elements("dag");
+                for (Element elem : ls) {
+                    AirflowDag dag = new AirflowDag();
+                    dag.setProjectName(projectName);
+                    dag.setId(elem.attribute("id").getValue());
+                    dag.setType(elem.attribute("type").getValue());
+                    dag.setAlert(elem.attribute("alert").getValue());
                     list.add(dag);
                 }
-                map.put(subjectArea, list);
+                DagProject pro = new DagProject();
+                pro.setName(projectName);
+                pro.setList(list);
+                projectList.add(pro);
             }
         } catch (DocumentException e) {
             e.printStackTrace();
         }
 
-        return map;
+        return projectList;
     }
 
 
@@ -129,6 +128,40 @@ public class XMLUtil {
         } else {
             return condition;
         }
+    }
+
+    public static LinkedList<SherlockProject> readSherlockMetricXml(String fileName) {
+        LinkedList<SherlockProject> projectList = new LinkedList<>();
+        SAXReader reader = new SAXReader();
+        try {
+            Document document = reader.read(new File(fileName));
+            Element projects = document.getRootElement();
+            Iterator it = projects.elementIterator();
+            while (it.hasNext()) {
+                ArrayList<SherlockMetric> list = new ArrayList<>();
+                Element project = (Element) it.next();
+                String projectName = project.attribute("name").getValue();
+                List<Element> metrics = project.elements("metric");
+                for (Element elem : metrics) {
+                    SherlockMetric metric = new SherlockMetric();
+                    metric.setProjectName(projectName);
+                    metric.setName(elem.attribute("name").getValue());
+                    metric.setQuery(elem.attribute("query").getValue());
+                    metric.setThreshold(Long.parseLong(elem.attribute("threshold").getValue()));
+                    metric.setThresholdFactor(Double.parseDouble(elem.attribute("thresholdFactor").getValue()));
+                    metric.setAlert(elem.attribute("alert").getValue());
+                    list.add(metric);
+                }
+                SherlockProject pro = new SherlockProject();
+                pro.setName(projectName);
+                pro.setList(list);
+                projectList.add(pro);
+            }
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+
+        return projectList;
     }
 
 }
