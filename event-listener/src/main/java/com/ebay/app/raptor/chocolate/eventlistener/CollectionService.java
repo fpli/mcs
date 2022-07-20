@@ -114,11 +114,6 @@ public class CollectionService {
           "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
   private static final String ROI_TRANS_TYPE = "roiTransType";
-  private static final String SITE_EMAIL_CHNL_ID = "7";
-  private static final String MRKT_EMAIL_CHNL_ID = "8";
-  private static final String SITE_MC_CHNL_ID = "26";
-  private static final String MRKT_MC_CHNL_ID = "27";
-  private static final String IS_BOT_TRAFFIC = "IsBotTraffic";
 
   @PostConstruct
   public void postInit() throws Exception {
