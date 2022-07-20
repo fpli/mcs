@@ -158,11 +158,6 @@ public class Constants {
   public static final String TYPE_INFO = "Info";
   public static final String STATUS_OK = "0";
 
-  public static final String SITE_EMAIL_CHNL_ID = "7";
-  public static final String MRKT_EMAIL_CHNL_ID = "8";
-  public static final String SITE_MC_CHNL_ID = "26";
-  public static final String MRKT_MC_CHNL_ID = "27";
-
   public static final String IS_BOT_TRAFFIC = "IsBotTraffic";
 
   /**

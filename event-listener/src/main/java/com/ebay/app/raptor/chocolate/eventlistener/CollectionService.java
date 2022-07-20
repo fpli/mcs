@@ -207,19 +207,6 @@ public class CollectionService {
       return null;
     }
 
-    // XC-4947 Overwrite mkcid if the url is redirected from UFES and contains mksrc, this is for Message Center case
-    if (parameters.containsKey(MKCID)
-            && (SITE_EMAIL_CHNL_ID.equals(parameters.get(MKCID).get(0)) || MRKT_EMAIL_CHNL_ID.equals(parameters.get(MKCID).get(0)))
-            && parameters.containsKey(UFES_REDIRECT)
-            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))
-            && parameters.containsKey(MKSRC)
-            && (SITE_MC_CHNL_ID.equals(parameters.get(MKSRC).get(0)) || MRKT_MC_CHNL_ID.equals(parameters.get(MKSRC).get(0)))) {
-      MonitorUtil.info("OverwriteChannelIdForUFESMC");
-      finalUrl = CollectionServiceUtil.replaceUrlParam(finalUrl, MKCID, parameters.get(MKSRC).get(0));
-      uriComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
-      parameters = uriComponents.getQueryParams();
-    }
-
     // get valid channel type
     ChannelIdEnum channelType;
 
@@ -228,6 +215,19 @@ public class CollectionService {
       LOGGER.warn(Errors.ERROR_INVALID_MKCID + " {}", targetUrl);
       MonitorUtil.info("InvalidMkcid");
       return null;
+    }
+
+    // XC-4947 Overwrite mkcid if the url is redirected from UFES and contains mksrc, this is for Message Center case
+    if ((channelType == SITE_EMAIL || channelType == MRKT_EMAIL)
+            && parameters.containsKey(UFES_REDIRECT)
+            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))
+            && parameters.containsKey(MKSRC)
+            && (SITE_MESSAGE_CENTER.getValue().equals(parameters.get(MKSRC).get(0)) || MRKT_MESSAGE_CENTER.getValue().equals(parameters.get(MKSRC).get(0)))) {
+      MonitorUtil.info("OverwriteChannelIdForUFESMC");
+      finalUrl = CollectionServiceUtil.replaceUrlParam(finalUrl, MKCID, parameters.get(MKSRC).get(0));
+      uriComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
+      parameters = uriComponents.getQueryParams();
+      channelType = parse(parameters.get(MKCID).get(0));
     }
 
     // for search engine free listings, append mkrid
