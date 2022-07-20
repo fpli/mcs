@@ -217,6 +217,19 @@ public class CollectionService {
       return null;
     }
 
+    // XC-4947 Overwrite mkcid if the url is redirected from UFES and contains mksrc, this is for Message Center case
+    if ((channelType == SITE_EMAIL || channelType == MRKT_EMAIL)
+            && parameters.containsKey(UFES_REDIRECT)
+            && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))
+            && parameters.containsKey(MKSRC)
+            && (SITE_MESSAGE_CENTER.getValue().equals(parameters.get(MKSRC).get(0)) || MRKT_MESSAGE_CENTER.getValue().equals(parameters.get(MKSRC).get(0)))) {
+      MonitorUtil.info("OverwriteChannelIdForUFESMC");
+      finalUrl = CollectionServiceUtil.replaceUrlParam(finalUrl, MKCID, parameters.get(MKSRC).get(0));
+      uriComponents = UriComponentsBuilder.fromUriString(finalUrl).build();
+      parameters = uriComponents.getQueryParams();
+      channelType = parse(parameters.get(MKCID).get(0));
+    }
+
     // for search engine free listings, append mkrid
     if (channelType == SEARCH_ENGINE_FREE_LISTINGS) {
       String rotationId = performanceMarketingCollector.getSearchEngineFreeListingsRotationId(userPrefsCtx);
@@ -297,11 +310,13 @@ public class CollectionService {
     // UFES metrics
     MonitorUtil.info("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
         Field.of(LANDING_PAGE_TYPE, landingPageType),
-        Field.of("statusCode", request.getHeader(NODE_REDIRECTION_HEADER_NAME)));
+        Field.of("statusCode", request.getHeader(NODE_REDIRECTION_HEADER_NAME)),
+        Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
 
     // UFES Redirect metrics
     if (parameters.containsKey(UFES_REDIRECT) && (Boolean.TRUE.toString().equalsIgnoreCase(parameters.getFirst(UFES_REDIRECT)))) {
-        MonitorUtil.info("UFESRedirect", 1, Field.of(CHANNEL_TYPE, urlRefChannel.getRight().getLogicalChannel().getAvro().toString()));
+        MonitorUtil.info("UFESRedirect", 1, Field.of(CHANNEL_TYPE, urlRefChannel.getRight().getLogicalChannel().getAvro().toString()),
+                Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
     }
     if (requestHeaders.containsKey(UFES_EDGTRKSVC_HDR)
             && Boolean.toString(true).equalsIgnoreCase(requestHeaders.get(UFES_EDGTRKSVC_HDR))) {
@@ -345,7 +360,8 @@ public class CollectionService {
     boolean isThirdParty = CollectionServiceUtil.isThirdParityClick(parameters);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, landingPageType));
+            Field.of(LANDING_PAGE_TYPE, landingPageType),
+            Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
@@ -427,7 +443,8 @@ public class CollectionService {
     }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-     Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+     Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType),
+     Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
 
     return true;
   }

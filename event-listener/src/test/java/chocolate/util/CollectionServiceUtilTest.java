@@ -503,4 +503,23 @@ public class CollectionServiceUtilTest {
     referer = "https://www.ebay.com/";
     assertFalse(CollectionServiceUtil.inAdobePageWhitelist(ChannelType.MRKT_EMAIL, referer, targetUrl, iphoneMwebAgentInfo));
   }
+
+  @Test
+  public void testReplaceUrlParam() {
+    String originalUrl = "https://www.ebay.co.uk/usr/ms4887074?bu=12345678&segname=017SP8_B1C8516-00&crd=20220528093000&ch=osgood&mksrc=27&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Durl%2Cch%3Dch&mkevt=1&mkcid=8&mkpid=2&emsid=0&ufes_redirect=true&ul_noapp=true";
+
+    String targetUrl = "https://www.ebay.co.uk/usr/ms4887074?bu=12345678&segname=017SP8_B1C8516-00&crd=20220528093000&ch=osgood&mksrc=27&sojTags=emid%3Dbu%2Cut%3Dut%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Curl%3Durl%2Cch%3Dch&mkevt=1&mkpid=2&emsid=0&ufes_redirect=true&ul_noapp=true&mkcid=27";
+
+    assertEquals(targetUrl, CollectionServiceUtil.replaceUrlParam(originalUrl, "mkcid", "27"));
+  }
+
+  @Test
+  public void testBot() {
+    assertTrue(CollectionServiceUtil.isBot("googleBot"));
+    assertTrue(CollectionServiceUtil.isBot("yahooProxy"));
+    assertTrue(CollectionServiceUtil.isBot("Spiderman"));
+    assertTrue(CollectionServiceUtil.isBot("Mediapartners-Google"));
+    assertFalse(CollectionServiceUtil.isBot("eBayAndroid/6.7.2"));
+    assertFalse(CollectionServiceUtil.isBot(""));
+  }
 }

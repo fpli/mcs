@@ -157,6 +157,9 @@ public class Constants {
 
   public static final String TYPE_INFO = "Info";
   public static final String STATUS_OK = "0";
+
+  public static final String IS_BOT_TRAFFIC = "IsBotTraffic";
+
   /**
    * Performance marketing channels
    */

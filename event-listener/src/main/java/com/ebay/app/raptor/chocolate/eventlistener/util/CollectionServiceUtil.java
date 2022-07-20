@@ -90,6 +90,8 @@ public class CollectionServiceUtil {
   private static final String ADOBE_PARTNER_NAME = "adobe";
   private static final String THIRD_PARTY = "third_party";
   private static final List<String> THIRD_PARTY_VALUE = Arrays.asList("true");
+  private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
+          "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
   
   
   // do not dedupe the item clicks from ebay special sites
@@ -675,6 +677,34 @@ public class CollectionServiceUtil {
             MonitorUtil.info("ClickInAdobePageWhitelist", 1);
             return true;
           }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Replace one url parameter
+   * @return
+   */
+  public static String replaceUrlParam(String url, String param, String value) {
+    UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUriString(url);
+    urlBuilder.replaceQueryParam(param, value);
+    return urlBuilder.build().toUriString();
+  }
+
+  /**
+   * Bot detection by user agent
+   *
+   * @param userAgent user agent
+   */
+  public static boolean isBot(String userAgent) {
+    if (org.apache.commons.lang.StringUtils.isNotEmpty(userAgent)) {
+      String userAgentLower = userAgent.toLowerCase();
+      for (String botKeyword : BOT_LIST) {
+        if (userAgentLower.contains(botKeyword.toLowerCase())) {
+          return true;
         }
       }
     }
