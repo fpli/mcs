@@ -515,8 +515,7 @@ public class CollectionService {
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
         Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, "NULL"),
-            Field.of(IS_BOT_TRAFFIC, "NULL"));
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
@@ -580,7 +579,7 @@ public class CollectionService {
 
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-            ChannelType.ROI.toString()), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"), Field.of(IS_BOT_TRAFFIC, "NULL"));
+            ChannelType.ROI.toString()), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -684,8 +683,7 @@ public class CollectionService {
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type)
             , Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, "NULL"),
-            Field.of(IS_BOT_TRAFFIC, "NULL"));
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -721,7 +719,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"), Field.of(IS_BOT_TRAFFIC, "NULL"));
+        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     return true;
   }
@@ -878,8 +876,7 @@ public class CollectionService {
   public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PLATFORM, "NULL"),
-            Field.of(LANDING_PAGE_TYPE, "NULL"),
-            Field.of(IS_BOT_TRAFFIC, "NULL"));
+            Field.of(LANDING_PAGE_TYPE, "NULL"));
 
     UnifiedTrackingMessage message = utpParser.parse(event);
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
@@ -892,7 +889,7 @@ public class CollectionService {
           UnifiedTrackingKafkaSink.callback);
 
     stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"), Field.of(IS_BOT_TRAFFIC, "NULL"));
+        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
   }
 
   /**
