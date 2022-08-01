@@ -65,6 +65,8 @@ public class UnifiedTrackingMessageParser {
 
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
       "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
+  private static final List<String> OPEN_BOT_LIST = Arrays.asList("bot", "Mediapartners-Google",
+      "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
 
   private static final String ITEM = "itm";
   private static final String ITEM_VIEW = "item.view";
@@ -169,12 +171,20 @@ public class UnifiedTrackingMessageParser {
    *
    * @param userAgent user agent
    */
-  public static boolean isBot(String userAgent) {
+  public static boolean isBot(String userAgent, String actionType) {
     if (StringUtils.isNotEmpty(userAgent)) {
       String userAgentLower = userAgent.toLowerCase();
-      for (String botKeyword : BOT_LIST) {
-        if (userAgentLower.contains(botKeyword.toLowerCase())) {
-          return true;
+      if (ActionTypeEnum.OPEN.getValue().equals(actionType)) {
+        for (String botKeyword : OPEN_BOT_LIST) {
+          if (userAgentLower.contains(botKeyword.toLowerCase())) {
+            return true;
+          }
+        }
+      } else {
+        for (String botKeyword : BOT_LIST) {
+          if (userAgentLower.contains(botKeyword.toLowerCase())) {
+            return true;
+          }
         }
       }
     }
@@ -301,7 +311,7 @@ public class UnifiedTrackingMessageParser {
     record.setGeoId(getGeoID(requestContext));
 
     // isBot. Basic bot detection by user agent.
-    record.setIsBot(isBot(userAgent));
+    record.setIsBot(isBot(userAgent, actionType));
 
     // payload
     String appId = CollectionServiceUtil.getAppIdFromUserAgent(baseEvent.getUserAgentInfo());
