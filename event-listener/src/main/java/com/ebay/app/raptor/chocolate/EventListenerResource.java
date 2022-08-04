@@ -221,6 +221,37 @@ public class EventListenerResource implements EventsApi {
       return res;
     }
   }
+
+  /**
+   * Collect akamai events
+   * @param body json body 
+   * @return Response telling it's successful or not
+   */
+  @Override
+  public Response akamai(Event body) {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "akamai").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        // akamai events
+        SpanEventHelper.writeEvent("Info", "mcs_akamai", "0", body.toString());
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
 }
 
 
