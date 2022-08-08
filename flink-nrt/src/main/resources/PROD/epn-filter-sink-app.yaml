@@ -1,0 +1,47 @@
+job:
+  name: epn-filter-sink-app
+
+source:
+  topic: marketing.tracking.ssl.filtered-epn-preprod
+  name: source
+  uid: source
+  properties: |-
+    bootstrap.servers: \
+      rhs-ontvkiaa-kfk-slc-1.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-2.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-3.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-4.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-5.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-6.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-7.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-8.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-9.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-10.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-11.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-12.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-13.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-14.rheos-streaming-prod.svc.45.tess.io:9092,\
+      rhs-ontvkiaa-kfk-slc-15.rheos-streaming-prod.svc.45.tess.io:9092
+    group.id: epn-filter-test-10
+    session.timeout.ms: 10000
+    auto.offset.reset: earliest
+    receive.buffer.bytes: 16777216
+    request.timeout.ms: 305000
+    sasl.mechanism: IAF
+    security.protocol: SASL_SSL
+    sasl.jaas.config: io.ebay.rheos.kafka.security.iaf.IAFLoginModule required\n\
+      iafConsumerId="urn:ebay-marketplace-consumerid:0a2563dc-390f-4b78-8648-68c01e248639"\n\
+      iafSecret="eb97c77a-92a6-490e-8808-09fd29ad03c5"\n\
+      iafEnv="production";
+    ssl.endpoint.identification.algorithm: 
+    rheos.services.urls: http://rheos-services.stratus.ebay.com
+    rheos.topic.schema: filter-message
+    flink.partition-discovery.interval-millis: 60000
+sink:
+  rno:
+    outputFileConfig:
+      partPrefix: epn-filter
+      partSuffix: .snappy.parquet
+    path: hdfs://apollo-router/apps/b_marketing_tracking/preprod/epn/filter
+    name: sink-rno
+    uid: sink-rno

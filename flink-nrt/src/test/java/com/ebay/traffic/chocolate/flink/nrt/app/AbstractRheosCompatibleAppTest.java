@@ -73,7 +73,7 @@ public class AbstractRheosCompatibleAppTest {
   @Test
   public void run() throws Exception {
     CustomSink.values.clear();
-    rheosCompatibleApp.run();
+    rheosCompatibleApp.run(new String[0]);
     Set<String> expected = new HashSet<>();
     expected.add("HELLO");
     assertEquals(expected, CustomSink.values);

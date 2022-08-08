@@ -70,7 +70,7 @@ public class ImkTrckngEventTransformApp
    */
   public static void main(String[] args) throws Exception {
     ImkTrckngEventTransformApp transformApp = new ImkTrckngEventTransformApp();
-    transformApp.run();
+    transformApp.run(args);
   }
 
   @Override

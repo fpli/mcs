@@ -32,6 +32,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-kafkacommon</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.ebay.rheos</groupId>
             <artifactId>rheos-client_JDK-1.8</artifactId>
             <version>${rheos.version}</version>
@@ -255,6 +261,54 @@
             <artifactId>metrics-common</artifactId>
             <version>1.3.2-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-nukv</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-migration</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-fountclient</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-simple</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <!-- kernel platform stuff -->
+        <dependency>
+            <groupId>org.ebaysf.mcf</groupId>
+            <artifactId>mcf-core</artifactId>
+            <version>3.5.0-RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.platform.security</groupId>
+            <artifactId>trustfabric-client</artifactId>
+            <version>1.0.7-RELEASE</version>
+        </dependency>
+
+        <!-- Not included in FOunt client, but used by Fount client -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+
     </dependencies>
 
     <build>
