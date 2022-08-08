@@ -5,11 +5,8 @@ package com.ebay.app.raptor.chocolate.gen.api;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
-import com.ebay.app.raptor.chocolate.gen.model.ErrorModel;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.*;
 
-import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
-import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import io.swagger.annotations.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -132,5 +129,5 @@ public interface EventsApi {
         @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
     @PreAuthorize("hasAuthority('https://api.ebay.com/oauth/scope/@public') and hasAuthority('https://api.ebay.com/oauth/scope/base@public') and hasAuthority('https://api.ebay.com/oauth/scope/experience@public')")
-    Response akamai(Event body);
+    Response akamai(AkamaiEvent body);
 }

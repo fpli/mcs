@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -224,11 +225,11 @@ public class EventListenerResource implements EventsApi {
 
   /**
    * Collect akamai events
-   * @param body json body 
+   * @param body json body
    * @return Response telling it's successful or not
    */
   @Override
-  public Response akamai(Event body) {
+  public Response akamai(AkamaiEvent body) {
     Tracer tracer = GlobalTracer.get();
     try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "akamai").startActive(true)) {
       Span span = scope.span();

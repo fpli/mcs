@@ -205,7 +205,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Event'
+              $ref: '#/components/schemas/AkamaiEvent'
 
 components:
   securitySchemes:
@@ -368,6 +368,15 @@ components:
               type: string
               description: placeOfferAPIClickTs, mandotary for click from placeofferAPI
               example: "1576108800000"
+    AkamaiEvent:
+      type: object
+      properties:
+        a:
+          type: string
+          example: 'aaa'
+        b:
+          type: string
+          example: 'bbb'
 
 
     ROIEvent:
