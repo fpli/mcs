@@ -20,17 +20,7 @@
     <project name="Chocolate-EPN-data">
         <metric name="Capping Output: click" query='sum by (channelAction)(sum_over_time(DedupeInputCount{_namespace_="chocolate",channelAction="click"}[24h]))' threshold="20000000" thresholdFactor="0.7" alert="true"/>
         <metric name="EPN click: click" query='sum by (channelAction)(sum_over_time(SuccessfulCountTess{_namespace_="chocolate",channelAction="click"}[24h]))' threshold="20000000" thresholdFactor="0.7" alert="true"/>
-        <metric name="Capping Output: impression" query='sum by (channelAction)(sum_over_time(DedupeInputCount{_namespace_="chocolate",channelAction="impression"}[24h]))' threshold="15000000" thresholdFactor="0.7" alert="true"/>
-        <metric name="EPN Impression: impression" query='sum by (channelAction)(sum_over_time(SuccessfulCountTess{_namespace_="chocolate",channelAction="impression"}[24h]))' threshold="15000000" thresholdFactor="0.7" alert="true"/>
-    </project>
-    <project name="Appdl-data">
-        <metric name="All App Event" value="Incoming" query='sum(increase(Incoming_total{_namespace_="appdlrheos"}[24h]))' threshold="1000000000" thresholdFactor="0.8" alert="true"/>
-        <metric name="First Open" value="FirstOpen" query='sum(increase(FirstOpeniOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(FirstOpenAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="200000" thresholdFactor="0.8" alert="true"/>
-        <metric name="Open" value="Open" query='sum(increase(OpeniOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(OpenAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="45000000" thresholdFactor="0.8" alert="true"/>
-        <metric name="ViewItem" value="ViewItem" query='sum(increase(ViewItemiOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(ViewItemAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="80000000" thresholdFactor="0.8" alert="true"/>
-        <metric name="Checkout" value="Checkout" query='sum(increase(CheckoutiOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(CheckoutAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="1500000" thresholdFactor="0.8" alert="true"/>
-        <metric name="Deeplink Open" value="DeeplinkOpen" query='sum(increase(DeeplinkOpeniOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(DeeplinkOpenAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="20000000" thresholdFactor="0.8" alert="true"/>
-        <metric name="Fm Segment" value="FmSegment" query='sum(increase(FmSegmentiOS_total{_namespace_="appdlapi"}[24h]))+sum(increase(FmSegmentAndroid_total{_namespace_="appdlapi"}[24h]))' threshold="500000" thresholdFactor="0.8" alert="true"/>
-        <metric name="MMP Fail" value="MMPFail" query='sum(increase(MMPFailFirstOpen_total{_namespace_="appdlapi"}[24h]))+sum(increase(MMPFailViewItem_total{_namespace_="appdlapi"}[24h]))+sum(increase(MMPFailCheckout_total{_namespace_="appdlapi"}[24h]))+sum(increase(MMPFailOpen_total{_namespace_="appdlapi"}[24h]))+sum(increase(MMPFailFmSegment_total{_namespace_="appdlapi"}[24h]))+sum(increase(MMPFailDeeplinkOpen_total{_namespace_="appdlapi"}[24h]))' threshold="100000" thresholdFactor="10" alert="false"/>
+        <metric name="Capping Output: impression" query='sum by (channelAction)(sum_over_time(DedupeInputCount{_namespace_="chocolate",channelAction="impression"}[24h]))' threshold="7800000" thresholdFactor="0.7" alert="true"/>
+        <metric name="EPN Impression: impression" query='sum by (channelAction)(sum_over_time(SuccessfulCountTess{_namespace_="chocolate",channelAction="impression"}[24h]))' threshold="7800000" thresholdFactor="0.7" alert="true"/>
     </project>
 </projects>

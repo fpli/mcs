@@ -7,14 +7,6 @@
         <dag id="epn_nrt_impression_v2" type="hourly" alert="false"/>
         <dag id="distcpRenoToHercules_v3" type="hourly" alert="false"/>
     </project>
-    <project name="core-job-monitor">
-        <dag id="AddDailyPartition" type="hourly" alert="false"/>
-        <dag id="AddHourlyPartition" type="hourly" alert="false"/>
-        <dag id="DriverIdMonitor" type="daily" alert="false"/>
-        <dag id="kill_long_run_job" type="hourly" alert="false"/>
-        <dag id="UTPHourlyDone" type="hourly" alert="false"/>
-        <dag id="UTPImkHourlyDone" type="hourly" alert="false"/>
-    </project>
     <project name="appdl-job-monitor">
         <dag id="AppdlETLTess" type="daily" alert="false"/>
         <dag id="appsflyer_batch_delete_data_job" type="hourly" alert="false"/>
