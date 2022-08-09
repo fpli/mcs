@@ -29,8 +29,7 @@
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "trackingId",
@@ -38,8 +37,7 @@
         "null",
         "string"
       ],
-      "doc":"ID to associate user behavior and dilivery",
-      "default": ""
+      "doc":"ID to associate user behavior and delivery"
     },
     {
       "name": "userId",
@@ -47,8 +45,7 @@
         "null",
         "long"
       ],
-      "doc":"Oracle id",
-      "default": ""
+      "doc":"Oracle id"
     },
     {
       "name": "publicUserId",
@@ -56,8 +53,7 @@
         "null",
         "string"
       ],
-      "doc":"public user id",
-      "default": ""
+      "doc":"public user id"
     },
     {
       "name": "encryptedUserId",
@@ -65,228 +61,201 @@
         "null",
         "long"
       ],
-      "doc":"Encrypted user id in email open and click url",
-      "default": ""
+      "doc":"Encrypted user id in email open and click url"
     },
     {
       "name": "guid",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "idfa",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "gadid",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "deviceId",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "channelType",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "actionType",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "partner",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "campaignId",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "rotationId",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "siteId",
       "type": [
         "null",
         "int"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "url",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "referer",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "userAgent",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "deviceFamily",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "deviceType",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "browserFamily",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "browserVersion",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "osFamily",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "osVersion",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "appVersion",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "appId",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "service",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "server",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "remoteIp",
       "type": [
         "null",
         "string"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "pageId",
       "type": [
         "null",
         "int"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "geoId",
       "type": [
         "null",
         "int"
-      ],
-      "default": ""
+      ]
     },
     {
       "name": "isBot",
       "type": "boolean",
-      "default" : "false"
+      "default" : false
     },
     {
-		"name": "payload",
-        "type": {
-            "type": "map",
-            "values": "string"
-        }
-	  }
+	  "name": "payload",
+       "type": {
+          "type": "map",
+          "values": "string"
+       }
+	}
   ]
 }

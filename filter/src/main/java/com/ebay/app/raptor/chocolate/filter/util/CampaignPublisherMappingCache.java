@@ -63,20 +63,6 @@ public class CampaignPublisherMappingCache {
     }
 
     /**
-     * Enters a mapping into the campaign -> publisher cache. Meant to be called from the Zookeeper entry point. This is
-     * synchronized because we check for uniqueness in the init method, and if we don't have a synchronized here, then,
-     * technically, there's an edge case where we could unnecessarily throw an exception by inserting duplicate keys via
-     * zookeeper.
-     *
-     * @param campaignId to create new mapping for
-     * @param publisherId to create new mapping for
-     */
-    public synchronized void addMapping(long campaignId, long publisherId) {
-        logger.debug("Adding new mapping. campaignId=" + campaignId + " publisherId=" + publisherId);
-        cache.putIfAbsent(campaignId, publisherId);
-    }
-
-    /**
      * Destroy the PublisherCache
      */
     public static synchronized void destroy() {

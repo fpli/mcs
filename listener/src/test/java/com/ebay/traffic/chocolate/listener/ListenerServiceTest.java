@@ -5,7 +5,6 @@ import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.raptor.test.framework.RaptorIOSpringRunner;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
-import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageDeserializer;
 import com.ebay.traffic.chocolate.kafka.ListenerMessageSerializer;
 import com.ebay.traffic.chocolate.listener.util.ListenerOptions;
@@ -56,7 +55,6 @@ public class ListenerServiceTest {
   private TestRestTemplate restTemplate;
 
   private static MiniKafkaCluster kafkaCluster;
-  private static MiniZookeeperCluster zookeeperCluster;
   private static MockHttpServletRequest mockClientRequest;
   private static MockHttpServletResponse mockProxyResponse;
   private static MessageObjectParser parser;
@@ -64,7 +62,6 @@ public class ListenerServiceTest {
   @BeforeClass
   public static void setUp() throws IOException {
     kafkaCluster = KafkaTestHelper.newKafkaCluster();
-    zookeeperCluster = kafkaCluster.getZookeeper();
     ListenerOptions options = ListenerOptions.getInstance();
     options.setKafkaProperties(kafkaCluster.getProducerProperties(
             LongSerializer.class, ListenerMessageSerializer.class));

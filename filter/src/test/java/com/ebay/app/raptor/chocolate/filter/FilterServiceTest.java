@@ -6,7 +6,6 @@ import com.ebay.app.raptor.chocolate.avro.FilterMessage;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.traffic.chocolate.common.KafkaTestHelper;
 import com.ebay.traffic.chocolate.common.MiniKafkaCluster;
-import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import com.ebay.traffic.chocolate.kafka.*;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.Producer;
@@ -39,21 +38,17 @@ import static com.ebay.traffic.chocolate.common.TestHelper.*;
     "GingerClient.testService.testClient.readTimeout=5000"})
 public class FilterServiceTest {
   private static MiniKafkaCluster kafkaCluster;
-  private static MiniZookeeperCluster zookeeperCluster;
 
   @BeforeClass
   public static void setUp() throws IOException {
 //    RuntimeContext.setConfigRoot(FilterServiceTest.class.
 //            getClassLoader().getResource("META-INF/configuration/Dev/"));
     kafkaCluster = KafkaTestHelper.newKafkaCluster();
-    zookeeperCluster = kafkaCluster.getZookeeper();
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setInputKafkaProperties(kafkaCluster.getConsumerProperties(
             LongDeserializer.class, ListenerMessageDeserializer.class));
     options.setSinkKafkaProperties(kafkaCluster.getProducerProperties(
             LongSerializer.class, FilterMessageSerializer.class));
-    options.setZkConnectionString(zookeeperCluster.getConnectionString());
-    options.setZkConnectionStringForPublisherCache(zookeeperCluster.getConnectionString());
 
     prepareData();
   }

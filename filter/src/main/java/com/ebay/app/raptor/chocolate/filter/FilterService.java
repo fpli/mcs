@@ -55,8 +55,6 @@ public class FilterService {
     ApplicationOptions.init();
     LBSClient.init();
     ApplicationOptions options = ApplicationOptions.getInstance();
-    //currently we need not use zookeeper watch to adding new campaign publisher pair into couchbase, so disable zookeeper here
-   // FilterZookeeperClient.init(options);
 
     //Initial Rule Configuration Map
     ApplicationOptions.initFilterRuleConfig(RULE_CONFIG_FILENAME);
