@@ -182,7 +182,7 @@ paths:
       summary: Send akamai event to marketing tracking
       description: Send akamai event to marketing tracking
       tags:
-        - events
+        - akamai
       operationId: akamai
       security:
         - app_scope_auth:
@@ -377,8 +377,6 @@ components:
         b:
           type: string
           example: 'bbb'
-
-
     ROIEvent:
       type: object
       properties:

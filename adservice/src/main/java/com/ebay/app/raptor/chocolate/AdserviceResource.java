@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -57,7 +58,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Path("/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi, AkamaiApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
 
   private static final String TYPE_INFO = "Info";
@@ -437,6 +438,24 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     String adguid = adserviceCookie.readAdguid(request);
     String encryptedUserid = idMapping.getUidByAdguid(adguid);
     return Response.status(Response.Status.OK).entity(encryptedUserid).build();
+  }
+
+  /**
+   * Collect Akamai events
+   */
+  @Override
+  public Response akamai(AkamaiEvent body, String xChocoAuth) {
+    // call MCS to send akamai events
+    String token = "akamai:chocolate_collection";
+    String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
+    if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
+      return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
+    } else {
+      Builder builder = mktClient.target(endpoint).path("/akamai").request();
+      builder.async().post(Entity.json(body), new MCSCallback());
+
+      return Response.status(Response.Status.OK).build();
+    }
   }
 
   /**

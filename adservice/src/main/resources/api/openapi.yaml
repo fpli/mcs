@@ -265,6 +265,34 @@ paths:
           description: Rejected
         '500':
           description: The call was unsuccessful due to exceptions on the Server
+  /akamai:
+    post:
+      summary: Send akamai event to marketing tracking
+      description: Send akamai event to marketing tracking
+      tags:
+        - akamai
+      operationId: akamai
+      parameters:
+        - in: header
+          name: X-Choco-Auth
+          schema:
+            type: string
+          description: Custom security header
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkamaiEvent'
+
 components:
   schemas:
     SyncEvent:
@@ -276,3 +304,12 @@ components:
         userid:
           type: string
           example: '12345678'
+    AkamaiEvent:
+      type: object
+      properties:
+        a:
+          type: string
+          example: 'aaa'
+        b:
+          type: string
+          example: 'bbb'
