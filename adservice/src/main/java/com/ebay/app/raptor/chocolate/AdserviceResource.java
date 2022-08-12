@@ -21,7 +21,12 @@ import com.ebay.jaxrs.client.config.bean.spi.JaxrsClientBaseConfigBean;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.raptor.opentracing.SpanEventHelper;
+import com.ebay.raptor.opentracing.Tags;
 import com.ebay.traffic.monitoring.Field;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -445,18 +450,35 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response akamai(AkamaiEvent body, String xChocoAuth) {
-    // call MCS to send akamai events
-    String token = "akamai:chocolate";
-    String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
-    if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
-      return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
-    } else {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("adservice").withTag(Tags.TYPE.getKey(), "akamai").startActive(true)) {
+      Span span = scope.span();
+      Response res;
+
+      // akamai events
+      String token = "akamai:chocolate";
+      String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
+      if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
+        res = Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
+      } else {
+        SpanEventHelper.writeEvent("Info", "akamai", "0", body.toString());
+        res = Response.status(Response.Status.OK).build();
+        Tags.STATUS.set(span, "0");
+      }
+      return res;
+    }
+
+//    // call MCS to send akamai events
+//    String token = "akamai:chocolate";
+//    String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
+//    if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
+//      return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
+//    } else {
 //      Builder builder = mktClient.target(endpoint).path("/akamai").request();
 //      builder.async().post(Entity.json(body), new MCSCallback());
-      SpanEventHelper.writeEvent(TYPE_INFO, "akamai", STATUS_OK, body.toString());
-
-      return Response.status(Response.Status.OK).build();
-    }
+//
+//      return Response.status(Response.Status.OK).build();
+//    }
   }
 
   /**
