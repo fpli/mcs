@@ -446,7 +446,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   @Override
   public Response akamai(AkamaiEvent body, String xChocoAuth) {
     // call MCS to send akamai events
-    String token = "akamai:chocolate_collection";
+    String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
