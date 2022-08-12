@@ -2,32 +2,23 @@ package com.ebay.app.raptor.chocolate.filter.util;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.PublisherCacheEntry;
-import com.ebay.app.raptor.chocolate.filter.ApplicationOptions;
-import com.ebay.dukes.CacheFactory;
-import com.ebay.dukes.base.BaseDelegatingCacheClient;
-import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
-import com.ebay.traffic.chocolate.common.MiniZookeeperCluster;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
-import scala.xml.Null;
 
 import java.io.IOException;
 
 import static com.ebay.app.raptor.chocolate.filter.service.FilterUtils.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class FilterUtilsTest {
 
 
     @BeforeClass
-    public static void setUp() throws Exception{
+    public static void setUp() {
     }
 
     @After
@@ -35,12 +26,12 @@ public class FilterUtilsTest {
     }
 
     @AfterClass
-  public static void tearDown() throws IOException{
+  public static void tearDown() {
 
   }
 
     @Test
-    public void testGetParamValueFromQuery() throws Exception {
+    public void testGetParamValueFromQuery() {
       String parameterNmae1 = "transType";
       String parameterNmae2 = "";
       String parameterNmae3 = null;
@@ -62,7 +53,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void testIsBESRoiTransType() throws Exception {
+    public void testIsBESRoiTransType() {
 
       assertTrue(isBESRoiTransType("BIN-Store"));
       assertTrue(isBESRoiTransType("BIN-FP"));
@@ -73,7 +64,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void testIsRoverBESRoi() throws Exception {
+    public void testIsRoverBESRoi() {
       FilterMessage outMessage = Mockito.mock(FilterMessage.class);;
       when(outMessage.getUri()).thenReturn("https://rover.ebay.com/roverroi/1/711-518-1801-10?mpuid=2082834080;324077230744;2176548533011;&siteId=0&BIN-Store=1&ff1=ss" +
           "&ff2=CHECKOUT|26764&tranType=BIN-Store&ff3=100015329801208&rcb=0");

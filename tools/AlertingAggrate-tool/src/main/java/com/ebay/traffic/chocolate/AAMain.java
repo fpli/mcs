@@ -29,7 +29,7 @@ public class AAMain {
     String toEmail = args[2];
     String runPeriod = args[3];
     String time = TimeUtil.getHour(System.currentTimeMillis());
-    String cluster = args[4];
+    String cluster = "27";
 
     logger.info("current time is: " + time);
     logger.info("current date is: " + date);

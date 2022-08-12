@@ -53,7 +53,7 @@ public class UTPChocolateEmailClickTransformApp
 
   public static void main(String[] args) throws Exception {
     UTPChocolateEmailClickTransformApp transformApp = new UTPChocolateEmailClickTransformApp();
-    transformApp.run();
+    transformApp.run(args);
   }
 
   @Override

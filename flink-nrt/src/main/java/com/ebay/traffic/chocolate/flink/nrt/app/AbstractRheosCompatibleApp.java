@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -39,13 +40,15 @@ public abstract class AbstractRheosCompatibleApp<IN, OUT> {
 
   protected Map<String, Object> env_config;
 
-  void run() throws Exception {
+  void run(String[] args) throws Exception {
+    ParameterTool parameters = ParameterTool.fromArgs(args);
     loadProperty();
     streamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
     prepareBaseExecutionEnvironment();
     DataStreamSource<IN> tuple2DataStreamSource = streamExecutionEnvironment.addSource(getKafkaConsumer());
     DataStream<OUT> output = transform(tuple2DataStreamSource);
     output.addSink(getKafkaProducer());
+    streamExecutionEnvironment.getConfig().setGlobalJobParameters(parameters);
     streamExecutionEnvironment.execute(this.getClass().getSimpleName());
   }
 

@@ -85,16 +85,6 @@ public class ApplicationOptionsTest {
   }
 
   @Test
-  public void testZookeeperConnect() {
-    Properties prop = new Properties();
-    String zkConnect = "127.1:2181";
-    prop.put(ApplicationOptions.ZK_CONNECT_PROPERTY, zkConnect);
-    ApplicationOptions.init(prop);
-    ApplicationOptions options = ApplicationOptions.getInstance();
-    assertEquals(options.getZookeeperString(), zkConnect);
-  }
-
-  @Test
   public void testInitFilterRuleConfig() throws IOException {
     ApplicationOptions.initFilterRuleConfig("filter_rule_config.json");
     Map<String, FilterRuleContent> defaultRule = ApplicationOptions.filterRuleConfigMap.get(ChannelType.DEFAULT);

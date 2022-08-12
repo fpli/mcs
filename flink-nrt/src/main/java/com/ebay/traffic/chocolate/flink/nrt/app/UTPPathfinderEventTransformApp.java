@@ -52,7 +52,7 @@ public class UTPPathfinderEventTransformApp
 
     public static void main(String[] args) throws Exception {
         UTPPathfinderEventTransformApp transformApp = new UTPPathfinderEventTransformApp();
-        transformApp.run();
+        transformApp.run(args);
     }
 
     @Override

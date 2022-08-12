@@ -206,6 +206,7 @@ public class PropertyMgr {
     }
   }
 
+
   public byte[] loadBytes(String propertyName) throws IOException {
     try (InputStream in = getClass().getClassLoader().getResourceAsStream(propertyEnv.name() + StringConstants.SLASH + propertyName)) {
       return IOUtils.toByteArray(Objects.requireNonNull(in));
@@ -221,6 +222,9 @@ public class PropertyMgr {
     if (hostName.endsWith(suffix) && hostName.length() > suffix.length()) {
       String prePart = hostName.substring(0, hostName.length() - suffix.length());
       int idx = prePart.lastIndexOf('.') + 1;
+      if (idx < 0) {
+        idx = 0;
+      }
 
       return prePart.substring(idx);
     }

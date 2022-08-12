@@ -20,7 +20,7 @@ public class HTMLParse {
         StringBuilder html = new StringBuilder();
         html.append(DailyEmailHtml.getSherlockAlertHtml("daily"));
         html.append(DailyEmailHtml.getHdfsCompareHtml());
-        html.append(DailyEmailHtml.getDailyDoneFileHtml());
+//        html.append(DailyEmailHtml.getDailyDoneFileHtml());
 //        html.append(DailyEmailHtml.getTDRotationCountHtml());
 //        html.append(DailyEmailHtml.getTDIMKCountHtml());
         html.append(DailyEmailHtml.getEPNDailyReportHtml());

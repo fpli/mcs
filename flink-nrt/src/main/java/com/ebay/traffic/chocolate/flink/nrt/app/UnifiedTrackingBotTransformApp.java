@@ -74,7 +74,7 @@ public class UnifiedTrackingBotTransformApp
 
   public static void main(String[] args) throws Exception {
     UnifiedTrackingBotTransformApp transformApp = new UnifiedTrackingBotTransformApp();
-    transformApp.run();
+    transformApp.run(args);
   }
 
   @Override

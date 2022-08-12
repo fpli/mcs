@@ -47,9 +47,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
     public static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "filter-kafka-rheos-producer.properties";
 
-    /** Zookeeper connection string */
-    public static final String ZK_CONNECT_PROPERTY = "chocolate.filter.zkconnect";
-
     /** In Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos". */
     public static final String KAFKA_IN_CLUSTER = "chocolate.filter.kafka.in";
 
@@ -70,15 +67,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     public static Map<ChannelType, Map<String, FilterRuleContent>> filterRuleConfigMap = new HashMap<ChannelType,
         Map<String, FilterRuleContent>>();
 
-    /** Zookeeper connection string for publisher cache. */
-    public static final String PUBLISHER_CACHE_ZK_CONNECT = "chocolate.filter.publisher.cache.zkconnect";
-
-    /** Driver ID path for Zookeeper connections. */
-    public static final String ZK_DRIVER_ID_PATH = "chocolate.filter.driverid.zkrootdir";
-
-    /** Zookeeper root directory for the Chocolate filter publisher cache */
-    public static final String PUBLISHER_CACHE_ZKROOTDIR = "chocolate.filter.cache.zkrootdir";
-
     /** Static driver ID */
     static final int DRIVER_ID = ApplicationOptionsParser.getDriverIdFromIp();
 
@@ -86,12 +74,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     private static final String COUCHBASE_DATASOURCE = "chocolate.filter.couchbase.datasource";
 
     private static final String ROI_TOPIC = "chocolate.filter.new-roi.topic";
-
-    /** zk connection string **/
-    private String zkConnectionString;
-
-    /** zk connection string for publisher cache **/
-    private String zkConnectionStringForPublisherCache;
 
     /** kafka related **/
     private static Properties inputKafkaProperties;
@@ -216,27 +198,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     }
 
     /**
-     * Gets Zookeeper properties.
-     */
-    public String getZookeeperString() {
-        if (zkConnectionString == null) {
-            if (!properties.containsKey(ZK_CONNECT_PROPERTY)) {
-                logger.error(ZK_CONNECT_PROPERTY + " not found in properties file!");
-                throw new UnsupportedOperationException(ZK_CONNECT_PROPERTY + " not found in properties file!");
-            }
-            zkConnectionString = properties.getProperty(ZK_CONNECT_PROPERTY);
-        }
-        return zkConnectionString;
-    }
-
-    /**
-     * Only for test
-     */
-   public void setZkConnectionString(String zkConnectionString) {
-        this.zkConnectionString = zkConnectionString;
-    }
-
-    /**
      * Only for test
      */
     public static void setInputKafkaProperties(Properties properties) {
@@ -356,54 +317,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     /** @return the properties for testing purposes only */
     public Properties getProperties() {
         return (Properties) properties.clone();
-    }
-
-    /**
-     * @return PublisherCache Zookeeper connection string.
-     */
-    public String getPublisherCacheZkConnectString() {
-        if (zkConnectionStringForPublisherCache == null) {
-            if (!properties.containsKey(PUBLISHER_CACHE_ZK_CONNECT)) {
-                logger.error(PUBLISHER_CACHE_ZK_CONNECT + " not found in properties file!");
-                throw new UnsupportedOperationException(PUBLISHER_CACHE_ZK_CONNECT
-                        + " not found in properties file!");
-            }
-
-            zkConnectionStringForPublisherCache = properties.getProperty(PUBLISHER_CACHE_ZK_CONNECT);
-        }
-
-        return zkConnectionStringForPublisherCache;
-    }
-
-    /**
-     * For test
-     */
-    public void setZkConnectionStringForPublisherCache(String zkConnectionString) {
-        this.zkConnectionStringForPublisherCache = zkConnectionString;
-    }
-
-    /**
-     * @return Zookeeper driver ID node for the Chocolate filter.
-     */
-    public String getZkDriverIdNode() {
-        String root = ApplicationOptionsParser.getStringProperty(properties,
-                ZK_DRIVER_ID_PATH);
-        // Now append a trailing '/' if not present.
-        if (!root.endsWith("/")) root += "/";
-
-        // Now append the driver ID.
-        root += Integer.toString(this.getDriverId());
-
-        // Get the
-        return root;
-    }
-
-    /**
-     * @return Zookeeper root directory for the Chocolate filter publisher cache.
-     */
-    public String getPublisherCacheZkRoot() {
-        return ApplicationOptionsParser.getStringProperty(properties,
-                PUBLISHER_CACHE_ZKROOTDIR);
     }
 
     /**

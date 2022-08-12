@@ -1629,10 +1629,20 @@ public class EventListenerServiceTest {
   
   @Test
   public void testThirdPartyClick() {
+    // Third party clicks should not be tracked into ubi
     Event event = new Event();
     event.setReferrer("");
-    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7");
+
+    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7&third_party=true");
     Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+  
+    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=8&third_party=true");
+    response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    assertEquals(HttpStatus.CREATED.value(), response.getStatus());
+  
+    event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=29&third_party=true");
+    response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
 }

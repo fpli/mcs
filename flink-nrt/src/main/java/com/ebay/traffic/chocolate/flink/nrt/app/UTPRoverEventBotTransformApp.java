@@ -50,7 +50,7 @@ public class UTPRoverEventBotTransformApp
 
   public static void main(String[] args) throws Exception {
     UTPRoverEventBotTransformApp transformApp = new UTPRoverEventBotTransformApp();
-    transformApp.run();
+    transformApp.run(args);
   }
 
   @Override

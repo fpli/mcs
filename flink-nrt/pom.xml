@@ -13,7 +13,7 @@
     <name>chocolate flink-nrt</name>
 
     <properties>
-        <flink.version>1.10.0</flink.version>
+        <flink.version>1.13.6</flink.version>
         <iaf.version>0.0.8-RELEASE</iaf.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -29,6 +29,12 @@
             <groupId>com.ebay.traffic</groupId>
             <artifactId>chocolate-utp-common</artifactId>
             <version>1.3.6-RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.traffic</groupId>
+            <artifactId>chocolate-kafkacommon</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -126,7 +132,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.3.1</version>
+            <version>3.3.2</version>
         </dependency>
 
         <dependency>
@@ -255,6 +261,54 @@
             <artifactId>metrics-common</artifactId>
             <version>1.3.2-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-nukv</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-migration</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-fountclient</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.dukes</groupId>
+            <artifactId>dukes-simple</artifactId>
+            <version>1.6.26</version>
+        </dependency>
+
+        <!-- kernel platform stuff -->
+        <dependency>
+            <groupId>org.ebaysf.mcf</groupId>
+            <artifactId>mcf-core</artifactId>
+            <version>3.5.0-RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.platform.security</groupId>
+            <artifactId>trustfabric-client</artifactId>
+            <version>1.0.7-RELEASE</version>
+        </dependency>
+
+        <!-- Not included in FOunt client, but used by Fount client -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+
     </dependencies>
 
     <build>
