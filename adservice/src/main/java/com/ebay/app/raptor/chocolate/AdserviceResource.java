@@ -451,8 +451,9 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
     } else {
-      Builder builder = mktClient.target(endpoint).path("/akamai").request();
-      builder.async().post(Entity.json(body), new MCSCallback());
+//      Builder builder = mktClient.target(endpoint).path("/akamai").request();
+//      builder.async().post(Entity.json(body), new MCSCallback());
+      SpanEventHelper.writeEvent(TYPE_INFO, "akamai", STATUS_OK, body.toString());
 
       return Response.status(Response.Status.OK).build();
     }
