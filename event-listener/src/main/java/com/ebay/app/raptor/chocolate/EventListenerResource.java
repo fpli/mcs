@@ -3,6 +3,7 @@ package com.ebay.app.raptor.chocolate;
 import com.ebay.app.raptor.chocolate.eventlistener.error.LocalizedErrorFactoryV3;
 import com.ebay.app.raptor.chocolate.gen.api.EventsApi;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -205,6 +206,37 @@ public class EventListenerResource implements EventsApi {
       Response res = null;
       try {
         collectionService.collectSync(request, requestContext, body);
+        res = Response.status(Response.Status.CREATED).build();
+        Tags.STATUS.set(span, "0");
+      } catch (Exception e) {
+        Tags.STATUS.set(span, "0");
+        // show warning in cal
+        SpanEventHelper.writeEvent("Warning", "mktcollectionsvc", "1", e.getMessage());
+        try {
+          res = errorFactoryV3.makeWarnResponse(e.getMessage());
+        } catch (Exception ex) {
+          logger.warn(e.getMessage(), request.toString(), body);
+          logger.warn(ex.getMessage(), ex);
+        }
+      }
+      return res;
+    }
+  }
+
+  /**
+   * Collect akamai events
+   * @param body json body
+   * @return Response telling it's successful or not
+   */
+  @Override
+  public Response akamai(AkamaiEvent body) {
+    Tracer tracer = GlobalTracer.get();
+    try(Scope scope = tracer.buildSpan("mktcollectionsvc").withTag(Tags.TYPE.getKey(), "akamai").startActive(true)) {
+      Span span = scope.span();
+      Response res = null;
+      try {
+        // akamai events
+        SpanEventHelper.writeEvent("Info", "mcs_akamai", "0", body.toString());
         res = Response.status(Response.Status.CREATED).build();
         Tags.STATUS.set(span, "0");
       } catch (Exception e) {

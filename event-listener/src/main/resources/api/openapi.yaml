@@ -177,6 +177,35 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Event'
+  /akamai:
+    post:
+      summary: Send akamai event to marketing tracking
+      description: Send akamai event to marketing tracking
+      tags:
+        - akamai
+      operationId: akamai
+      security:
+        - app_scope_auth:
+            - 'https://api.ebay.com/oauth/scope/@public'
+            - 'https://api.ebay.com/oauth/scope/base@public'
+            - 'https://api.ebay.com/oauth/scope/experience@public'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Rejected due to message format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorModel'
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkamaiEvent'
 
 components:
   securitySchemes:
@@ -339,8 +368,15 @@ components:
               type: string
               description: placeOfferAPIClickTs, mandotary for click from placeofferAPI
               example: "1576108800000"
-
-
+    AkamaiEvent:
+      type: object
+      properties:
+        a:
+          type: string
+          example: 'aaa'
+        b:
+          type: string
+          example: 'bbb'
     ROIEvent:
       type: object
       properties:
