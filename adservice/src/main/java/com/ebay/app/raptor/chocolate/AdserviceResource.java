@@ -450,35 +450,18 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response akamai(AkamaiEvent body, String xChocoAuth) {
-    Tracer tracer = GlobalTracer.get();
-    try(Scope scope = tracer.buildSpan("adservice").withTag(Tags.TYPE.getKey(), "akamai").startActive(true)) {
-      Span span = scope.span();
-      Response res;
-
-      // akamai events
-      String token = "akamai:chocolate";
-      String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
-      if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
-        res = Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
-      } else {
-        SpanEventHelper.writeEvent("Info", "akamai", "0", body.toString());
-        res = Response.status(Response.Status.OK).build();
-        Tags.STATUS.set(span, "0");
-      }
-      return res;
-    }
-
-//    // call MCS to send akamai events
-//    String token = "akamai:chocolate";
-//    String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
-//    if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
-//      return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
-//    } else {
+    // call MCS to send akamai events
+    String token = "akamai:chocolate";
+    String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
+    if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
+      return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
+    } else {
+      logger.info("Akamai event: " + body.toString());
 //      Builder builder = mktClient.target(endpoint).path("/akamai").request();
 //      builder.async().post(Entity.json(body), new MCSCallback());
-//
-//      return Response.status(Response.Status.OK).build();
-//    }
+
+      return Response.status(Response.Status.OK).build();
+    }
   }
 
   /**
