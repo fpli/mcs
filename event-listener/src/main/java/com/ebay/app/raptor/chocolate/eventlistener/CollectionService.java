@@ -80,8 +80,6 @@ public class CollectionService {
   private static final String STATUS_OK = "0";
 
   @Autowired
-  private HttpRoverClient roverClient;
-  @Autowired
   private PerformanceMarketingCollector performanceMarketingCollector;
   @Autowired
   private MrktEmailCollector mrktEmailCollector;
@@ -104,12 +102,10 @@ public class CollectionService {
 
   @Autowired
   private CouchbaseClientV2 couchbaseClientV2;
-  private static final String PARTNER = "partner";
   private static final String PLATFORM = "platform";
   private static final String LANDING_PAGE_TYPE = "landingPageType";
   private static final String ADGUID_PARAM = "adguid";
   private static final String ROI_SOURCE = "roisrc";
-  private static final String ROVER_INTERNAL_VIP = "internal.rover.vip.ebay.com";
   private static final List<String> REFERER_WHITELIST = Arrays.asList(
           "https://ebay.mtag.io", "https://ebay.pissedconsumer.com", "https://secureir.ebaystatic.com",
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
@@ -270,12 +266,6 @@ public class CollectionService {
 
     // get original referer from different sources
     String referer = commonRequestHandler.getReferer(event, requestHeaders, endUserContext);
-
-    // legacy rover deeplink case. Forward it to rover. We control this at our backend in case mobile app miss it
-    if (CollectionServiceUtil.isLegacyRoverDeeplinkCase(event.getTargetUrl(), referer)) {
-      roverClient.forwardRequestToRover(referer, ROVER_INTERNAL_VIP, request);
-      return true;
-    }
 
     // get user agent
     String userAgent = endUserContext.getUserAgent();
