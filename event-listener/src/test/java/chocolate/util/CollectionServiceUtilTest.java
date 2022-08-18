@@ -263,44 +263,6 @@ public class CollectionServiceUtilTest {
   }
 
   @Test
-  public void testIsLegacyRoverDeeplinkCase() {
-    String targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor";
-    String referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/1?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    targetUrl = "https://www.ebay.com/sch/i.html?_nkw=first+home+decor";
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/2?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/4?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/16?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/28?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/7?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/8?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/26?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://rover.ebay.com/rover/1/710-53481-19255-0/27?campid=5338757546&customid=deeplinktest&toolid=10001&mpre=https%3A%2F%2Fwww.ebay.co.uk%2Fitm%2F184967549514";
-    assertTrue(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-
-    referer = "https://www.ebay.com/sch/i.html";
-    assertFalse(CollectionServiceUtil.isLegacyRoverDeeplinkCase(targetUrl, referer));
-  }
-
-  @Test
   public void testInRefererWhitelist() {
     String referer = "https://ebay.mtag.io/?abc=true";
     assertTrue(CollectionServiceUtil.inRefererWhitelist(referer));
