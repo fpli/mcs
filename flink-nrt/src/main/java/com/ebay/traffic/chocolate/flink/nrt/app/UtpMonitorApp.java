@@ -182,7 +182,7 @@ public class UtpMonitorApp {
             String channelType = nullVerifier(message.getChannelType());
             String actionType = nullVerifier(message.getActionType());
             String producer = nullVerifier(message.getService());
-            String isBot = nullVerifier(message.getIsBot().toString());
+            String isBot = nullVerifier(String.valueOf(message.getIsBot()));
             String isUep = nullVerifier(getUEP(message.getPayload()));
             String platform = nullVerifier(getPlatform(message));
             String site = nullVerifier(String.valueOf(message.getSiteId()));
@@ -277,7 +277,7 @@ public class UtpMonitorApp {
         }
     }
 
-    private static List<String> getMessageId(Map<String, String> payload) throws Exception {
+    public static List<String> getMessageId(Map<String, String> payload) throws Exception {
         List<String> nullMessageList = new ArrayList<>();
         nullMessageList.add("NULL");
         String messageListString = payload.getOrDefault("annotation.mesg.list", "[]");
