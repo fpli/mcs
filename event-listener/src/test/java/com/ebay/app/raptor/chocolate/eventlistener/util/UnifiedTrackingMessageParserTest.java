@@ -262,6 +262,57 @@ public class UnifiedTrackingMessageParserTest {
     assertEquals("700001", message.getPayload().get("plmtId"));
     assertEquals("313369033082", message.getPayload().get("recoId"));
     assertEquals("1", message.getPayload().get("recoPos"));
+  }
 
+  @Test
+  public void testEmailOpenSiteId() throws Exception {
+    UnifiedTrackingMessageParser utpParser = new UnifiedTrackingMessageParser();
+    long currentTimeMillis = System.currentTimeMillis();
+    ContainerRequestContext requestContext = Mockito.mock(ContainerRequestContext.class);
+    UserPrefsCtx userPrefsCtx = Mockito.mock(UserPrefsCtx.class);
+    Locale locale = new Locale("xx", "YY");
+    GeoCtx geoCtx = new GeoCtx(101);
+    Mockito.when(userPrefsCtx.getLangLocale()).thenReturn(locale);
+    Mockito.when(userPrefsCtx.getGeoContext()).thenReturn(geoCtx);
+    Mockito.when(requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY)).thenReturn(userPrefsCtx);
+    RequestTracingContext requestTracingContext = Mockito.mock(RequestTracingContext.class);
+    Mockito.when(requestTracingContext.getRlogId()).thenReturn("123456");
+    Mockito.when(requestContext.getProperty(RequestTracingContext.NAME)).thenReturn(requestTracingContext);
+    DomainRequestData domainRequestData = Mockito.mock(DomainRequestData.class);
+    Mockito.when(domainRequestData.getSiteId()).thenReturn(101);
+    Mockito.when(domainRequestData.getHost()).thenReturn("localhost");
+    Mockito.when(requestContext.getProperty(DomainRequestData.NAME)).thenReturn(domainRequestData);
+
+    IEndUserContext endUserContext = Mockito.mock(IEndUserContext.class);
+    Mockito.when(endUserContext.getIPAddress()).thenReturn("127.0.0.1");
+    UserAgentInfo agentInfo = new UserAgentParser().parse("ebayUserAgent/eBayIOS;5.19.0;iOS;11.2;Apple;x86_64;" +
+        "no-carrier;414x736;3.0");
+
+    String url = "https://www.ebayadservices.com/marketingtracking/v1/impression?mkevt=4&mkpid=2&emsid=e90001.m43.l1123&mkcid=8&bu=45101843235&osub=0d6476007af14726a1eaca4dbd59f3fd%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20220321090000&ch=osgood&trkid=0A7B08EE-0B951BFA9CE-017F96B73B0D-0000000000BDDC2E&siteId=77";
+    String referer = "https://www.google.com";
+    MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(url).build().getQueryParams();
+    long snapshotId = 0L;
+    long shortSnapshotId = 0L;
+    Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    BaseEvent baseEvent = new BaseEvent();
+    baseEvent.setTimestamp(currentTimeMillis);
+    baseEvent.setUrl(url);
+    baseEvent.setReferer(referer);
+    baseEvent.setChannelType(ChannelIdEnum.MRKT_EMAIL);
+    baseEvent.setActionType(ChannelActionEnum.EMAIL_OPEN);
+    baseEvent.setUserAgentInfo(agentInfo);
+    baseEvent.setEndUserContext(endUserContext);
+    baseEvent.setUrlParameters(parameters);
+    requestHeaders.put("X-EBAY-C-TRACKING", "cguid=8b34ef1d1740a4d724970d78eec8ee4c644dc2df");
+    baseEvent.setRequestHeaders(requestHeaders);
+    baseEvent.setUserPrefsCtx(userPrefsCtx);
+    baseEvent.setUuid(UUID.randomUUID().toString());
+
+    UnifiedTrackingMessage message = utpParser.parse(baseEvent, requestContext, snapshotId, shortSnapshotId);
+
+    assertEquals("MRKT_EMAIL",  message.getChannelType());
+    assertEquals("OPEN",  message.getActionType());
+    assertEquals(Integer.valueOf(77), message.getSiteId());
   }
 }
