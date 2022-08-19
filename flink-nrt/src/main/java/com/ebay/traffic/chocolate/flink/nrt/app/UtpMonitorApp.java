@@ -277,7 +277,7 @@ public class UtpMonitorApp {
         }
     }
 
-    public static List<String> getMessageId(Map<String, String> payload) throws Exception {
+    private static List<String> getMessageId(Map<String, String> payload) throws Exception {
         List<String> nullMessageList = new ArrayList<>();
         nullMessageList.add("NULL");
         String messageListString = payload.getOrDefault("annotation.mesg.list", "[]");
