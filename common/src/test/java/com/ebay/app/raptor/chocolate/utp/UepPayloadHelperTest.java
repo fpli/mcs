@@ -48,10 +48,11 @@ public class UepPayloadHelperTest {
     assertEquals(String.valueOf(userId), result.get("userid"));
 
     // uep click
-    clickUrl = "https://www.ebay.com/i/292626925815?mkevt=1&mkpid=2&emsid=e90001.m43.l1123&mkcid=8&bu=45357454939&osub=984d1ae5f4be407f85b72c20d309f59c%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20210218090000&fdbk=1&ch=osgood&trkId=0AB8E3DC-E3FD0D54F97-0177B1D23EB7-00000000002917F9&mesgId=3023&plmtId=700001&recoId=292626925815&recoPos=1&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2CtrkId%3DtrkId%2CmesgId%3DmesgId%2CplmtId%3DplmtId%2CrecoId%3DrecoId%2CrecoPos%3DrecoPos%2Cchnl%3Dmkcid";
+    clickUrl = "https://www.ebay.com/i/292626925815?mkevt=1&mkpid=2&emsid=e90001.m43.l1123&mkcid=8&bu=45357454939&osub=984d1ae5f4be407f85b72c20d309f59c%257ETE80101_T_AGM&segname=TE80101_T_AGM&crd=20210218090000&fdbk=1&ch=osgood&trkId=0AB8E3DC-E3FD0D54F97-0177B1D23EB7-00000000002917F9&cnvId=700001&mesgId=3023&plmtId=700001&recoId=292626925815&recoPos=1&sojTags=osub%3Dosub%2Csegname%3Dsegname%2Ccrd%3Dcrd%2Cch%3Dch%2CtrkId%3DtrkId%2CmesgId%3DmesgId%2CplmtId%3DplmtId%2CrecoId%3DrecoId%2CrecoPos%3DrecoPos%2Cchnl%3Dmkcid";
     result = helper.getUepPayload(clickUrl, userId, ActionTypeEnum.CLICK, ChannelTypeEnum.MRKT_MESSAGE_CENTER);
     System.out.println(result);
     assertTrue(result.get("annotation.mesg.list").contains("mesg.fdbk"));
+    assertEquals("700001", result.get("annotation.cnv.id"));
   }
 
   @Test
