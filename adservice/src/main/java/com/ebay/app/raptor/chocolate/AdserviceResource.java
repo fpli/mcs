@@ -444,13 +444,13 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    * Collect Akamai events
    */
   @Override
-  public Response akamai(Object body, String xChocoAuth) {
+  public Response akamai(String body, String xChocoAuth) {
     String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
     } else {
-      logger.info("Akamai event: " + body.toString());
+      logger.info("Akamai event: " + body);
 //      Builder builder = mktClient.target(endpoint).path("/akamai").request();
 //      builder.async().post(Entity.json(body), new MCSCallback());
 
