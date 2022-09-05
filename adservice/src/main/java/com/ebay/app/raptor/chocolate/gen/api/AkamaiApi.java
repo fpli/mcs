@@ -1,13 +1,11 @@
 package com.ebay.app.raptor.chocolate.gen.api;
 
-import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import io.swagger.annotations.*;
 
 @Api(description = "The Akamai API")
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2022-08-10T17:50:41.429+08:00[Asia/Shanghai]")
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2022-09-05T14:31:34.611+08:00[Asia/Shanghai]")
 public interface AkamaiApi {
     @POST
     @Path("/akamai")
@@ -19,5 +17,5 @@ public interface AkamaiApi {
         @ApiResponse(code = 500, message = "The call was unsuccessful due to exceptions on the Server", response = Void.class) }
     )
 
-    Response akamai(AkamaiEvent body, @HeaderParam("X-Choco-Auth") @ApiParam("Custom security header") String xChocoAuth);
+    Response akamai(Object body, @HeaderParam("X-Choco-Auth")  @ApiParam("Custom security header") String xChocoAuth);
 }
