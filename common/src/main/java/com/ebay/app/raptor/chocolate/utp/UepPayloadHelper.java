@@ -22,7 +22,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
@@ -55,6 +54,10 @@ public class UepPayloadHelper {
   public static final String ANNOTATION_MESSAGE_NAME = "annotation.message.name";
   public static final String ANNOTATION_CANVAS_UNIQ_ID = "annotation.canvas.uniq.id";
   public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.ofHours(-7);
+
+  // UEP canvas id
+  private static final String ANNOTATION_CNV_ID = "annotation.cnv.id";
+  private static final String CANVAS_ID = "cnvId";
 
   private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(DEFAULT_ZONE_OFFSET);
   private final DateTimeFormatter eventDateStringFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(DEFAULT_ZONE_OFFSET);
@@ -170,10 +173,14 @@ public class UepPayloadHelper {
     // status, all SENT for click/open
     payload.put(MessageConstantsEnum.STATUS.getValue(), STATUS_SENT);
 
-    // cnv.id no need in open/click
     // tracking id
     String trackingId = getOrDefault(parseFromTwoParams(parameters, TRACKING_ID, TRACKING_ID.toLowerCase()));
     payload.put(MessageConstantsEnum.TRACKING_ID.getValue(), trackingId);
+    // annotation.cnv.id
+    String cnvId = parseFromTwoParams(parameters, CANVAS_ID, CANVAS_ID.toLowerCase());
+    if (!StringUtils.isEmpty(cnvId)) {
+      payload.put(ANNOTATION_CNV_ID, cnvId);
+    }
     // isUep
     if((ChannelTypeEnum.SITE_EMAIL.equals(channelTypeEnum) ||
         ChannelTypeEnum.MRKT_EMAIL.equals(channelTypeEnum) ||

@@ -92,8 +92,8 @@ public class CollectionServiceUtil {
   private static final List<String> THIRD_PARTY_VALUE = Arrays.asList("true");
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
           "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
-  
-  
+
+
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
 
@@ -494,34 +494,6 @@ public class CollectionServiceUtil {
   }
 
   /**
-   * Is legacy rover deeplink case
-   * @param targetUrl
-   * @param referer
-   * @return forward to rover or not
-   */
-  public static boolean isLegacyRoverDeeplinkCase(String targetUrl, String referer) {
-    Matcher roverSitesMatcher = roversites.matcher(referer.toLowerCase());
-
-    UriComponents uriComponents = UriComponentsBuilder.fromUriString(targetUrl).build();
-    MultiValueMap<String, String> parameters = uriComponents.getQueryParams();
-
-    if (parameters.containsKey(Constants.UFES_REDIRECT) && ("true".equals(parameters.getFirst(Constants.UFES_REDIRECT)))) {
-      return false;
-    }
-
-    // Don't forward to Rover for PM cases
-    String[] refererPathComponents = UriComponentsBuilder.fromUriString(referer).build().getPath().split(Constants.SLASH);
-    if (refererPathComponents.length == 5) {
-      ChannelIdEnum channelType = ChannelIdEnum.parse(refererPathComponents[4]);
-      if (PM_CHANNELS.contains(channelType)) {
-        return false;
-      }
-    }
-
-    return roverSitesMatcher.find();
-  }
-
-  /**
    * The referer belongs to ebay site if user clicks some ulk links and redirects to the pages which UFES supports on iOS
    * The referer is always ebay site for the static page (pages.ebay)
    * So add a page whitelist to avoid rejecting these clicks
@@ -637,7 +609,7 @@ public class CollectionServiceUtil {
 
     return true;
   }
-  
+
   /**
    * Identify third party clicks
    * @param parameters

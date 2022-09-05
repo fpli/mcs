@@ -281,7 +281,12 @@ public class UnifiedTrackingMessageParser {
     record.setRotationId(rotationId);
 
     // site id
-    record.setSiteId(domainRequest.getSiteId());
+    String siteId = parameters.getFirst(Constants.SITEID);
+    if (ActionTypeEnum.OPEN.getValue().equals(actionType) && StringUtils.isNotEmpty(siteId)) {
+      record.setSiteId(Integer.valueOf(siteId));
+    } else {
+      record.setSiteId(domainRequest.getSiteId());
+    }
 
     // url
     record.setUrl(removeBsParam(parameters, baseEvent.getUrl()));
