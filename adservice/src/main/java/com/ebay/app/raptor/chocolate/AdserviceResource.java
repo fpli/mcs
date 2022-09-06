@@ -21,12 +21,7 @@ import com.ebay.jaxrs.client.config.bean.spi.JaxrsClientBaseConfigBean;
 import com.ebay.kernel.util.RequestUtil;
 import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.raptor.opentracing.SpanEventHelper;
-import com.ebay.raptor.opentracing.Tags;
 import com.ebay.traffic.monitoring.Field;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -449,14 +444,13 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    * Collect Akamai events
    */
   @Override
-  public Response akamai(AkamaiEvent body, String xChocoAuth) {
-    // call MCS to send akamai events
+  public Response akamai(String body, String xChocoAuth) {
     String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
     } else {
-      logger.info("Akamai event: " + body.toString());
+      logger.info("Akamai event: " + body);
 //      Builder builder = mktClient.target(endpoint).path("/akamai").request();
 //      builder.async().post(Entity.json(body), new MCSCallback());
 

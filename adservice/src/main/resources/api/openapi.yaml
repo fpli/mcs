@@ -291,7 +291,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AkamaiEvent'
+              type: string
 
 components:
   schemas:
