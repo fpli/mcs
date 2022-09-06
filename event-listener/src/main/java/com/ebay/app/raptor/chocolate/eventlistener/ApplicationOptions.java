@@ -40,10 +40,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   private static final String EVENT_LISTENER_PROPERTIES_FILE = "event-listener.properties";
 
-  private static final String CONSUME_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-consumer.properties";
-
-  private static final String CONSUME_RHEOS_KAFKA_SERVICE_URL = "chocolate.event-listener.kafka.consumer.services.urls";
-
   private static final String SINK_KAFKA_PROPERTIES_FILE = "event-listener-kafka-producer.properties";
 
   private static final String SINK_RHEOS_KAFKA_PROPERTIES_FILE = "event-listener-rheos-producer.properties";
@@ -58,19 +54,9 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static final String KAFKA_OUT_CLUSTER = "chocolate.event-listener.kafka.out";
 
   /**
-   * prefix for rover rheos topic
-   */
-  private static final String RHEOS_INPUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.consumer.topic";
-
-  /**
    * prefix of out Kafka topic for channels.
    */
   private static final String KAFKA_OUT_TOPIC_PREFIX = "chocolate.event-listener.kafka.producer.topic.";
-
-  /**
-   * behavior topic
-   */
-  private static final String RHEOS_OUT_BEHAVIOR_TOPIC = "chocolate.event-listener.kafka.producer.behavior.topic";
 
   /**
    * unified tracking topic
@@ -100,7 +86,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   /**
    * kafka related
    **/
-  private static Properties consumeRheosKafkaProperties;
   private static Properties sinkKafkaProperties;
   private static Properties sinkRheosKafkaProperties;
   private static Properties behaviorRheosProperties;
@@ -116,7 +101,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public static synchronized void init() throws IOException {
     instance.initInstance(loadProperties(EVENT_LISTENER_PROPERTIES_FILE));
-    consumeRheosKafkaProperties = loadProperties(CONSUME_RHEOS_KAFKA_PROPERTIES_FILE);
 
     if (sinkKafkaProperties == null) {
       sinkKafkaProperties = loadProperties(SINK_KAFKA_PROPERTIES_FILE);
@@ -203,32 +187,6 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public Properties getUnifiedTrackingRheosProperties() {
     return unifiedTrackingRheosProperties;
-  }
-
-  /**
-   * Get consume rheos properties
-   */
-  public Properties getConsumeRheosKafkaProperties() {
-    return consumeRheosKafkaProperties;
-  }
-
-  /**
-   * Get consume rheos topic
-   *
-   */
-  public String getConsumeRheosTopic() {
-    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_INPUT_TOPIC_PREFIX);
-  }
-
-  public String getConsumeRheosKafkaServiceUrl() {
-    return ApplicationOptionsParser.getStringProperty(properties, CONSUME_RHEOS_KAFKA_SERVICE_URL);
-  }
-
-  /**
-   * Get produce behavior topic
-   */
-  public String getProduceBehaviorTopic() {
-    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_OUT_BEHAVIOR_TOPIC);
   }
 
   /**
