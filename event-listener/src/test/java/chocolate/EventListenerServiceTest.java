@@ -101,7 +101,6 @@ public class EventListenerServiceTest {
   private static String endUserCtxMweb;
   private static String endUserCtxNoReferer;
   private static String endUserCtxCheckoutAPI;
-  private static String endUserCtxPlaceOfferAPI;
   private static String endUserCtxAndroidNoReferer;
 
   private static String tracking;
@@ -205,16 +204,6 @@ public class EventListenerServiceTest {
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
       "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
       "userAgent=checkoutApi," +
-      "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
-      "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,uri=%2Fsampleappweb%2Fsctest," +
-      "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
-      "physicalLocation=country%3DUS,contextualLocation=country%3DIT," +
-      "origUserId=origUserName%3Dqamenaka1%2CorigAcctId%3D1026324923,isPiggybacked=false,fullSiteExperience=true," +
-      "expectSecureURL=true&X-EBAY-C-CULTURAL-PREF=currency=USD,locale=en-US,timezone=America%2FLos_Angeles";
-    endUserCtxPlaceOfferAPI = "ip=10.148.184.210," +
-      "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
-      "%2Fapng%2C*%2F*%3Bq%3D0.8,userAgentAcceptEncoding=gzip%2C+deflate%2C+br,userAgentAcceptCharset=null," +
-      "userAgent=Mozilla%2F5.0%20%28compatible%3B%20Ebay%2FPlaceOfferAPI%29," +
       "deviceId=16178ec6e70.a88b147.489a0.fefc1716,deviceIdType=IDREF," +
       "contextualLocation=country%3DUS%2Cstate%3DCA%2Czip%3D95134,uri=%2Fsampleappweb%2Fsctest," +
       "applicationURL=http%3A%2F%2Ftrackapp-3.stratus.qa.ebay.com%2Fsampleappweb%2Fsctest%3Fmkevt%3D1," +
@@ -1475,67 +1464,6 @@ public class EventListenerServiceTest {
     assertEquals(1, listenerMessagesROIExcludeRover.size());
   }
 
-  @Test
-  public void testPlaceOfferAPIClickAndRoiEventsResource() throws InterruptedException {
-    // Test Checkout api click
-    Event event = new Event();
-    event.setReferrer("");
-    event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
-    EventPayload eventPayload = new EventPayload();
-    eventPayload.setPlaceOfferAPIClickTs("1604566345000");
-    event.setPayload(eventPayload);
-
-    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
-    assertEquals(201, response.getStatus());
-
-    // Test Checkout api ROI
-    ROIEvent roiEvent = new ROIEvent();
-    roiEvent.setItemId("192658398245");
-    roiEvent.setTransType("BIN-FP");
-    roiEvent.setUniqueTransactionId("1677235978009");
-    roiEvent.setTransactionTimestamp("1504566344000");
-
-    Map<String, String> payload = new HashMap<String, String>();
-    payload.put("roisrc", "6");
-    payload.put("api", "1");
-    payload.put("BIN-FP", "1");
-    payload.put("siteId", "0");
-    roiEvent.setPayload(payload);
-
-    Response response1 = client.target(svcEndPoint).path(roiPath)
-            .request()
-            .header("X-EBAY-C-ENDUSERCTX", endUserCtxPlaceOfferAPI)
-            .header("X-EBAY-C-TRACKING", tracking)
-            .header("Authorization", token)
-            .accept(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.json(roiEvent));
-    assertEquals(201, response1.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerEpn = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesEpn = pollFromKafkaTopic(
-            consumerEpn, Arrays.asList("dev_listened-epn"), 2, 30 * 1000);
-    consumerEpn.close();
-
-    Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
-    assertEquals(1, listenerMessagesEpnExcludeRover.size());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerROI = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesROI = pollFromKafkaTopic(
-            consumerROI, Arrays.asList("dev_listened-roi"), 1, 30 * 1000);
-    consumerROI.close();
-
-    Map<Long, ListenerMessage> listenerMessagesROIExcludeRover = listenerMessageExcludeRover(listenerMessagesROI);
-    assertEquals(1, listenerMessagesROIExcludeRover.size());
-  }
-
   /**
    * Load properties
    * @param fileName
@@ -1578,11 +1506,7 @@ public class EventListenerServiceTest {
     Event event = new Event();
     event.setReferrer("");
     event.setTargetUrl("https://www.qa.ebay.com/?mkevt=1&mkcid=8&mkpid=12&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=8878");
-    EventPayload eventPayload = new EventPayload();
-    eventPayload.setPlaceOfferAPIClickTs("1604566345000");
-    event.setPayload(eventPayload);
-
-    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(201, response.getStatus());
 
   }
@@ -1592,10 +1516,7 @@ public class EventListenerServiceTest {
     Event event = new Event();
     event.setReferrer("");
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=29&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
-    EventPayload eventPayload = new EventPayload();
-    eventPayload.setPlaceOfferAPIClickTs("1641970800491");
-    event.setPayload(eventPayload);
-    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
 
@@ -1604,10 +1525,7 @@ public class EventListenerServiceTest {
     Event event = new Event();
     event.setReferrer("");
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=30&mkrid=711-53200-19255-0&campid=1234567899&customid=234&nrd=1&api=1&toolid=10006");
-    EventPayload eventPayload = new EventPayload();
-    eventPayload.setPlaceOfferAPIClickTs("1641970896430");
-    event.setPayload(eventPayload);
-    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
 
@@ -1618,15 +1536,15 @@ public class EventListenerServiceTest {
     event.setReferrer("");
 
     event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=7&third_party=true");
-    Response response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    Response response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
 
     event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=8&third_party=true");
-    response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
 
     event.setTargetUrl("https://ebay.live/fr/upcoming-events/181?mkevt=1&mkcid=29&third_party=true");
-    response = postMcsResponse(eventsPath, endUserCtxPlaceOfferAPI, tracking, event);
+    response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }
 }

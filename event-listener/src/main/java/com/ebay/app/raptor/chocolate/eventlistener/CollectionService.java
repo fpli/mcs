@@ -342,10 +342,6 @@ public class CollectionService {
     boolean isClickFromCheckoutAPI = CollectionServiceUtil.isClickFromCheckoutAPI(
         urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
 
-    // placeoffer click flag
-    boolean isClickFromPlaceOfferAPI = CollectionServiceUtil.isClickFromPlaceOfferAPI(
-            urlRefChannel.getRight().getLogicalChannel().getAvro(), endUserContext);
-
     // 3rd party click flag
     boolean isThirdParty = CollectionServiceUtil.isThirdParityClick(parameters);
 
@@ -369,12 +365,10 @@ public class CollectionService {
     baseEvent.setUid(userId);
     baseEvent.setCheckoutApi(isClickFromCheckoutAPI);
     baseEvent.setPayload(event.getPayload());
-    baseEvent.setPlaceOfferApi(isClickFromPlaceOfferAPI);
     baseEvent.setThirdParty(isThirdParty);
 
-    // update startTime if the click comes from checkoutAPI or placeOfferAPI
+    // update startTime if the click comes from checkoutAPI
     baseEvent = performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
-    baseEvent = performanceMarketingCollector.setPlaceOfferTimestamp(baseEvent);
 
     // Overwrite the referer for the clicks from Promoted Listings iframe on ebay partner sites XC-3256
     // only for EPN channel
@@ -531,9 +525,8 @@ public class CollectionService {
     }
 
     // write roi event tags into ubi
-    // Don't write into ubi if roi is from Checkout API or PlaceOffer API
+    // Don't write into ubi if roi is from Checkout API
     boolean isRoiFromCheckoutAPI = CollectionServiceUtil.isROIFromCheckoutAPI(payloadMap, endUserContext);
-    boolean isRoiFromPlaceOfferAPI = CollectionServiceUtil.isROIFromPlaceOfferAPI(payloadMap, endUserContext);
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -555,7 +548,6 @@ public class CollectionService {
     baseEvent.setUid(userId);
     baseEvent.setCheckoutApi(isRoiFromCheckoutAPI);
     baseEvent.setRoiEvent(roiEvent);
-    baseEvent.setPlaceOfferApi(isRoiFromPlaceOfferAPI);
     baseEvent.setUuid(UUID.randomUUID().toString());
 
     // fire roi events
@@ -734,11 +726,9 @@ public class CollectionService {
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
     // 2. track ubi
-    // Checkout ROI and PlaceOffer ROI won't go to UBI
+    // Checkout ROI won't go to UBI
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.info("CheckoutAPIROI", 1);
-    } else if (baseEvent.isPlaceOfferApi()) {
-      MonitorUtil.info("PlaceOfferAPIROI", 1);
     } else {
       roiCollector.trackUbi(containerRequestContext, baseEvent);
     }
@@ -937,12 +927,10 @@ public class CollectionService {
         KafkaSink.callback);
 
     // 2. track ubi
-    // Checkout click and placeoffer click events won't go to UBI
+    // Checkout click events won't go to UBI
     // Only track click to UBI
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.info("CheckoutAPIClick", 1);
-    } else if (baseEvent.isPlaceOfferApi()) {
-      MonitorUtil.info("PlaceOfferAPIClick", 1);
     } else if (baseEvent.getActionType().equals(CLICK)) {
       performanceMarketingCollector.trackUbi(requestContext, baseEvent, listenerMessage);
     }
@@ -1020,8 +1008,6 @@ public class CollectionService {
     MonitorUtil.info("CollectionServiceSuccess", 1,  additionalFields);
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.latency("CollectionServiceCheckoutAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
-    } else if (baseEvent.isPlaceOfferApi()) {
-      MonitorUtil.latency("CollectionServicePlaceOfferAPIClickAndROIAverageLatency", endTime - baseEvent.getTimestamp());
     } else {
       MonitorUtil.latency("CollectionServiceAverageLatency", endTime - baseEvent.getTimestamp());
     }

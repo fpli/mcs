@@ -75,31 +75,4 @@ public class PerformanceMarketingCollectorTest {
     performanceMarketingCollector.setCheckoutTimestamp(baseEvent);
     assertEquals(checkoutTs, baseEvent.getTimestamp());
   }
-
-  @Test
-  public void setPlaceOfferApiTimestamp() {
-    BaseEvent baseEvent = new BaseEvent();
-    long currentTs = System.currentTimeMillis();
-    long placeOfferTs = currentTs + 10;
-    baseEvent.setTimestamp(currentTs);
-    baseEvent.setChannelType(ChannelIdEnum.EPN);
-    EventPayload payload = new EventPayload();
-    // exception setting timestamp
-    payload.setPlaceOfferAPIClickTs("abcdef");
-    baseEvent.setPayload(payload);
-    performanceMarketingCollector.setPlaceOfferTimestamp(baseEvent);
-    assertEquals(currentTs, baseEvent.getTimestamp());
-
-    // successful set timestamp
-    payload.setPlaceOfferAPIClickTs(String.valueOf(placeOfferTs));
-    baseEvent.setPayload(payload);
-    performanceMarketingCollector.setPlaceOfferTimestamp(baseEvent);
-    assertEquals(placeOfferTs, baseEvent.getTimestamp());
-
-    // don't set timestamp if non-epn
-    baseEvent.setTimestamp(currentTs);
-    baseEvent.setChannelType(ChannelIdEnum.DAP);
-    performanceMarketingCollector.setPlaceOfferTimestamp(baseEvent);
-    assertEquals(currentTs, baseEvent.getTimestamp());
-  }
 }
