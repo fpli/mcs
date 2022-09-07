@@ -94,6 +94,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
+  private static final String METRIC_AKAMAI_INCOMING = "METRIC_AKAMAI_INCOMING";
+  private static final String METRIC_AKAMAI_UNAUTHORIZED = "METRIC_AKAMAI_UNAUTHORIZED";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
   private static final int GUID_LIST_MAX_SIZE = 20;
@@ -444,15 +446,17 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    * Collect Akamai events
    */
   @Override
-  public Response akamai(String body, String xChocoAuth) {
+  public Response akamai(List<AkamaiEvent> body, String xChocoAuth) {
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "akamai"));
     String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
+      MonitorUtil.info(METRIC_AKAMAI_UNAUTHORIZED);
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
     } else {
-      logger.info("Akamai event: " + body);
-//      Builder builder = mktClient.target(endpoint).path("/akamai").request();
-//      builder.async().post(Entity.json(body), new MCSCallback());
+      MonitorUtil.info(METRIC_AKAMAI_INCOMING);
+      Builder builder = mktClient.target(endpoint).path("/akamai").request();
+      builder.async().post(Entity.json(body), new MCSCallback());
 
       return Response.status(Response.Status.OK).build();
     }
