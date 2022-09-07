@@ -8,6 +8,7 @@ package com.ebay.app.raptor.chocolate;
 
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.CollectionService;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -26,11 +27,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.net.URISyntaxException;
 
@@ -66,6 +70,7 @@ public class AdserviceResourceTest {
   private static final String GUID_PATH = "/marketingtracking/v1/guid";
   private static final String USERID_PATH = "/marketingtracking/v1/uid";
   private static final String PLACEMENT_PATH = "/marketingtracking/v1/placement";
+  private static final String AKAMAI_PATH = "/marketingtracking/v1/akamai";
 
 
   @Autowired
@@ -558,6 +563,30 @@ public class AdserviceResourceTest {
     response = getAdserviceResponse(REDIRECT_PATH, parameters);
     assertEquals(301, response.getStatus());
     assertEquals("mpre", "https://www.ebayinc.com/company/privacy-center/fr/#subsite-dropdown", response.getLocation().toString());
+  }
 
+  @Test
+  public void akamai() {
+    AkamaiEvent event1 = new AkamaiEvent();
+    event1.setReqId("111");
+    AkamaiEvent event2 = new AkamaiEvent();
+    event2.setReqId("222");
+    List<AkamaiEvent> body = new ArrayList<>();
+    body.add(event1);
+    body.add(event2);
+
+    Response response = client.target(svcEndPoint).path(AKAMAI_PATH)
+        .request()
+        .header("X-Choco-Auth", "YWthbWFpOmNob2NvbGF0ZQ==")
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(body));
+    assertEquals(200, response.getStatus());
+
+    // No X-Choco-Auth header
+    response = client.target(svcEndPoint).path(AKAMAI_PATH)
+        .request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .post(Entity.json(body));
+    assertEquals(401, response.getStatus());
   }
 }
