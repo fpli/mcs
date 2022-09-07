@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate.eventlistener;
 
+import com.ebay.app.raptor.chocolate.avro.AkamaiMessage;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelActionEnum;
@@ -11,6 +12,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
@@ -23,6 +25,7 @@ import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
+import com.ebay.traffic.chocolate.kafka.AkamaiKafkaSink;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
@@ -36,6 +39,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -72,8 +76,10 @@ public class CollectionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionService.class);
   private ListenerMessageParser listenerMessageParser;
   private Producer unifiedTrackingProducer;
+  private Producer akamaiProducer;
   private String unifiedTrackingTopic;
   private String internalClickTopic;
+  private String akamaiTopic;
   private static CollectionService instance = null;
   private UnifiedTrackingMessageParser utpParser;
   private static final String TYPE_INFO = "Info";
@@ -116,8 +122,10 @@ public class CollectionService {
     this.listenerMessageParser = ListenerMessageParser.getInstance();
     this.unifiedTrackingProducer = UnifiedTrackingKafkaSink.get();
     this.unifiedTrackingTopic = ApplicationOptions.getInstance().getUnifiedTrackingTopic();
+    this.akamaiTopic = ApplicationOptions.getInstance().getAkamaiTopic();
     this.internalClickTopic = ApplicationOptions.getInstance().getInternalItmClickTopic();
     this.utpParser = new UnifiedTrackingMessageParser();
+    this.akamaiProducer = AkamaiKafkaSink.get();
   }
 
   public boolean missMandatoryParams(MultiValueMap<String, String> parameters) {
@@ -880,6 +888,27 @@ public class CollectionService {
 
     stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
         Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
+  }
+
+  /**
+   * Collect Akamai cached SEO events
+   *
+   * @param events post body
+   */
+  public void collectAkamai(List<AkamaiEvent> events) {
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_TYPE, "SEO"));
+    if (!events.isEmpty()) {
+      for (AkamaiEvent event : events) {
+        MonitorUtil.info("AkamaiIncoming");
+        AkamaiMessage message = new AkamaiMessage();
+        BeanUtils.copyProperties(event, message);
+
+        if (message != null)
+          akamaiProducer.send(new ProducerRecord<>(akamaiTopic, message.getReqId().getBytes(), message),
+              AkamaiKafkaSink.callback);
+      }
+    }
+    stopTimerAndLogData(startTime, Field.of(CHANNEL_TYPE, "SEO"));
   }
 
   /**

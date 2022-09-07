@@ -9,6 +9,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.ListenerMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.RheosConsumerWrapper;
 import com.ebay.app.raptor.chocolate.jdbc.repo.DriverIdServiceImpl;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.chocolate.kafka.AkamaiKafkaSink;
 import com.ebay.traffic.chocolate.kafka.KafkaSink;
 import com.ebay.traffic.chocolate.kafka.UnifiedTrackingKafkaSink;
 import com.ebay.traffic.monitoring.Field;
@@ -61,6 +62,7 @@ public class EventListenerService {
     KafkaSink.initialize(options, options);
     BehaviorKafkaSink.initialize(ApplicationOptions.getInstance().getBehaviorRheosProperties());
     UnifiedTrackingKafkaSink.initialize(ApplicationOptions.getInstance().getUnifiedTrackingRheosProperties());
+    AkamaiKafkaSink.initialize(ApplicationOptions.getInstance().getAkamaiRheosProperties());
     ListenerMessageParser.init();
 
     RheosConsumerWrapper.init(ApplicationOptions.getInstance().getConsumeRheosKafkaProperties());

@@ -52,6 +52,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
 
   private static final String UNIFIED_TRACKING_RHEOS_PROPERTIES_FILE = "event-listener-unified-tracking-rheos-producer.properties";
 
+  private static final String AKAMAI_RHEOS_PROPERTIES_FILE = "event-listener-akamai-rheos-producer.properties";
+
   /**
    * Out Kafka cluster, can be "kafka", "rheos", "rheos,kafka", "kafka,rheos".
    */
@@ -76,6 +78,11 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    * unified tracking topic
    */
   private static final String RHEOS_OUT_UNIFIED_TRACKING_TOPIC = "chocolate.event-listener.kafka.producer.unified.tracking.topic";
+
+  /**
+   * Akamai topic
+   */
+  private static final String RHEOS_OUT_AKAMAI_TOPIC = "chocolate.event-listener.kafka.producer.akamai.topic";
 
   /**
    * couchbase data source
@@ -105,6 +112,7 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   private static Properties sinkRheosKafkaProperties;
   private static Properties behaviorRheosProperties;
   private static Properties unifiedTrackingRheosProperties;
+  private static Properties akamaiRheosProperties;
 
   private String outKafkaCluster;
   private Map<ChannelType, String> outKafkaConfigMap = new HashMap<>();
@@ -126,6 +134,8 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
     behaviorRheosProperties = loadProperties(BEHAVIOR_RHEOS_PROPERTIES_FILE);
 
     unifiedTrackingRheosProperties = loadProperties(UNIFIED_TRACKING_RHEOS_PROPERTIES_FILE);
+
+    akamaiRheosProperties = loadProperties(AKAMAI_RHEOS_PROPERTIES_FILE);
 
     instance.initKafkaConfigs();
   }
@@ -206,6 +216,12 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
   }
 
   /**
+   * Get Akamai rheos properties
+   */
+  public Properties getAkamaiRheosProperties() {
+    return akamaiRheosProperties;
+  }
+  /**
    * Get consume rheos properties
    */
   public Properties getConsumeRheosKafkaProperties() {
@@ -236,6 +252,13 @@ public class ApplicationOptions extends AbstractApplicationOptions implements Ka
    */
   public String getUnifiedTrackingTopic() {
     return ApplicationOptionsParser.getStringProperty(properties, RHEOS_OUT_UNIFIED_TRACKING_TOPIC);
+  }
+
+  /**
+   * Get Akamai topic
+   */
+  public String getAkamaiTopic() {
+    return ApplicationOptionsParser.getStringProperty(properties, RHEOS_OUT_AKAMAI_TOPIC);
   }
 
   /**
