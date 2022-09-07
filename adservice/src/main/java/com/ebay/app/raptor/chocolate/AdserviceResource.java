@@ -94,8 +94,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
-  private static final String METRIC_AKAMAI_INCOMING = "Akamai_Incoming";
-  private static final String METRIC_AKAMAI_UNAUTHORIZED = "Akamai_UnAuthorized";
+  private static final String METRIC_AKAMAI_INCOMING = "METRIC_AKAMAI_INCOMING";
+  private static final String METRIC_AKAMAI_UNAUTHORIZED = "METRIC_AKAMAI_UNAUTHORIZED";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
   private static final int GUID_LIST_MAX_SIZE = 20;
@@ -447,6 +447,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    */
   @Override
   public Response akamai(List<AkamaiEvent> body, String xChocoAuth) {
+    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "akamai"));
     String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
     if (StringUtils.isEmpty(xChocoAuth) || !xChocoAuth.equals(encodedToken)) {
