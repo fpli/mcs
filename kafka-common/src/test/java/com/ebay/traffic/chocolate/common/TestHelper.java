@@ -1066,6 +1066,13 @@ public class TestHelper {
     return message;
   }
 
+  public static AkamaiMessage newAkamaiMessage (String reqId) {
+    AkamaiMessage message = new AkamaiMessage();
+    message.setReqId(reqId);
+
+    return message;
+  }
+
   /**
    * Load properties from file
    *
