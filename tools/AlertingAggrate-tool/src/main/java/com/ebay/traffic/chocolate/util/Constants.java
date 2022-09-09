@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.util;
 
 public class Constants {
-    public static String TOOLS_BASE_DIR = "/datashare/mkttracking/jobs/tools/AlertingAggrate-tool/";
+    public static String TOOLS_BASE_DIR = "/datashare/mkttracking/tools/AlertingAggrate-tool-imk-v3/";
     public static String PREFIX_TMP_DIR = TOOLS_BASE_DIR + "temp/";
     public static String APOLLO_DONE_FILES = PREFIX_TMP_DIR + "apollo_files/apollo_done_files.txt";
     public static String HERCULES_DONE_FILES = PREFIX_TMP_DIR + "hercules_files/hercules_done_files.txt";
@@ -19,6 +19,8 @@ public class Constants {
 
     public static String TRACKING_EVENT_DIR = TOOLS_BASE_DIR + "/data_check/trackingEvent";
     public static String ROTATION_DIR = "/home/_choco_admin/rotation/";
+    public static String Uc4_DIR = PREFIX_CONF_DIR + "uc4-hourly.xml";
+    public static String LOG4J_DIR = TOOLS_BASE_DIR+"log/1.txt";
 
     // Airflow 27
     public static String AIRFLOW_GET_DAG_API_URL_27 = "http://airflowprod-web.mrkttech-tracking-ns.svc.27.tess.io:8080/api/v1/dags";
@@ -43,6 +45,7 @@ public class Constants {
     public static String OS_IDENTITY_END_POINT = "https://os-identity.vip.ebayc3.com/v2.0/tokens";
     public static String AUTH_USER_NAME = "_PaaS_Provisioning";
     public static String AUTH_PASSWD = "Cloud2018#E2Eebay@123";
+    public static String AUTH_PASSWD_BASE64 = "Q2xvdWQyMDE4I0UyRWViYXlAMTIz";
 
 
 }
