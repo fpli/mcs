@@ -7,10 +7,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.eventlistener.CollectionService;
 import com.ebay.app.raptor.chocolate.eventlistener.constant.ErrorType;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CouchbaseClientV2;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
-import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
-import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
-import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
+import com.ebay.app.raptor.chocolate.gen.model.*;
 import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
@@ -47,10 +44,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,6 +88,7 @@ public class EventListenerServiceTest {
   private static String versionPath;
   private static String syncPath;
   private static String trackPath;
+  private static String akamaiPath;
 
   private static String endUserCtxiPhone;
   private static String endUserCtxAndroid;
@@ -144,6 +139,7 @@ public class EventListenerServiceTest {
     versionPath = "/marketingtracking/v1/getVersion";
     syncPath = "/marketingtracking/v1/sync";
     trackPath = "/marketingtracking/v1/track";
+    akamaiPath = "/marketingtracking/v1/akamai";
 
     endUserCtxiPhone = "ip=10.148.184.210," +
       "userAgentAccept=text%2Fhtml%2Capplication%2Fxhtml%2Bxml%2Capplication%2Fxml%3Bq%3D0.9%2Cimage%2Fwebp%2Cimage" +
@@ -280,6 +276,11 @@ public class EventListenerServiceTest {
   }
 
   private Response postMcsResponse(String path, UnifiedTrackingEvent event) {
+    return client.target(svcEndPoint).path(path).request().header("Authorization", token).
+        accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
+  }
+
+  private Response postMcsResponse(String path, List<AkamaiEvent> event) {
     return client.target(svcEndPoint).path(path).request().header("Authorization", token).
         accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(event));
   }
@@ -1337,6 +1338,20 @@ public class EventListenerServiceTest {
     Map<String, String> payload = new HashMap<>();
     event.setPayload(payload);
     Response response = postMcsResponse(trackPath, event);
+    assertEquals(201, response.getStatus());
+  }
+
+  @Test
+  public void testAkamaiResource() {
+    AkamaiEvent event1 = new AkamaiEvent();
+    event1.setReqId("111");
+    AkamaiEvent event2 = new AkamaiEvent();
+    event2.setReqId("222");
+    List<AkamaiEvent> body = new ArrayList<>();
+    body.add(event1);
+    body.add(event2);
+
+    Response response = postMcsResponse(akamaiPath, body);
     assertEquals(201, response.getStatus());
   }
 

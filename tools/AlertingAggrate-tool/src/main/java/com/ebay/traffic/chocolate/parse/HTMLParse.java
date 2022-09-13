@@ -35,6 +35,7 @@ public class HTMLParse {
         html.append(HourlyEmailHtml.getHourlyEPNClusterFileVerifyHtml());
         html.append(HourlyEmailHtml.getEPNHourlyReportHtml());
         html.append(HourlyEmailHtml.getAirflowReportHtml(cluster));
+        html.append(HourlyEmailHtml.getUc4ReportHtml());
         html.append(HourlyEmailHtml.getWorkerReportHtml(cluster));
         html.append(HourlyEmailHtml.getIMKHourlyCountHtml());
         return html.toString();

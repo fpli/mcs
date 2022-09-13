@@ -3,6 +3,7 @@ package com.ebay.traffic.chocolate.html;
 import com.ebay.traffic.chocolate.parse.EPNReportUtil;
 import com.ebay.traffic.chocolate.report.AirflowReport;
 import com.ebay.traffic.chocolate.report.FlowerReport;
+import com.ebay.traffic.chocolate.report.Uc4Report;
 import com.ebay.traffic.chocolate.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,15 @@ public class HourlyEmailHtml {
             e.printStackTrace();
             logger.error(e.getMessage());
             return "getSherlockAlertHtml";
+        }
+    }
+
+    public static String getUc4ReportHtml() {
+        try {
+            return Uc4Table.parse(Uc4Report.getUc4JobPlanList());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return "getUc4ReportHtml";
         }
     }
 }

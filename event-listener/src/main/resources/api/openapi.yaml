@@ -205,7 +205,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AkamaiEvent'
+              type: array
+              items:
+                $ref: '#/components/schemas/AkamaiEvent'
 
 components:
   securitySchemes:
@@ -368,15 +370,6 @@ components:
               type: string
               description: placeOfferAPIClickTs, mandotary for click from placeofferAPI
               example: "1576108800000"
-    AkamaiEvent:
-      type: object
-      properties:
-        a:
-          type: string
-          example: 'aaa'
-        b:
-          type: string
-          example: 'bbb'
     ROIEvent:
       type: object
       properties:
@@ -397,6 +390,99 @@ components:
           example: '{"transactionTimestamp":"aaa","siteId":"bbbb"}'
           additionalProperties:
             type: string
+    AkamaiEvent:
+      type: object
+      properties:
+        version:
+          type: string
+        ewUsageInfo:
+          type: string
+        ewExecutionInfo:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        cacheStatus:
+          type: string
+        customField:
+          type: string
+        turnAroundTimeMSec:
+          type: string
+        transferTimeMSec:
+          type: string
+        cliIP:
+          type: string
+        statusCode:
+          type: string
+        reqHost:
+          type: string
+        reqMethod:
+          type: string
+        bytes:
+          type: string
+        tlsVersion:
+          type: string
+        UA:
+          type: string
+        queryStr:
+          type: string
+        rspContentLen:
+          type: string
+        rspContentType:
+          type: string
+        reqPath:
+          type: string
+        reqPort:
+          type: string
+        proto:
+          type: string
+        reqTimeSec:
+          type: string
+        cp:
+          type: string
+        reqId:
+          type: string
+        tlsOverheadTimeMSec:
+          type: string
+        objSize:
+          type: string
+        uncompressedSize:
+          type: string
+        overheadBytes:
+          type: string
+        totalBytes:
+          type: string
+        accLang:
+          type: string
+        cookie:
+          type: string
+        range:
+          type: string
+        referer:
+          type: string
+        xForwardedFor:
+          type: string
+        maxAgeSec:
+          type: string
+        reqEndTimeMSec:
+          type: string
+        errorCode:
+          type: string
+        dnsLookupTimeMSec:
+          type: string
+        billingRegion:
+          type: string
+        edgeIP:
+          type: string
+        securityRules:
+          type: string
+        serverCountry:
+          type: string
+        streamId:
+          type: string
     errorData:
       type: object
       description: >
