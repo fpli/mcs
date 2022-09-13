@@ -80,7 +80,6 @@ public class CollectionServiceUtil {
   private static final String BOT_USER_AGENT = "bot";
   private static final String PROMOTED_LISTINGS_SOURCE = "PromotedListings";
   private static final String CHECKOUT_API_USER_AGENT = "checkoutApi";
-  private static final String PLACEOFFER_API_USER_AGENT = "placeofferapi";
   private static final String DEEP_LINK_WITH_CHOCO_PARAMS = "chocodeeplink";
   private static final String DEEP_LINK_WITH_REFERRER_PARAMS = "referrerdeeplink";
   private static final String PRE_INSTALL_APP_RLUTYPE = "1";
@@ -526,38 +525,6 @@ public class CollectionServiceUtil {
       }
     }
     return false;
-  }
-
-  /**
-   * Determine whether the click is from PlaceOffer API
-   * If so, don't track into ubi
-   */
-  public static Boolean isClickFromPlaceOfferAPI(ChannelType channelType, IEndUserContext endUserContext) {
-    boolean isClickFromPlaceofferAPI = false;
-    try {
-      if (channelType == ChannelType.EPN && endUserContext.getUserAgent().toLowerCase().contains(PLACEOFFER_API_USER_AGENT)) {
-        isClickFromPlaceofferAPI = true;
-      }
-    } catch (Exception e) {
-      LOGGER.error("Determine whether the click from PlaceOffer API error");
-      MonitorUtil.info("DeterminePlaceOfferAPIClickError");
-    }
-    return isClickFromPlaceofferAPI;
-  }
-
-  /**
-   * Determine whether the roi is from PlaceOffer API
-   * If so, don't track into ubi
-   */
-  public static Boolean isROIFromPlaceOfferAPI(Map<String, String> roiPayloadMap, IEndUserContext endUserContext) {
-    boolean isROIFromPlaceofferAPI = false;
-    if (roiPayloadMap.containsKey(ROI_SOURCE)) {
-      if (roiPayloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.PLACEOFFER_SOURCE.getId()))
-              && endUserContext.getUserAgent().toLowerCase().contains(PLACEOFFER_API_USER_AGENT)) {
-        isROIFromPlaceofferAPI = true;
-      }
-    }
-    return isROIFromPlaceofferAPI;
   }
 
   /**
