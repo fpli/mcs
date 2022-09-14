@@ -57,9 +57,6 @@ public class BaseEvent {
   // flag of checkout api
   private boolean isCheckoutApi;
 
-  // flag of placeoffer api
-  private boolean isPlaceOfferApi;
-
   // flag of third party click
   private boolean isThirdParty;
 
@@ -152,14 +149,6 @@ public class BaseEvent {
 
   public void setCheckoutApi(boolean checkoutApi) {
     isCheckoutApi = checkoutApi;
-  }
-
-  public boolean isPlaceOfferApi() {
-    return isPlaceOfferApi;
-  }
-
-  public void setPlaceOfferApi(boolean placeOfferApi) {
-    isPlaceOfferApi = placeOfferApi;
   }
 
   public EventPayload getPayload() {
