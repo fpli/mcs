@@ -11,7 +11,6 @@ import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
-import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -446,7 +445,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
    * Collect Akamai events
    */
   @Override
-  public Response akamai(List<AkamaiEvent> body, String xChocoAuth) {
+  public Response akamai(String body, String xChocoAuth) {
     MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "akamai"));
     String token = "akamai:chocolate";
     String encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
