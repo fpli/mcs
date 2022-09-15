@@ -39,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.net.URL;
+
 
 /**
  * Receive performance marketing events from utp topic, aggregate metrics of different kinds of messages to sherlock
@@ -62,6 +64,14 @@ public class UtpMonitorApp {
     protected Map<String, Object> config;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
+
+    private static List<String> ebayHomePageDomainList = Arrays.asList("www.ebay.com","www.ebay.com.au",
+            "www.ebay.ca","www.ebay.de","www.ebay.at","www.ebay.ch","www.ebay.es","www.ebay.fr","www.befr.ebay.be",
+            "www.ebay.in","www.ebay.it","www.benl.ebay.be","www.cafr.ebay.ca","www.ebay.com.hk","www.ebay.pl","www.ebay.com.sg",
+            "www.ebay.com.my","www.ebay.ph","www.ebay.nl","www.ebay.co.uk","www.ebay.ie");
+
+    private static List<String> topPageList = Arrays.asList("i","itm","sch","b","e","vod","ulk","ws","p","cnt","sl","signin","fdbk","rtn");
+
 
     public static void main(String[] arg) throws Exception {
         UtpMonitorApp utpMonitorApp = new UtpMonitorApp();
@@ -260,6 +270,32 @@ public class UtpMonitorApp {
                         );
                     }
                 }
+
+                //UFES metrics
+                String isNative = "false";
+                if(message.getUserAgent() != null){
+                    if(message.getUserAgent().toLowerCase().contains("ebayandroid") ||
+                            message.getUserAgent().toLowerCase().contains("ebayios")) {
+                        isNative = "true";
+                    }
+                }
+                if(producer.equalsIgnoreCase("chocolate") &&
+                        isNative.equalsIgnoreCase("false") &&
+                        actionType.equalsIgnoreCase("click")){
+                    String isUFES = nullVerifier(getUFESSignal(message.getPayload()));
+                    //domain
+                    String domain = getDomainFromUrl(message.getUrl());
+                    //pagetype: /i/, /itm/, /sch/,/b/，/vod/,/ulk/messages/,/ulk/usr/,/ws/,/p/, home page
+                    String pageType = getPageType(message.getUrl());
+
+                    sherlockioMetrics.meterByGauge("chocolate_web_incoming_traffic", 1,
+                            Field.of("isUFES", isUFES),
+                            Field.of("domain",domain),
+                            Field.of("pagetype", pageType),
+                            Field.of("isBot", isBot));
+                }
+
+                
             } catch (Exception e) {
                 sherlockioMetrics.meterByGauge("unified_tracking_metrics_error_total", 1,
                         Field.of("channel", channelType),
@@ -328,6 +364,77 @@ public class UtpMonitorApp {
      */
     private static String getUEP(Map<String, String> payload) {
         return payload.getOrDefault("isUEP", "NULL");
+    }
+
+    /**
+     * Check the payload to see if it is handled by UFES
+     *
+     * @param payload the payload to be read
+     * @return the corresponding value if so, otherwise return "NULL"
+     */
+    public static String getUFESSignal(Map<String, String> payload) {
+        return payload.getOrDefault("isUfes", "NULL");
+    }
+
+    /**
+     * get domain from url
+     *
+     * @param url is the url to be read
+     * @return the corresponding value if so, otherwise return "NULL"
+     */
+    public static String getDomainFromUrl(final String url) {
+        if (url == null || url.length() == 0) {
+            return null;
+        }
+
+        // Parse the url link into a URL
+        URL landingPage;
+        try {
+            landingPage = new URL(url);
+        } catch (Exception e) {
+            LOGGER.warn("Error in parsing incoming link into url: ", e);
+            return null;
+        }
+
+        // Strip off domain and validate that it is not empty or null
+        return landingPage.getHost().toLowerCase().trim();
+    }
+
+    /**
+     * get pagetype from url
+     *
+     * @param url is the url to be read
+     * @return the corresponding value if so, otherwise return "NULL"
+     */
+    public static String getPageType(final String url) {
+
+        if (url == null || url.length() == 0) {
+            return null;
+        }
+
+        URL landingPage;
+        String pageType = null;
+        try {
+            landingPage = new URL(url);
+            String path = landingPage.getPath();
+            if(path == null || path.length() == 0){
+                String domain = getDomainFromUrl(url);
+                if(ebayHomePageDomainList.contains(domain)){
+                    pageType = "homepage";
+                }else{
+                    pageType = "others";
+                }
+            } else{
+                pageType = path.split("/")[1];
+                if(!topPageList.contains(pageType)){
+                    pageType = "others";
+                }
+            }
+            return pageType;
+        } catch (Exception e) {
+            LOGGER.warn("Error in parsing incoming link into url: ", e);
+            return null;
+        }
     }
 
     /**
