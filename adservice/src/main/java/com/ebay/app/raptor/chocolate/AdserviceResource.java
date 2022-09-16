@@ -465,13 +465,15 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
         String[] akamaiEvents = body.split(AKAMAI_BODY_DELIMITER);
         if(akamaiEvents != null && akamaiEvents.length > 0){
           for (String akamaiEventJson : akamaiEvents) {
-            try {
-              AkamaiEvent akamaiEvent = new Gson().fromJson(akamaiEventJson,AkamaiEvent.class);
-              akamaiEventList.add(akamaiEvent);
-              MonitorUtil.info(METRIC_AKAMAI_PARSING_SUCCESS);
-            }catch (Exception ex){
-              MonitorUtil.info(METRIC_AKAMAI_PARSING_ERROR);
-              logger.warn(ex.getMessage(), ex);
+            if (StringUtils.isNotBlank(akamaiEventJson)) {
+              try {
+                AkamaiEvent akamaiEvent = new Gson().fromJson(akamaiEventJson, AkamaiEvent.class);
+                akamaiEventList.add(akamaiEvent);
+                MonitorUtil.info(METRIC_AKAMAI_PARSING_SUCCESS);
+              } catch (Exception ex) {
+                MonitorUtil.info(METRIC_AKAMAI_PARSING_ERROR);
+                logger.warn(ex.getMessage(), ex);
+              }
             }
           }
         }
