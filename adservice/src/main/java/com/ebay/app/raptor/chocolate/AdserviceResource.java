@@ -11,6 +11,7 @@ import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.jaxrs.client.EndpointUri;
@@ -21,6 +22,7 @@ import com.ebay.kernel.util.RequestUtil;
 import com.ebay.raptor.geo.utils.GeoUtils;
 import com.ebay.raptor.opentracing.SpanEventHelper;
 import com.ebay.traffic.monitoring.Field;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -95,6 +97,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String METRIC_AKAMAI_INCOMING = "METRIC_AKAMAI_INCOMING";
   private static final String METRIC_AKAMAI_UNAUTHORIZED = "METRIC_AKAMAI_UNAUTHORIZED";
+  private static final String METRIC_AKAMAI_PARSING_SUCCESS = "METRIC_AKAMAI_PARSING_SUCCESS";
+  private static final String METRIC_AKAMAI_PARSING_ERROR = "METRIC_AKAMAI_PARSING_ERROR";
   private static final String[] ADOBE_PARAMS_LIST = {"id", "ap_visitorId", "ap_category", "ap_deliveryId",
       "ap_oid", "data"};
   private static final int GUID_LIST_MAX_SIZE = 20;
@@ -114,6 +118,8 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
   private static final Client mktClient = GingerClientBuilder.newClient(config);
   private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
+  
+  private static final String AKAMAI_BODY_DELIMITER="\n";
 
   /**
    * Initialize function
@@ -454,8 +460,24 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       return Response.status(Response.Status.UNAUTHORIZED).entity("Unauthorized").build();
     } else {
       MonitorUtil.info(METRIC_AKAMAI_INCOMING);
+      List<AkamaiEvent> akamaiEventList = new ArrayList<>();
+      if(StringUtils.isNotEmpty(body)) {
+        String[] akamaiEvents = body.split(AKAMAI_BODY_DELIMITER);
+        if(akamaiEvents != null && akamaiEvents.length > 0){
+          for (String akamaiEventJson : akamaiEvents) {
+            try {
+              AkamaiEvent akamaiEvent = new Gson().fromJson(akamaiEventJson,AkamaiEvent.class);
+              akamaiEventList.add(akamaiEvent);
+              MonitorUtil.info(METRIC_AKAMAI_PARSING_SUCCESS);
+            }catch (Exception ex){
+              MonitorUtil.info(METRIC_AKAMAI_PARSING_ERROR);
+              logger.warn(ex.getMessage(), ex);
+            }
+          }
+        }
+      }
       Builder builder = mktClient.target(endpoint).path("/akamai").request();
-      builder.async().post(Entity.json(body), new MCSCallback());
+      builder.async().post(Entity.json(akamaiEventList), new MCSCallback());
 
       return Response.status(Response.Status.OK).build();
     }

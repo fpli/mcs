@@ -13,8 +13,9 @@ import com.ebay.jaxrs.client.EndpointUri;
 import com.ebay.jaxrs.client.config.ConfigurationBuilder;
 import com.ebay.kernel.context.RuntimeContext;
 import com.ebay.platform.raptor.cosadaptor.token.ISecureTokenManager;
-import org.apache.http.client.utils.URIBuilder;
+import com.google.gson.Gson;
 import org.apache.commons.collections.MapUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,11 +33,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -571,22 +570,20 @@ public class AdserviceResourceTest {
     event1.setReqId("111");
     AkamaiEvent event2 = new AkamaiEvent();
     event2.setReqId("222");
-    List<AkamaiEvent> body = new ArrayList<>();
-    body.add(event1);
-    body.add(event2);
+    String akamaiEventList = new Gson().toJson(event1) + "\n" + new Gson().toJson(event2);
 
     Response response = client.target(svcEndPoint).path(AKAMAI_PATH)
         .request()
         .header("X-Choco-Auth", "YWthbWFpOmNob2NvbGF0ZQ==")
-        .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(body));
+        .accept(MediaType.TEXT_PLAIN)
+        .post(Entity.text(akamaiEventList));
     assertEquals(200, response.getStatus());
 
     // No X-Choco-Auth header
     response = client.target(svcEndPoint).path(AKAMAI_PATH)
         .request()
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.json(body));
+        .post(Entity.text(akamaiEventList));
     assertEquals(401, response.getStatus());
   }
 }
