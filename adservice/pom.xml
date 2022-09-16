@@ -11,9 +11,9 @@
   <artifactId>chocolate-adservice</artifactId>
   <name>chocolate adservice</name>
   <properties>
-    <swagger.codegen.version>3.0.0</swagger.codegen.version>
+    
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
-    <coreauth.component.version>0.14.5-RELEASE</coreauth.component.version>
+    
   </properties>
   <dependencyManagement>
     <dependencies>

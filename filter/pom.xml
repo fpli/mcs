@@ -424,10 +424,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <coreauth.component.version>0.14.5-RELEASE</coreauth.component.version>
-    </properties>
-
     <build>
         <plugins>
             <!-- spring boot plugin -->
