@@ -582,7 +582,7 @@ public class AdserviceResourceTest {
     // No X-Choco-Auth header
     response = client.target(svcEndPoint).path(AKAMAI_PATH)
         .request()
-        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .accept(MediaType.TEXT_PLAIN)
         .post(Entity.text(akamaiEventList));
     assertEquals(401, response.getStatus());
   }
