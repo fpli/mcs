@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -108,7 +110,7 @@ public class UtpMonitorAppTest {
         url = "https://www.ebay.in?more=http%3A%2F%2Fwww.ebay.in&mkevt=1&mkcid=2&mkrid=4686-203594-43235-113&ufes_redirect=true";
         assertEquals("homepage", UtpMonitorApp.getPageType(url));
 
-        url = "https://www.ebay.it?mkevt=1&mkcid=1&mkrid=724-53478-19255-0&campid=5338491329&toolid=20006&customid=ec4827eb1d9e54bb&_trkparms=ispr%3D1&amdata=enc%3A1kFoARB9STQiocgQJOJ3czQ75";
+        url = "https://www.ebay.it/?mkevt=1&mkcid=1&mkrid=724-53478-19255-0&campid=5338491329&toolid=20006&customid=ec4827eb1d9e54bb&_trkparms=ispr%3D1&amdata=enc%3A1kFoARB9STQiocgQJOJ3czQ75";
         assertEquals("homepage", UtpMonitorApp.getPageType(url));
 
         url = "https://www.benl.ebay.be?mkevt=1&mkcid=1&mkrid=1553-53471-19255-0&campid=5338430852&customid=134022135207_619&toolid=11000";
@@ -185,6 +187,171 @@ public class UtpMonitorAppTest {
         //test case 3: isUfes = false
         payload.put("isUfes", "false");
         assertEquals("false", UtpMonitorApp.getUFESSignal(payload));
+
+    }
+
+    @Test
+    public void testHomepagePattern(){
+
+        String domain = "www.ebay.com";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "ww1.ebay.com";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "ebay.com";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.com";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.befr.ebay.be";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.benl.ebay.be";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.cafr.ebay.ca";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.caf.ebay.ca";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.ca";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.de";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.at";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.ch";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.es";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.fr";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.in";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.it";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.pl";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.ph";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.nl";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.ie";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.com.au";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.com.hk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.com.sg";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.com.my";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.co.uk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.co.uk1";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+
+        domain = "WWW.EBAY.co.uk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "www.ebay.at.uk";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+
+        domain = "m.befr.ebay.be";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.benl.ebay.be";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.cafr.ebay.ca";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.caf.ebay.ca";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.ca";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.de";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.at";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.ch";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.es";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.fr";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.in";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.it";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.pl";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.ph";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.nl";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.ie";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.com.au";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.com.hk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.com.sg";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.com.my";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.co.uk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.co.uk1";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
+
+        domain = "M.EBAY.co.uk";
+        assertEquals(true, UtpMonitorApp.isHomepageDomain(domain));
+
+        domain = "m.ebay.at.uk";
+        assertEquals(false, UtpMonitorApp.isHomepageDomain(domain));
+
 
     }
 

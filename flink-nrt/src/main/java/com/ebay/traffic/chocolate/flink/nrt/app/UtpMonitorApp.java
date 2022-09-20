@@ -40,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -65,11 +67,12 @@ public class UtpMonitorApp {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UtpMonitorApp.class);
 
-    private static List<String> ebayHomePageDomainList = Arrays.asList("www.ebay.com","www.ebay.com.au",
-            "www.ebay.ca","www.ebay.de","www.ebay.at","www.ebay.ch","www.ebay.es","www.ebay.fr","www.befr.ebay.be",
-            "www.ebay.in","www.ebay.it","www.benl.ebay.be","www.cafr.ebay.ca","www.ebay.com.hk","www.ebay.pl","www.ebay.com.sg",
-            "www.ebay.com.my","www.ebay.ph","www.ebay.nl","www.ebay.co.uk","www.ebay.ie");
+//    private static List<String> ebayHomePageDomainList = Arrays.asList("www.ebay.com","www.ebay.com.au",
+//            "www.ebay.ca","www.ebay.de","www.ebay.at","www.ebay.ch","www.ebay.es","www.ebay.fr","www.befr.ebay.be",
+//            "www.ebay.in","www.ebay.it","www.benl.ebay.be","www.cafr.ebay.ca","www.ebay.com.hk","www.ebay.pl","www.ebay.com.sg",
+//            "www.ebay.com.my","www.ebay.ph","www.ebay.nl","www.ebay.co.uk","www.ebay.ie");
 
+    private static Pattern pattern = Pattern.compile("(m|www)\\.(befr|benl|cafr|ebay)\\.((com|ca|de|at|ch|es|fr|ebay|in|it|pl|ph|nl|co|ie)|(com|ebay|co)\\.(au|be|ca|hk|sg|my|uk))$", Pattern.CASE_INSENSITIVE);
     private static List<String> topPageList = Arrays.asList("i","itm","sch","b","e","vod","ulk","ws","p","cnt","sl","signin","fdbk","rtn");
 
 
@@ -417,11 +420,13 @@ public class UtpMonitorApp {
         try {
             landingPage = new URL(url);
             String path = landingPage.getPath();
-            if(path == null || path.length() == 0){
+            if(path == null || path.length() == 0 || path.equalsIgnoreCase("/")){
                 String domain = getDomainFromUrl(url);
-                if(ebayHomePageDomainList.contains(domain)){
+                Matcher matcher = pattern.matcher(domain);
+                boolean matchFound = matcher.find();
+                if(matchFound) {
                     pageType = "homepage";
-                }else{
+                } else {
                     pageType = "others";
                 }
             } else{
@@ -433,9 +438,23 @@ public class UtpMonitorApp {
             return pageType;
         } catch (Exception e) {
             LOGGER.warn("Error in parsing incoming link into url: ", e);
+            LOGGER.warn("Error url: ", url);
             return null;
         }
     }
+
+    /**
+     * for test domain pattern
+     *
+     * @param domain the domain string to be tested
+     * @return if the domain is ebay hoempage domain
+     */
+    public static boolean isHomepageDomain(String domain){
+        Matcher matcher = pattern.matcher(domain);
+        boolean matchFound = matcher.find();
+        return matchFound?true:false;
+    }
+
 
     /**
      * Check the message, see what platform generated the message
