@@ -33,11 +33,11 @@ public abstract class AbstractRheosElasticSearchCompatibleApp<IN, OUT> {
   private static final int NUM_MAX_ACTIONS = 1000;
   protected StreamExecutionEnvironment streamExecutionEnvironment;
 
-  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(3);
+  private static final long DEFAULT_CHECK_POINT_PERIOD = TimeUnit.MINUTES.toMillis(10);
 
-  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.SECONDS.toMillis(30);
+  private static final long DEFAULT_MIN_PAUSE_BETWEEN_CHECK_POINTS = TimeUnit.MINUTES.toMillis(2);
 
-  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
+  private static final long DEFAULT_CHECK_POINT_TIMEOUT = TimeUnit.MINUTES.toMillis(2);
 
   private static final int DEFAULT_MAX_CONCURRENT_CHECK_POINTS = 1;
 
