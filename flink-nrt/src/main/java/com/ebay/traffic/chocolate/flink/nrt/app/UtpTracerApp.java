@@ -4,7 +4,6 @@
 
 package com.ebay.traffic.chocolate.flink.nrt.app;
 
-import com.ebay.app.raptor.chocolate.avro.versions.UnifiedTrackingRheosMessage;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.kafka.DefaultKafkaDeserializationSchema;
@@ -12,15 +11,11 @@ import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import com.google.common.primitives.Longs;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.ebay.rheos.kafka.client.StreamConnectorConfig;
+import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
+import io.ebay.rheos.schema.avro.RheosEventDeserializer;
 import io.ebay.rheos.schema.event.RheosEvent;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.configuration.Configuration;
@@ -48,7 +43,7 @@ import java.util.*;
  * @since 2020/11/17
  */
 public class UtpTracerApp
-    extends AbstractRheosElasticSearchCompatibleApp<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage>  {
+    extends AbstractRheosElasticSearchCompatibleApp<ConsumerRecord<byte[], byte[]>, String>  {
   private static final Logger LOGGER = LoggerFactory.getLogger(UtpTracerApp.class);
   // default index prefix
   static final String INDEX_PREFIX = "utp-tracer-write";
@@ -69,31 +64,30 @@ public class UtpTracerApp
     rheosESCompatibleApp.run();
   }
 
-  private static class Deserialize extends RichMapFunction<ConsumerRecord<byte[], byte[]>, UnifiedTrackingRheosMessage> {
-    private transient DatumReader<GenericRecord> rheosHeaderReader;
-    private transient DatumReader<UnifiedTrackingRheosMessage> reader;
-
-    @Override
-    public void open(Configuration parameters) throws Exception {
-      super.open(parameters);
-      Schema rheosHeaderSchema = RheosEvent.BASE_SCHEMA.getField(RheosEvent.RHEOS_HEADER).schema();
-      rheosHeaderReader = new GenericDatumReader<>(rheosHeaderSchema);
-      reader = new SpecificDatumReader<>(UnifiedTrackingRheosMessage.getClassSchema());
-    }
-
-    @Override
-    public UnifiedTrackingRheosMessage map(ConsumerRecord<byte[], byte[]> value) throws Exception {
-      BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(value.value(), null);
-      rheosHeaderReader.read(null, decoder);
-      UnifiedTrackingRheosMessage datum = new UnifiedTrackingRheosMessage();
-      datum = reader.read(datum, decoder);
-      return datum;
-    }
-  }
-
   @Override
-  protected DataStream<UnifiedTrackingRheosMessage> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    return dataStreamSource.map(new Deserialize()).map(new UtpMonitor());
+  protected DataStream<String> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
+    return dataStreamSource.map(new RichMapFunction<ConsumerRecord<byte[], byte[]>, String>() {
+      private transient GenericRecordDomainDataDecoder decoder;
+      private transient RheosEventDeserializer deserializer;
+
+      @Override
+      public void open(Configuration parameters) throws Exception {
+        deserializer = new RheosEventDeserializer();
+        Map<String, Object> config = new HashMap<>();
+        Properties consumerProperties = PropertyMgr.getInstance()
+            .loadProperty(PropertyConstants.UTP_EVENT_TRACER_CONSUMER_PROPERTIES);
+        String rheosServiceUrl = consumerProperties.getProperty(StreamConnectorConfig.RHEOS_SERVICES_URLS);
+        config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, rheosServiceUrl);
+        decoder = new GenericRecordDomainDataDecoder(config);
+      }
+
+      @Override
+      public String map(ConsumerRecord<byte[], byte[]> value) throws Exception {
+        RheosEvent sourceRheosEvent = deserializer.deserialize(value.topic(), value.value());
+        GenericRecord sourceRecord = decoder.decode(sourceRheosEvent);
+        return sourceRecord.toString();
+      }
+    });
   }
 
   @Override
@@ -121,13 +115,12 @@ public class UtpTracerApp
   }
 
   @Override
-  protected ElasticsearchSinkFunction<UnifiedTrackingRheosMessage> getElasticSearchSinkFunction() {
+  protected ElasticsearchSinkFunction<String> getElasticSearchSinkFunction() {
     return new CustomElasticsearchSinkFunction();
   }
 
-  private static class CustomElasticsearchSinkFunction implements ElasticsearchSinkFunction<UnifiedTrackingRheosMessage> {
-    public IndexRequest createIndexRequest(UnifiedTrackingRheosMessage message) {
-      String element = message.toString();
+  private static class CustomElasticsearchSinkFunction implements ElasticsearchSinkFunction<String> {
+    public IndexRequest createIndexRequest(String element) {
       final String id = UUID.randomUUID().toString();
 
       Type type = new TypeToken<Map<String, Object>>() {}.getType();
@@ -158,8 +151,8 @@ public class UtpTracerApp
     }
 
     @Override
-    public void process(UnifiedTrackingRheosMessage message, RuntimeContext ctx, RequestIndexer indexer) {
-      indexer.add(createIndexRequest(message));
+    public void process(String element, RuntimeContext ctx, RequestIndexer indexer) {
+      indexer.add(createIndexRequest(element));
     }
   }
 }
