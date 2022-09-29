@@ -193,7 +193,8 @@ class UTPHourlyDoneJob(params: Parameter, override val enableHiveSupport: Boolea
       .withColumn("minProducerEventTime", datetimeUdf(col("minProducerEventTs")))
     logger.info("current status {}", Utils.showString(stat, 100, truncate = false))
 
-    val minRow = diffDf.orderBy(col("producerEventTs").asc).limit(1)
+    val minRow = diffDf.filter(expr(s"actionType not in ('WATCH', 'UNWATCH')"))
+      .orderBy(col("producerEventTs").asc).limit(1)
       .withColumn("minProducerEventTime", datetimeUdf(col("producerEventTs")))
     logger.info("min event {}", Utils.showString(minRow, 100, truncate = false))
 
