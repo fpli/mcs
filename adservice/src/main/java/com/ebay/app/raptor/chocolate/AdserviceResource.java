@@ -118,7 +118,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       "urn:ebay-marketplace-consumerid:2e26698a-e3a3-499a-a36f-d34e45276d46");
   private static final Client mktClient = GingerClientBuilder.newClient(config);
   private static final String endpoint = (String) mktClient.getConfiguration().getProperty(EndpointUri.KEY);
-  
+
   private static final String AKAMAI_BODY_DELIMITER="\n";
 
   /**
@@ -462,6 +462,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       MonitorUtil.info(METRIC_AKAMAI_INCOMING);
       List<AkamaiEvent> akamaiEventList = new ArrayList<>();
       if(StringUtils.isNotEmpty(body)) {
+        logger.info("Akamai body for debug: " + body);
         String[] akamaiEvents = body.split(AKAMAI_BODY_DELIMITER);
         if(akamaiEvents != null && akamaiEvents.length > 0){
           for (String akamaiEventJson : akamaiEvents) {
