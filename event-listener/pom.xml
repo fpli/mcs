@@ -533,6 +533,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptorio.component</groupId>
+      <artifactId>raptor-opentelemetry-starter</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
