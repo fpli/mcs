@@ -127,11 +127,11 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.kylin/kylin-jdbc -->
-        <dependency>
-            <groupId>org.apache.kylin</groupId>
-            <artifactId>kylin-jdbc</artifactId>
-            <version>2.1.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.kylin</groupId>-->
+<!--            <artifactId>kylin-jdbc</artifactId>-->
+<!--            <version>2.1.0</version>-->
+<!--        </dependency>-->
 
         <!-- test -->
         <dependency>
