@@ -126,9 +126,9 @@ public class DoneFileUtil {
         } else if (delay > waring_delay_max_value) {
             status = "Critical";
         }
-        //01 utpbatch_madrona today_file is null before 9 o'clock today
-        //02 utpbatch_madrona today_file is null after 9 o'clock today
-        //03 utpbatch_madrona today_file is not null after 9 o'clock today
+        //01 utpbatch_overall today_file is null before 9 o'clock today
+        //02 utpbatch_overall today_file is null after 9 o'clock today
+        //03 utpbatch_overall today_file is not null after 9 o'clock today
 
         //01  currentTime is before or after pm 9 o'clock;
         //02  before, statu is OK ; after, judge today_file if is null ?
