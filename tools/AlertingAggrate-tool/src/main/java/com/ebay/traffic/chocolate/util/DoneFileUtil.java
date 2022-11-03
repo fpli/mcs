@@ -133,7 +133,7 @@ public class DoneFileUtil {
         //01  currentTime is before or after pm 9 o'clock;
         //02  before, statu is OK ; after, judge today_file if is null ?
         //03  not null ,statu is ok; is null ,statu is "Critical"
-        if (pattern.equals("utpbatch_madrona") && delay_hour == -1) {
+        if (pattern.equals("utpbatch_overall") && delay_hour == -1) {
             status = "Critical";
         }
 
@@ -151,7 +151,7 @@ public class DoneFileUtil {
         list.add(getDoneFileDetail("ams_click_hourly", "apollo-rno", "apollo"));
         list.add(getDoneFileDetail("ams_imprsn_hourly", "apollo-rno", "apollo"));
         list.add(getDoneFileDetail("utp_event_hourly", "apollo-rno", "apollo"));
-        list.add(getDoneFileDetail("utpbatch_madrona", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("utpbatch_overall", "apollo-rno", "apollo"));
         list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly", "hercules", "hercules"));
         list.add(getDoneFileDetail("ams_click_hourly", "hercules", "hercules"));
         list.add(getDoneFileDetail("ams_imprsn_hourly", "hercules", "hercules"));
