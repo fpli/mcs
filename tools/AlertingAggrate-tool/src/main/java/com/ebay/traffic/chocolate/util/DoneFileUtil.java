@@ -4,6 +4,7 @@ import com.ebay.traffic.chocolate.pojo.DoneFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,12 +40,27 @@ public class DoneFileUtil {
             String[] arr = donefile.split("\\.");
             if (arr.length == 3) {
                 donefile = arr[2];
+            } else {
+                String[] arr1 = arr[0].split("_");
+                // 20221030
+                donefile = arr1[arr1.length - 1];
             }
             logger.info("log: donefile ----> " + donefile);
             System.out.println("console: donefile ----> " + donefile);
             if (donefile.length() > 10) {
                 max_time = donefile.substring(0, 10);
                 delay = getDelay(max_time);
+            }
+            if (donefile.length() == 8) {
+                Calendar c = Calendar.getInstance();
+                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+                String currentDate = df.format(c.getTime());
+                int hour = c.get(Calendar.HOUR_OF_DAY);
+                if (!donefile.equals(currentDate) && hour > 9) {
+                    delay = -1;
+                } else {
+                    delay = 0;
+                }
             }
             logger.info("log: max_time ----> " + max_time);
             System.out.println("console: max_time ----> " + max_time);
@@ -110,6 +126,16 @@ public class DoneFileUtil {
         } else if (delay > waring_delay_max_value) {
             status = "Critical";
         }
+        //01 utpbatch_madrona today_file is null before 9 o'clock today
+        //02 utpbatch_madrona today_file is null after 9 o'clock today
+        //03 utpbatch_madrona today_file is not null after 9 o'clock today
+
+        //01  currentTime is before or after pm 9 o'clock;
+        //02  before, statu is OK ; after, judge today_file if is null ?
+        //03  not null ,statu is ok; is null ,statu is "Critical"
+        if (pattern.equals("utpbatch_madrona") && delay_hour == -1) {
+            status = "Critical";
+        }
 
         doneFile.setDataSource(pattern);
         doneFile.setStatus(status);
@@ -121,14 +147,15 @@ public class DoneFileUtil {
 
     public static ArrayList<DoneFile> getDoneFileInfos() {
         ArrayList<DoneFile> list = new ArrayList<>();
-        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly","apollo-rno", "apollo"));
-        list.add(getDoneFileDetail("ams_click_hourly","apollo-rno", "apollo"));
-        list.add(getDoneFileDetail("ams_imprsn_hourly","apollo-rno", "apollo"));
-        list.add(getDoneFileDetail("utp_event_hourly","apollo-rno", "apollo"));
-        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly","hercules", "hercules"));
-        list.add(getDoneFileDetail("ams_click_hourly","hercules", "hercules"));
-        list.add(getDoneFileDetail("ams_imprsn_hourly","hercules", "hercules"));
-        list.add(getDoneFileDetail("utp_event_hourly","hercules", "hercules"));
+        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("ams_click_hourly", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("ams_imprsn_hourly", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("utp_event_hourly", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("utpbatch_madrona", "apollo-rno", "apollo"));
+        list.add(getDoneFileDetail("imk_rvr_trckng_event_hourly", "hercules", "hercules"));
+        list.add(getDoneFileDetail("ams_click_hourly", "hercules", "hercules"));
+        list.add(getDoneFileDetail("ams_imprsn_hourly", "hercules", "hercules"));
+        list.add(getDoneFileDetail("utp_event_hourly", "hercules", "hercules"));
         return list;
     }
 
