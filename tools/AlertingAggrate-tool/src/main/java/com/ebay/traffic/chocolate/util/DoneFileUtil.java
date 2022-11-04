@@ -69,8 +69,8 @@ public class DoneFileUtil {
 
             if (donefile.length() == 8) {
                 // The local 9 a.m. switch to server time is 18 p.m
-                if (!donefile.equals(currentDate) && hour > 18) {
-                    delay = hour - 18;
+                if (!donefile.equals(currentDate) && hour > 17) {
+                    delay = hour - 17;
                 } else {
                     delay = 0;
                 }
