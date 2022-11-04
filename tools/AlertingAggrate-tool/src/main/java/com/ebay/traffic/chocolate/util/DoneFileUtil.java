@@ -42,7 +42,7 @@ public class DoneFileUtil {
             // 0:no delay; 1:delay
             if (pattern.equals("utpbatch_overall")
                     && hour <= 17) {
-                delay = 0;
+                delay = -1;
             } else if (
                     pattern.equals("utpbatch_overall")
                             && hour > 17) {
@@ -72,7 +72,7 @@ public class DoneFileUtil {
                 if (!donefile.equals(currentDate) && hour > 17) {
                     delay = hour - 17;
                 } else {
-                    delay = 0;
+                    delay = -1;
                 }
             }
             logger.info("log: max_time ----> " + max_time);
@@ -148,6 +148,7 @@ public class DoneFileUtil {
         //03  not null ,statu is ok; is null ,statu is "Critical"
         if (pattern.equals("utpbatch_overall") && delay_hour > 0) {
             status = "Critical";
+            delay=delay_hour;
         }
 
         doneFile.setDataSource(pattern);
