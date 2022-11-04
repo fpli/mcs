@@ -14,6 +14,7 @@ public class DoneFileReadUtil {
     public static ArrayList<String> getDoneFileList(String path, String pattern) {
         try {
 
+//            String path1="src/test/resources/1102HDFSFiles2/apollo_done_files.txt";
             ArrayList<String> list = readFiles(path);
             ArrayList<String> list1 = new ArrayList<>();
             for (String fileName : list) {

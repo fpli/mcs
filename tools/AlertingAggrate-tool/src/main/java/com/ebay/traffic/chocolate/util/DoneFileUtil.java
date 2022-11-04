@@ -28,14 +28,32 @@ public class DoneFileUtil {
         ArrayList<String> retList = new ArrayList<>();
         int delay = 0;
 
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        // Done file is yesterday,so -1
+        c.set(Calendar.DATE, c.get(Calendar.DATE) - 1);
+        String currentDate = df.format(c.getTime());
+        String isFileNull=null;
+
         if (list == null || list.size() == 0) {
             int h = LocalDateTime.now().getHour();
             delay = -1;
-        }
 
-        String donefile = "";
-        String max_time = "";
-        if (list.size() >= 1) {
+            // 0:no delay; 1:delay
+            if (pattern.equals("utpbatch_overall")
+                    && hour <= 18) {
+                delay = 0;
+            }else if (
+                    pattern.equals("utpbatch_overall")
+                            && hour > 18){
+                delay = hour - 18;
+                isFileNull="true";
+
+            }
+        } else {
+            String donefile = "";
+            String max_time = "";
             donefile = list.get(0);
             String[] arr = donefile.split("\\.");
             if (arr.length == 3) {
@@ -51,13 +69,12 @@ public class DoneFileUtil {
                 max_time = donefile.substring(0, 10);
                 delay = getDelay(max_time);
             }
+
             if (donefile.length() == 8) {
-                Calendar c = Calendar.getInstance();
-                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-                String currentDate = df.format(c.getTime());
-                int hour = c.get(Calendar.HOUR_OF_DAY);
-                if (!donefile.equals(currentDate) && hour > 9) {
-                    delay = -1;
+                // The local 9 a.m. switch to server time is 18 p.m
+                if (!donefile.equals(currentDate) && hour > 18) {
+                    delay = hour - 18;
+                    isFileNull="false";
                 } else {
                     delay = 0;
                 }
@@ -68,6 +85,7 @@ public class DoneFileUtil {
 
         retList.add(new Integer(delay).toString());
         retList.add(list.get(0));
+        retList.add(isFileNull);
 
         return retList;
     }
@@ -107,6 +125,7 @@ public class DoneFileUtil {
 
         int delay_hour = Integer.parseInt(list.get(0));
         String donefile = list.get(1);
+        String isFileNull = list.get(2);
 
         DoneFile doneFile = new DoneFile();
         int delay = 0;
@@ -133,7 +152,7 @@ public class DoneFileUtil {
         //01  currentTime is before or after pm 9 o'clock;
         //02  before, statu is OK ; after, judge today_file if is null ?
         //03  not null ,statu is ok; is null ,statu is "Critical"
-        if (pattern.equals("utpbatch_overall") && delay_hour == -1) {
+        if (pattern.equals("utpbatch_overall") &&  isFileNull.equals("true")) {
             status = "Critical";
         }
 
