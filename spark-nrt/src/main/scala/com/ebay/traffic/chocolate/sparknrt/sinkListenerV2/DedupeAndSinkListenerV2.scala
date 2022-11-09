@@ -24,6 +24,7 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.spark.TaskContext
 import rx.Observable
 import rx.functions.Func1
+import com.ebay.app.raptor.chocolate.util.MonitorUtil
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
@@ -228,6 +229,7 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
         val cacheClient:CacheClient= CorpCouchbaseClientV2.getCacheClientFunc()
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         if (cacheClient.get(key)==null) {
+          MonitorUtil.info("getNukvSuccess")
           writeMessage(writer, message)
         }
         CorpCouchbaseClientV2.returnClient(Option.apply(cacheClient))

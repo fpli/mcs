@@ -4,10 +4,10 @@ import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.{Date, Properties}
 import java.{lang, util}
-
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
+import com.ebay.app.raptor.chocolate.util.MonitorUtil
 import com.ebay.dukes.CacheClient
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDDV2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
@@ -237,6 +237,7 @@ class DedupeAndSinkV2(params: ParameterV2)
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         logger.info("couchbaseDedupe {}", key)
         if (cacheClient.get(key) == null) {
+          MonitorUtil.info("getNukvSuccess")
           writeMessage(writer, message)
         } else {
           logger.info("couchbaseDedupe contains the key{}", key)

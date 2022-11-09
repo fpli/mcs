@@ -82,6 +82,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.ADGUID_GUID_PREFIX + adguid, new JacksonTranscoder<>(Map.class));
+            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 guidList = map.get(GUID_MAP_KEY).toString();
                 logger.debug("Get guid list. adguid=" + adguid + " guidList=" + guidList);
@@ -101,6 +102,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.ADGUID_UID_PREFIX + adguid, new JacksonTranscoder<>(Map.class));
+            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
                 logger.debug("Get user id. adguid=" + adguid + " uid=" + uid);
@@ -120,6 +122,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_ADGUID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
+            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 adguid = map.get(ADGUID_MAP_KEY).toString();
                 logger.debug("Get adguid. guid=" + guid + " adguid=" + adguid);
@@ -139,6 +142,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
+            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
                 MonitorUtil.info("getNukvSuccess");
@@ -160,6 +164,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.UID_GUID_PREFIX + uid, new JacksonTranscoder<>(Map.class));
+            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 guid = map.get(GUID_MAP_KEY).toString();
                 logger.debug("Get guid. uid=" + uid + " guid=" + guid);
@@ -183,6 +188,7 @@ public class CouchbaseClientV2 {
                 MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                MonitorUtil.info("addNukvFail");
             } finally {
                 factory.returnClient(cacheClient);
             }
@@ -228,9 +234,13 @@ public class CouchbaseClientV2 {
         CacheClient cacheClient = null;
         try {
             cacheClient = factory.getClient(datasourceName);
-            return cacheClient.set(key, expiry, val).get();
+            Boolean flag = cacheClient.set(key, expiry, val).get();
+            MonitorUtil.info("addNukvSuccess");
+            MonitorUtil.info("getNukvSuccess");
+            return flag;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
+            MonitorUtil.info("addNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -242,6 +252,7 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Object o = cacheClient.get(key, StringTranscoder.getInstance());
+            MonitorUtil.info("getNukvSuccess");
             return o == null ? null : o.toString();
         } catch (Exception e) {
             e.printStackTrace();

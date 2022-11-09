@@ -7,9 +7,9 @@ import java.util
 import java.util.Properties
 import java.util.regex.Pattern
 import java.util.{Properties, StringJoiner}
-
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum
+import com.ebay.app.raptor.chocolate.util.MonitorUtil
 import com.ebay.kernel.util.HeaderMultiValue
 import com.ebay.dukes.base.JacksonTranscoder
 import com.ebay.dukes.nukv.trancoders.StringTranscoder
@@ -1826,6 +1826,7 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         val start: Long = System.currentTimeMillis
         val chocoTagKey: String = CB_CHOCO_TAG_PREFIX + chocoTag
         val o: util.HashMap[String, String] = cacheClient.get(chocoTagKey, new JacksonTranscoder[util.HashMap[String, String]](classOf[util.HashMap[String, String]]))
+        MonitorUtil.info("getNukvSuccess");
         if (o != null) {
           logger.info("get guid successfully " + guid)
           roverLastClickGuid = o.getOrDefault("guid", "")
