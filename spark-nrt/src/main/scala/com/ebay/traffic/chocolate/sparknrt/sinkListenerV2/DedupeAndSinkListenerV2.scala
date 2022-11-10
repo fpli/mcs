@@ -24,7 +24,6 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.spark.TaskContext
 import rx.Observable
 import rx.functions.Func1
-import com.ebay.app.raptor.chocolate.util.MonitorUtil
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 

@@ -7,7 +7,6 @@ import java.{lang, util}
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
-import com.ebay.app.raptor.chocolate.util.MonitorUtil
 import com.ebay.dukes.CacheClient
 import com.ebay.traffic.chocolate.spark.kafka.KafkaRDDV2
 import com.ebay.traffic.chocolate.sparknrt.BaseSparkNrtJob
