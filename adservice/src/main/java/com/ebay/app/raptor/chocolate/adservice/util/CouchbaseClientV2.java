@@ -171,7 +171,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -254,7 +254,7 @@ public class CouchbaseClientV2 {
             return o == null ? null : o.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }
