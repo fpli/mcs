@@ -4,6 +4,7 @@ import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.{Date, Properties}
 import java.{lang, util}
+
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.JsonObject
 import com.ebay.app.raptor.chocolate.avro.{ChannelAction, FilterMessage}
