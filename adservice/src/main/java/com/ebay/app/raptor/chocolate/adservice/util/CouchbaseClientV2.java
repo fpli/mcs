@@ -82,13 +82,14 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.ADGUID_GUID_PREFIX + adguid, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 guidList = map.get(GUID_MAP_KEY).toString();
                 logger.debug("Get guid list. adguid=" + adguid + " guidList=" + guidList);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getNukvFail");
+
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -102,13 +103,13 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.ADGUID_UID_PREFIX + adguid, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
                 logger.debug("Get user id. adguid=" + adguid + " uid=" + uid);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -122,13 +123,13 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_ADGUID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 adguid = map.get(ADGUID_MAP_KEY).toString();
                 logger.debug("Get adguid. guid=" + guid + " adguid=" + adguid);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -142,10 +143,8 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
-                MonitorUtil.info("getNukvSuccess");
                 logger.debug("Get user id. guid=" + guid + " uid=" + uid);
             }
         } catch (Exception e) {
@@ -164,13 +163,13 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.UID_GUID_PREFIX + uid, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (map != null) {
                 guid = map.get(GUID_MAP_KEY).toString();
                 logger.debug("Get guid. uid=" + uid + " guid=" + guid);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -185,7 +184,6 @@ public class CouchbaseClientV2 {
             map.put(mapName, idValue);
             try {
                 cacheClient.set(key, EXPIRY, map, new JacksonTranscoder<>(Map.class)).get();
-                MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 MonitorUtil.info("addNukvFail");
@@ -234,13 +232,11 @@ public class CouchbaseClientV2 {
         CacheClient cacheClient = null;
         try {
             cacheClient = factory.getClient(datasourceName);
-            Boolean flag = cacheClient.set(key, expiry, val).get();
-            MonitorUtil.info("addNukvSuccess");
-            MonitorUtil.info("getNukvSuccess");
-            return flag;
+            return cacheClient.set(key, expiry, val).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             MonitorUtil.info("addNukvFail");
+            MonitorUtil.info("getNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -252,10 +248,10 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Object o = cacheClient.get(key, StringTranscoder.getInstance());
-            MonitorUtil.info("getNukvSuccess");
             return o == null ? null : o.toString();
         } catch (Exception e) {
             e.printStackTrace();
+            MonitorUtil.info("getNukvFail");
         } finally {
             factory.returnClient(cacheClient);
         }

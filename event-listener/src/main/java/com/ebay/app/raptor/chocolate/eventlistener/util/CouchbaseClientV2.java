@@ -44,6 +44,7 @@ public class CouchbaseClientV2 {
 
     private static final String SELF_SERVICE_METRICS_FAILURE = "SelfServiceCBFailure";
 
+
     @Autowired
     CacheProperties cacheProperties;
 
@@ -62,13 +63,13 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map m = cacheClient.get(key, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (m != null) {
                 url = m.get("url").toString();
                 logger.info("Get self-service url. id=" + id + " url=" + url);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception for self-service", e);
+            MonitorUtil.info("CBDeGetException",1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -84,12 +85,12 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             Map m = cacheClient.get(KAFKA_GLOBAL_CONFIG, new JacksonTranscoder<>(Map.class));
-            MonitorUtil.info("getNukvSuccess");
             if (m != null) {
                 globalConfig = Integer.parseInt(m.get("globalConfig").toString());
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("CBDeGetException",1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -122,10 +123,9 @@ public class CouchbaseClientV2 {
                 cacheClient.set(key, 24 * 60 * 60, m, new JacksonTranscoder<>(Map.class)).get();
                 logger.info("Adding new self-service record. id=" + id + " url=" + url);
             }
-            MonitorUtil.info("addNukvSuccess");
             MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
         } catch (Exception e) {
-            MonitorUtil.info("addNukvFail");
+            MonitorUtil.info("CBDeSetException",1);
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);
@@ -154,10 +154,9 @@ public class CouchbaseClientV2 {
         try {
             cacheClient = factory.getClient(datasourceName);
             result = cacheClient.set(key, expiry, val, StringTranscoder.getInstance()).get();
-            MonitorUtil.info("addNukvSuccess");
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            MonitorUtil.info("addNukvFail");
+            MonitorUtil.info("CBDeSetException",1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -167,7 +166,6 @@ public class CouchbaseClientV2 {
     public String get(String key) {
         CacheClient cacheClient = factory.getClient(datasourceName);
         Object o = cacheClient.get(key, StringTranscoder.getInstance());
-        MonitorUtil.info("addNukvSuccess");
         factory.returnClient(cacheClient);
         return o == null ? null : o.toString();
     }

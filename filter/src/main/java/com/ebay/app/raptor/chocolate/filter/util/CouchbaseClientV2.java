@@ -65,7 +65,7 @@ public class CouchbaseClientV2 {
                 logger.debug("Adding new mapping. campaignId=" + campaignId + " publisherId=" + publisherId);
             }
         } catch (Exception e) {
-            MonitorUtil.info("addNukvFail");
+            MonitorUtil.info("CBDeSetException",1);
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);
@@ -84,6 +84,8 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
+            MonitorUtil.info("CBDeGetException",1);
+
         }
     }
 
@@ -99,7 +101,6 @@ public class CouchbaseClientV2 {
                 long start = System.currentTimeMillis();
                 cacheClient = factory.getClient(cacheProperties.getDatasource());
                 Object o = cacheClient.get(String.valueOf(campaignId), StringTranscoder.getInstance());
-                MonitorUtil.info("getNukvSuccess");
                 MonitorUtil.latency("FilterCouchbaseLatency", System.currentTimeMillis() - start);
                 if (o == null) {
                     logger.warn("No publisherID found for campaign " + campaignId + " in couchbase");

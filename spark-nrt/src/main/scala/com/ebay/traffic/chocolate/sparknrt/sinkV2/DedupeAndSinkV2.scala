@@ -237,7 +237,6 @@ class DedupeAndSinkV2(params: ParameterV2)
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         logger.info("couchbaseDedupe {}", key)
         if (cacheClient.get(key) == null) {
-          MonitorUtil.info("getNukvSuccess")
           writeMessage(writer, message)
         } else {
           logger.info("couchbaseDedupe contains the key{}", key)

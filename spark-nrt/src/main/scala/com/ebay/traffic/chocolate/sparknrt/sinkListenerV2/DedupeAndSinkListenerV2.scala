@@ -229,7 +229,6 @@ class DedupeAndSinkListenerV2(params: ParameterV2)
         val cacheClient:CacheClient= CorpCouchbaseClientV2.getCacheClientFunc()
         val key = DEDUPE_KEY_PREFIX + message.getShortSnapshotId.toString
         if (cacheClient.get(key)==null) {
-          MonitorUtil.info("getNukvSuccess")
           writeMessage(writer, message)
         }
         CorpCouchbaseClientV2.returnClient(Option.apply(cacheClient))
