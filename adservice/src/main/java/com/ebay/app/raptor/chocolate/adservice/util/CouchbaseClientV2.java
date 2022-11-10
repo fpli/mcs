@@ -189,6 +189,7 @@ public class CouchbaseClientV2 {
                 MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                MonitorUtil.info("CBDeSetException", 1);
                 MonitorUtil.info("CBDeGetException", 1);
             } finally {
                 factory.returnClient(cacheClient);

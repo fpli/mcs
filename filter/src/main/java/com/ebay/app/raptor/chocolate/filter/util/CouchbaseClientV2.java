@@ -65,6 +65,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             MonitorUtil.info("CBDeSetException",1);
+            MonitorUtil.info("CBDeGetException",1);
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);
@@ -83,8 +84,6 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
-            MonitorUtil.info("CBDeGetException",1);
-
         }
     }
 

@@ -44,7 +44,6 @@ public class CouchbaseClientV2 {
 
     private static final String SELF_SERVICE_METRICS_FAILURE = "SelfServiceCBFailure";
 
-
     @Autowired
     CacheProperties cacheProperties;
 
@@ -126,6 +125,7 @@ public class CouchbaseClientV2 {
             MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
         } catch (Exception e) {
             MonitorUtil.info("CBDeSetException",1);
+            MonitorUtil.info("CBDeGetException",1);
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);
@@ -157,6 +157,7 @@ public class CouchbaseClientV2 {
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             MonitorUtil.info("CBDeSetException",1);
+            MonitorUtil.info("CBDeGetException",1);
         } finally {
             factory.returnClient(cacheClient);
         }
