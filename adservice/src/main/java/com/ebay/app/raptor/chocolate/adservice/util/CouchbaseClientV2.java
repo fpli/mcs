@@ -88,7 +88,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
 
         } finally {
             factory.returnClient(cacheClient);
@@ -109,7 +109,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -129,7 +129,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -145,11 +145,12 @@ public class CouchbaseClientV2 {
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
+                MonitorUtil.info("getNukvSuccess");
                 logger.debug("Get user id. guid=" + guid + " uid=" + uid);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -184,9 +185,10 @@ public class CouchbaseClientV2 {
             map.put(mapName, idValue);
             try {
                 cacheClient.set(key, EXPIRY, map, new JacksonTranscoder<>(Map.class)).get();
+                MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                MonitorUtil.info("addNukvFail");
+                MonitorUtil.info("CBDeGetException", 1);
             } finally {
                 factory.returnClient(cacheClient);
             }
@@ -235,8 +237,8 @@ public class CouchbaseClientV2 {
             return cacheClient.set(key, expiry, val).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            MonitorUtil.info("addNukvFail");
-            MonitorUtil.info("getNukvFail");
+            MonitorUtil.info("CBDeSetException", 1);
+            MonitorUtil.info("CBDeGetException", 1);
         } finally {
             factory.returnClient(cacheClient);
         }

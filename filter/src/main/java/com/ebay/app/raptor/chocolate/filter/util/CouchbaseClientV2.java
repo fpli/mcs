@@ -61,7 +61,6 @@ public class CouchbaseClientV2 {
             cacheClient = factory.getClient(cacheProperties.getDatasource());
             if (cacheClient.get(String.valueOf(campaignId), StringTranscoder.getInstance()) == null) {
                 cacheClient.set(String.valueOf(campaignId), 2500, String.valueOf(publisherId), StringTranscoder.getInstance());
-                MonitorUtil.info("addNukvSuccess");
                 logger.debug("Adding new mapping. campaignId=" + campaignId + " publisherId=" + publisherId);
             }
         } catch (Exception e) {
