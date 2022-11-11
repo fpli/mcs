@@ -7,6 +7,7 @@ import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.JacksonTranscoder;
 import com.ebay.dukes.nukv.trancoders.StringTranscoder;
+import com.ebay.traffic.monitoring.Field;
 import com.mysql.jdbc.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,8 +89,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("CBDeGetException", 1);
-
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidListByAdguid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -109,7 +109,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidListByAdguid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -129,7 +129,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getAdguidByGuid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -145,13 +145,11 @@ public class CouchbaseClientV2 {
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
             if (map != null) {
                 uid = map.get(UID_MAP_KEY).toString();
-                MonitorUtil.info("getNukvSuccess");
                 logger.debug("Get user id. guid=" + guid + " uid=" + uid);
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getUidByGuid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -171,7 +169,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidByUid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -189,8 +187,7 @@ public class CouchbaseClientV2 {
                 MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                MonitorUtil.info("CBDeSetException", 1);
-                MonitorUtil.info("CBDeGetException", 1);
+                MonitorUtil.info("addCBDeFaile", 1, Field.of("method","addSingleMapping"));
             } finally {
                 factory.returnClient(cacheClient);
             }
@@ -239,8 +236,7 @@ public class CouchbaseClientV2 {
             return cacheClient.set(key, expiry, val).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            MonitorUtil.info("CBDeSetException", 1);
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("addCBDeFaile", 1, Field.of("method","put"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -255,7 +251,7 @@ public class CouchbaseClientV2 {
             return o == null ? null : o.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            MonitorUtil.info("CBDeGetException", 1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","get"));
         } finally {
             factory.returnClient(cacheClient);
         }
