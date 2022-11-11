@@ -109,7 +109,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidListByAdguid"));
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getUidByAdguid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -149,6 +149,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getNukvFail");
             MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getUidByGuid"));
         } finally {
             factory.returnClient(cacheClient);

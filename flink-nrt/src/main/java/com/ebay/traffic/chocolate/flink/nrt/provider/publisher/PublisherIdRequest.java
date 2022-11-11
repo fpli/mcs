@@ -6,11 +6,13 @@ package com.ebay.traffic.chocolate.flink.nrt.provider.publisher;
 
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
 import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.OperationFuture;
 import com.ebay.dukes.builder.FountCacheFactoryBuilder;
 import com.ebay.dukes.nukv.trancoders.StringTranscoder;
+import com.ebay.traffic.monitoring.Field;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.primitives.Longs;
@@ -171,6 +173,7 @@ public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV6, Lis
             return DEFAULT_PUBLISHER_ID;
           }
           this.numGetPublisherIdSuccessRate.markEvent();
+          MonitorUtil.info("getCBDeFaile", 1, Field.of("method","asyncInvoke"));
           return publisherId;
         }
       } catch (Exception e) {

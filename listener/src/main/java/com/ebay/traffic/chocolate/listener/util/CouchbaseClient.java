@@ -3,12 +3,14 @@ package com.ebay.traffic.chocolate.listener.util;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonObject;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.traffic.monitoring.ESMetrics;
+import com.ebay.traffic.monitoring.Field;
 import com.ebay.traffic.monitoring.Metrics;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
@@ -126,6 +128,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getKafkaGlobalConfig"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -186,6 +189,7 @@ public class CouchbaseClient {
       metrics.mean("ListenerUpsertChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start);
       metrics.meter(CHOCOTAG_GUID_UPSERT_COMMAND);
     } catch (Exception e) {
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsertCBChocoTagGuidMapping"));
       throw new Exception(e);
     } finally {
       factory.returnClient(cacheClient);
