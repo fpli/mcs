@@ -12,6 +12,7 @@ import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
+import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
 
@@ -120,6 +121,8 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception for self-service", e);
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getSelfServiceUrl"));
+
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -140,6 +143,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getKafkaGlobalConfig"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -155,6 +159,8 @@ public class CouchbaseClient {
     } catch (Exception e) {
       MonitorUtil.info(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","addSelfServiceRecord"));
+
     }
   }
 

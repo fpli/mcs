@@ -212,6 +212,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getChocoTagGuidMappingByChocoTag"));
     } finally {
       factory.returnClient(cacheClient);
     }

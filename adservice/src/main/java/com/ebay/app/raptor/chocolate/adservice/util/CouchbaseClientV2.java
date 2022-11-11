@@ -72,6 +72,7 @@ public class CouchbaseClientV2 {
             upserted = upsert(adguid, guidList, guid, uid);
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","addMappingRecord"));
         }
         return upserted;
     }
@@ -144,6 +145,7 @@ public class CouchbaseClientV2 {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
             if (map != null) {
+                MonitorUtil.info("getNukvSuccess");
                 uid = map.get(UID_MAP_KEY).toString();
                 logger.debug("Get user id. guid=" + guid + " uid=" + uid);
             }
@@ -220,6 +222,7 @@ public class CouchbaseClientV2 {
             upserted = true;
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsert"));
         }
         return upserted;
     }

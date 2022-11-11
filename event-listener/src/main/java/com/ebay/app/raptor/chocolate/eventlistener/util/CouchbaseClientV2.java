@@ -6,6 +6,7 @@ import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.JacksonTranscoder;
 import com.ebay.dukes.nukv.trancoders.StringTranscoder;
+import com.ebay.traffic.monitoring.Field;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -68,7 +69,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception for self-service", e);
-            MonitorUtil.info("CBDeGetException",1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getSelfServiceUrl"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -89,7 +90,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("CBDeGetException",1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getKafkaGlobalConfig"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -124,8 +125,7 @@ public class CouchbaseClientV2 {
             }
             MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
         } catch (Exception e) {
-            MonitorUtil.info("CBDeSetException",1);
-            MonitorUtil.info("CBDeGetException",1);
+            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsertSelfService"));
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);
