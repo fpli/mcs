@@ -159,8 +159,6 @@ public class CouchbaseClient {
     } catch (Exception e) {
       MonitorUtil.info(SELF_SERVICE_METRICS_FAILURE);
       logger.warn("Couchbase upsert operation exception for self-service", e);
-      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","addSelfServiceRecord"));
-
     }
   }
 
@@ -179,6 +177,7 @@ public class CouchbaseClient {
       }
       MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
     } catch (Exception e) {
+      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsertSelfService"));
       throw new Exception(e);
     } finally {
       factory.returnClient(cacheClient);

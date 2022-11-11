@@ -145,8 +145,8 @@ public class CouchbaseClientV2 {
             cacheClient = factory.getClient(datasourceName);
             Map map = cacheClient.get(IdMapable.GUID_UID_PREFIX + guid, new JacksonTranscoder<>(Map.class));
             if (map != null) {
-                MonitorUtil.info("getNukvSuccess");
                 uid = map.get(UID_MAP_KEY).toString();
+                MonitorUtil.info("getNukvSuccess");
                 logger.debug("Get user id. guid=" + guid + " uid=" + uid);
             }
         } catch (Exception e) {
