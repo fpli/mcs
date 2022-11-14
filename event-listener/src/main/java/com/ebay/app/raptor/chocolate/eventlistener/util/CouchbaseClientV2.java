@@ -69,7 +69,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception for self-service", e);
-            MonitorUtil.info("getCBFail", 1, Field.of("method","getSelfServiceUrl"));
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "getSelfServiceUrl"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -90,7 +90,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBFail", 1, Field.of("method","getKafkaGlobalConfig"));
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "getKafkaGlobalConfig"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -125,7 +125,7 @@ public class CouchbaseClientV2 {
             }
             MonitorUtil.info(SELF_SERVICE_METRICS_SUCCESS);
         } catch (Exception e) {
-            MonitorUtil.info("getCBFail", 1, Field.of("method","upsertSelfService"));
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "upsertSelfService"));
             throw new Exception(e);
         } finally {
             factory.returnClient(cacheClient);

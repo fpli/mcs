@@ -53,7 +53,7 @@ public class CouchbaseClientV2 {
         } catch (Exception e) {
             buffer.add(new AbstractMap.SimpleEntry<>(campaignId, publisherId));
             logger.warn("Couchbase upsert operation exception", e);
-            MonitorUtil.info("getCBFail", 1, Field.of("method","addMappingRecord"));
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "addMappingRecord"));
         }
     }
 
@@ -84,7 +84,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
-            MonitorUtil.info("getCBFail", 1, Field.of("method","flushBuffer"));
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "flushBuffer"));
         }
     }
 
