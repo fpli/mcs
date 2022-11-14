@@ -93,7 +93,7 @@ public class CouchbaseClient {
     } catch (Exception e) {
       buffer.add(new AbstractMap.SimpleEntry<>(campaignId, publisherId));
       logger.warn("Couchbase upsert operation exception", e);
-      MonitorUtil.info("getCBDeFail", 1, Field.of("method","addMappingRecord"));
+      MonitorUtil.info("getCBFail", 1, Field.of("method","addMappingRecord"));
     }
   }
 
@@ -123,7 +123,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase upsert operation exception", e);
-      MonitorUtil.info("getCBDeFail", 1, Field.of("method","flushBuffer"));
+      MonitorUtil.info("getCBFail", 1, Field.of("method","flushBuffer"));
     }
   }
 
@@ -151,10 +151,10 @@ public class CouchbaseClient {
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         MonitorUtil.info("FilterCouchbaseRetry");
-        MonitorUtil.info("addCBDeFail", 1, Field.of("method","getPublisherID"));
+        MonitorUtil.info("addCBFail", 1, Field.of("method","getPublisherID"));
         logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
         Thread.sleep(1000);
-        MonitorUtil.info("getCBDeFail", 1, Field.of("method","getPublisherID"));
+        MonitorUtil.info("getCBFail", 1, Field.of("method","getPublisherID"));
         ++retry;
       } finally {
         factory.returnClient(cacheClient);
