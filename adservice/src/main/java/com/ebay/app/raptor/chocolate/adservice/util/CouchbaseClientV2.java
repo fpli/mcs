@@ -190,7 +190,7 @@ public class CouchbaseClientV2 {
                 MonitorUtil.info("addNukvSuccess");
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                MonitorUtil.info("addCBDeFaile", 1, Field.of("method","addSingleMapping"));
+                MonitorUtil.info("addCBDeFail", 1, Field.of("method","addSingleMapping"));
             } finally {
                 factory.returnClient(cacheClient);
             }
@@ -240,7 +240,7 @@ public class CouchbaseClientV2 {
             return cacheClient.set(key, expiry, val).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            MonitorUtil.info("addCBDeFaile", 1, Field.of("method","put"));
+            MonitorUtil.info("addCBDeFail", 1, Field.of("method","put"));
         } finally {
             factory.returnClient(cacheClient);
         }

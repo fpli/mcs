@@ -151,7 +151,7 @@ public class CouchbaseClient {
         return DEFAULT_PUBLISHER_ID;
       } catch (Exception e) {
         MonitorUtil.info("FilterCouchbaseRetry");
-        MonitorUtil.info("addCBDeFaile", 1, Field.of("method","getPublisherID"));
+        MonitorUtil.info("addCBDeFail", 1, Field.of("method","getPublisherID"));
         logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
         Thread.sleep(1000);
         MonitorUtil.info("getCBDeFail", 1, Field.of("method","getPublisherID"));
