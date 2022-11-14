@@ -295,8 +295,6 @@
         <version>${kafka.version}</version>
       </dependency>
 
-      
-
       <!-- UTP -->
 
     </dependencies>
