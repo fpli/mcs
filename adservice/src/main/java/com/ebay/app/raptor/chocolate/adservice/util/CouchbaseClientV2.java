@@ -151,7 +151,6 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getNukvFail");
             MonitorUtil.info("getCBFail", 1, Field.of("method","getUidByGuid"));
         } finally {
             factory.returnClient(cacheClient);
