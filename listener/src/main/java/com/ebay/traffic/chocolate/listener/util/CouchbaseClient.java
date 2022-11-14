@@ -128,7 +128,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
-      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getKafkaGlobalConfig"));
+      MonitorUtil.info("getCBDeFail", 1, Field.of("method","getKafkaGlobalConfig"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -189,7 +189,7 @@ public class CouchbaseClient {
       metrics.mean("ListenerUpsertChocoTagGuidCouchbaseLatency", System.currentTimeMillis() - start);
       metrics.meter(CHOCOTAG_GUID_UPSERT_COMMAND);
     } catch (Exception e) {
-      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsertCBChocoTagGuidMapping"));
+      MonitorUtil.info("getCBDeFail", 1, Field.of("method","upsertCBChocoTagGuidMapping"));
       throw new Exception(e);
     } finally {
       factory.returnClient(cacheClient);
@@ -212,7 +212,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
-      MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getChocoTagGuidMappingByChocoTag"));
+      MonitorUtil.info("getCBDeFail", 1, Field.of("method","getChocoTagGuidMappingByChocoTag"));
     } finally {
       factory.returnClient(cacheClient);
     }

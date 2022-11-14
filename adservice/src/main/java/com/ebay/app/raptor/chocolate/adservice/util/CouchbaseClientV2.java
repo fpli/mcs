@@ -72,7 +72,7 @@ public class CouchbaseClientV2 {
             upserted = upsert(adguid, guidList, guid, uid);
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","addMappingRecord"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","addMappingRecord"));
         }
         return upserted;
     }
@@ -90,7 +90,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidListByAdguid"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","getGuidListByAdguid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -110,7 +110,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getUidByAdguid"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","getUidByAdguid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -130,7 +130,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getAdguidByGuid"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","getAdguidByGuid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -152,7 +152,7 @@ public class CouchbaseClientV2 {
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
             MonitorUtil.info("getNukvFail");
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getUidByGuid"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","getUidByGuid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -172,7 +172,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","getGuidByUid"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","getGuidByUid"));
         } finally {
             factory.returnClient(cacheClient);
         }
@@ -222,7 +222,7 @@ public class CouchbaseClientV2 {
             upserted = true;
         } catch (Exception e) {
             logger.warn("Couchbase get operation exception", e);
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","upsert"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","upsert"));
         }
         return upserted;
     }
@@ -255,7 +255,7 @@ public class CouchbaseClientV2 {
             return o == null ? null : o.toString();
         } catch (Exception e) {
             e.printStackTrace();
-            MonitorUtil.info("getCBDeFaile", 1, Field.of("method","get"));
+            MonitorUtil.info("getCBDeFail", 1, Field.of("method","get"));
         } finally {
             factory.returnClient(cacheClient);
         }

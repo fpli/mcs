@@ -173,7 +173,7 @@ public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV6, Lis
             return DEFAULT_PUBLISHER_ID;
           }
           this.numGetPublisherIdSuccessRate.markEvent();
-          MonitorUtil.info("getCBDeFaile", 1, Field.of("method","asyncInvoke"));
+          MonitorUtil.info("getCBDeFail", 1, Field.of("method","asyncInvoke"));
           return publisherId;
         }
       } catch (Exception e) {
