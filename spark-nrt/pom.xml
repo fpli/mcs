@@ -173,13 +173,11 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes</artifactId>
-      <version>${dukes.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-migration</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
@@ -191,7 +189,6 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-nukv</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
@@ -203,7 +200,6 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-failover</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
