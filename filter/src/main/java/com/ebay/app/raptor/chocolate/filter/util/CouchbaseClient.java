@@ -153,7 +153,6 @@ public class CouchbaseClient {
         MonitorUtil.info("FilterCouchbaseRetry");
         logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
         Thread.sleep(1000);
-        MonitorUtil.info("getCBFail", 1, Field.of("method","getPublisherID"));
         ++retry;
       } finally {
         factory.returnClient(cacheClient);

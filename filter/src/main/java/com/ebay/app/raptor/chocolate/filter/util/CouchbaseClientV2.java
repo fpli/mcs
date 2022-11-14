@@ -116,7 +116,6 @@ public class CouchbaseClientV2 {
             } catch (Exception e) {
                 MonitorUtil.info("FilterCouchbaseRetry");
                 logger.warn("Couchbase query operation timeout, will sleep for 1s to retry", e);
-                MonitorUtil.info("getCBFail", 1, Field.of("method","getPublisherID"));
                 Thread.sleep(1000);
                 ++retry;
             } finally {
