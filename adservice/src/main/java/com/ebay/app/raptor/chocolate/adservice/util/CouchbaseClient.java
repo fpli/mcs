@@ -7,11 +7,13 @@ import com.couchbase.client.java.document.StringDocument;
 import com.couchbase.client.java.document.json.JsonObject;
 import com.ebay.app.raptor.chocolate.adservice.ApplicationOptions;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
+import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.base.BaseDelegatingCacheClient;
 import com.ebay.dukes.builder.DefaultCacheFactoryBuilder;
 import com.ebay.dukes.couchbase2.Couchbase2CacheClient;
+import com.ebay.traffic.monitoring.Field;
 import com.mysql.jdbc.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.log4j.Logger;
@@ -119,6 +121,7 @@ public class CouchbaseClient {
       upserted = upsert(adguid, guidList, guid, uid);
     } catch (Exception e) {
       logger.warn("Couchbase upsert operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "addMappingRecord"));
     }
     return upserted;
   }
@@ -136,6 +139,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "getGuidListByAdguid"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -155,6 +159,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "getUidByAdguid"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -174,6 +179,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "getAdguidByGuid"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -193,6 +199,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "getUidByGuid"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -212,6 +219,7 @@ public class CouchbaseClient {
       }
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "getGuidByUid"));
     } finally {
       factory.returnClient(cacheClient);
     }
@@ -261,6 +269,7 @@ public class CouchbaseClient {
       upserted = true;
     } catch (Exception e) {
       logger.warn("Couchbase get operation exception", e);
+      MonitorUtil.info("getCBFail", 1, Field.of("method", "upsert"));
     } finally {
       factory.returnClient(cacheClient);
     }

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.16.0-RELEASE</version>
+    <version>0.16.1-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -28,7 +28,6 @@
     <parquet.version>1.10.1</parquet.version>
     <curator.version>4.3.0</curator.version>
     <couchbase.client.version>2.7.11</couchbase.client.version>
-    <dukes.component.version>1.6.26.raptorio</dukes.component.version>
     <dukes.version>1.6.26.raptorio</dukes.version>
     <rheos.version>2.0.11</rheos.version>
     <kafka.version>2.0.1</kafka.version>

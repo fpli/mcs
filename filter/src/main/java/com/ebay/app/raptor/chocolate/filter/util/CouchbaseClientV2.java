@@ -5,6 +5,7 @@ import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.nukv.trancoders.StringTranscoder;
+import com.ebay.traffic.monitoring.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class CouchbaseClientV2 {
         } catch (Exception e) {
             buffer.add(new AbstractMap.SimpleEntry<>(campaignId, publisherId));
             logger.warn("Couchbase upsert operation exception", e);
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "addMappingRecord"));
         }
     }
 
@@ -82,6 +84,7 @@ public class CouchbaseClientV2 {
             }
         } catch (Exception e) {
             logger.warn("Couchbase upsert operation exception", e);
+            MonitorUtil.info("getCBFail", 1, Field.of("method", "flushBuffer"));
         }
     }
 
