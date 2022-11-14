@@ -156,7 +156,7 @@ public class CouchbaseClientV2 {
             result = cacheClient.set(key, expiry, val, StringTranscoder.getInstance()).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            MonitorUtil.info("CBDeGetException",1);
+            MonitorUtil.info("getCBDeFail",1);
         } finally {
             factory.returnClient(cacheClient);
         }
