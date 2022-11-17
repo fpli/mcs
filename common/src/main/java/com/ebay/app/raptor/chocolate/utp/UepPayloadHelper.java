@@ -68,11 +68,15 @@ public class UepPayloadHelper {
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_AXO = "11403";
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SS = "11021";
   private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SIO = "11304";
+  private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_BOSD = "11967";
+  private static final String WHITELIST_EXACTMATCH_SITE_EMAIL_SOSD = "12995";
   private static final String MESSAGE_PA = "PA";
   private static final String MESSAGE_ESPRESSO = "ESPRESSO";
   private static final String MESSAGE_AXO = "AXO";
   private static final String MESSAGE_SS = "SAVEDSEARCH";
   private static final String MESSAGE_SIO = "SellerInitiatedOffer";
+  private static final String MESSAGE_BOSD = "BuyerOrderShipmentDelay";
+  private static final String MESSAGE_SOSD = "SellerOrderShipmentDelay";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UepPayloadHelper.class);
 
@@ -139,6 +143,10 @@ public class UepPayloadHelper {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SS);
       } else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SIO)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SIO);
+      }else if (segmentCode.equalsIgnoreCase(MESSAGE_BOSD)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, WHITELIST_EXACTMATCH_SITE_EMAIL_BOSD);
+      }else if (segmentCode.equalsIgnoreCase(MESSAGE_SOSD)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, WHITELIST_EXACTMATCH_SITE_EMAIL_SOSD);
       }
     }
     // rundate
