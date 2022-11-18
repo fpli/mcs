@@ -143,10 +143,10 @@ public class UepPayloadHelper {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SS);
       } else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SIO)) {
         payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SIO);
-      }else if (segmentCode.equalsIgnoreCase(MESSAGE_BOSD)) {
-        payload.put(ANNOTATION_MESSAGE_NAME, WHITELIST_EXACTMATCH_SITE_EMAIL_BOSD);
-      }else if (segmentCode.equalsIgnoreCase(MESSAGE_SOSD)) {
-        payload.put(ANNOTATION_MESSAGE_NAME, WHITELIST_EXACTMATCH_SITE_EMAIL_SOSD);
+      }else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_BOSD)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_BOSD);
+      }else if (segmentCode.equalsIgnoreCase(WHITELIST_EXACTMATCH_SITE_EMAIL_SOSD)) {
+        payload.put(ANNOTATION_MESSAGE_NAME, MESSAGE_SOSD);
       }
     }
     // rundate
