@@ -116,5 +116,16 @@ public class UepPayloadHelperTest {
     assertEquals("SellerInitiatedOffer", result.get("annotation.message.name"));
     assertEquals("818921348af341b1adafaf25c3036795", result.get("annotation.canvas.uniq.id"));
     assertEquals("2021-09-12 11:13:55", result.get("rundate"));
+
+    // BuyerOrderShipmentDelay
+    String openUrl;
+    openUrl = "http://adservice.vip.qa.ebay.com/marketingtracking/v1/impression?mkevt=4&siteId=77&mkpid=0&emsid=e11021&mkcid=7&ch=osgood&euid=7a6dd93dde7049ab924184238fbebdf2&bu=66666666666&ut=RU&exe=0&ext=0&osub=-1%7E1&crd=20221116082538&segname=11967";
+    result = helper.getUepPayload(openUrl, userId, ActionTypeEnum.OPEN, ChannelTypeEnum.SITE_EMAIL);
+    assertEquals("BuyerOrderShipmentDelay", result.get("annotation.message.name"));
+
+    // SellerOrderShipmentDelay
+    openUrl = "http://adservice.vip.qa.ebay.com/marketingtracking/v1/impression?mkevt=4&siteId=77&mkpid=0&emsid=e11021&mkcid=7&ch=osgood&euid=7a6dd93dde7049ab924184238fbebdf2&bu=77777777777&ut=RU&exe=0&ext=0&osub=-1%7E1&crd=20221116082538&segname=12995";
+    result = helper.getUepPayload(openUrl, userId, ActionTypeEnum.OPEN, ChannelTypeEnum.SITE_EMAIL);
+    assertEquals("SellerOrderShipmentDelay", result.get("annotation.message.name"));
   }
 }

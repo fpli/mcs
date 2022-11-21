@@ -234,7 +234,6 @@
       <dependency>
         <groupId>com.ebay.dukes</groupId>
         <artifactId>dukes</artifactId>
-        <version>${dukes.version}</version>
         <exclusions>
           <exclusion>
             <groupId>javax.persistence</groupId>
@@ -319,6 +318,10 @@
       <dependency>
          <groupId>com.ebay.raptorio.component</groupId>
          <artifactId>raptor-gis-aid-starter</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>com.ebay.raptorio.component</groupId>
+         <artifactId>raptor-opentelemetry-starter</artifactId>
       </dependency>
 
     </dependencies>

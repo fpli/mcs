@@ -45,6 +45,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
+      <version>2.7.3.2.6.4.2.0.37</version>
       <scope>provided</scope>
     </dependency>
 
@@ -172,13 +173,11 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes</artifactId>
-      <version>${dukes.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-migration</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
@@ -190,7 +189,6 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-nukv</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
@@ -202,7 +200,6 @@
     <dependency>
       <groupId>com.ebay.dukes</groupId>
       <artifactId>dukes-failover</artifactId>
-      <version>${dukes.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.glassfish.jersey.core</groupId>
