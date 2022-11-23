@@ -13,6 +13,7 @@
   <properties>
     
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
+    <dukes.component.version>1.6.26.raptorio</dukes.component.version>
     
   </properties>
   <dependencyManagement>
