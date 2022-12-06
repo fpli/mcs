@@ -185,6 +185,18 @@ public class CollectionServiceUtil {
     return true;
   }
 
+  public static boolean isIntegerNumeric(String strNum) {
+    if (StringUtils.isEmpty(strNum)) {
+      return false;
+    }
+    try {
+      Integer i = Integer.parseInt(strNum);
+    } catch (NumberFormatException nfe) {
+      return false;
+    }
+    return true;
+  }
+
   public static String generateQueryString(ROIEvent roiEvent, Map<String, String> payloadMap, String localTimestamp,
                                            String userId) throws UnsupportedEncodingException {
     String queryString = "tranType="
@@ -202,6 +214,10 @@ public class CollectionServiceUtil {
     payloadMap.remove(TRANSACTION_TYPE);
     payloadMap.remove(TRANSACTION_ID);
     payloadMap.remove(ITEM_ID);
+
+    // do not append sale type in query string
+    payloadMap.remove("saleTypeId");
+    payloadMap.remove("saleTypeFlow");
 
     // If MPUID is not inside payload or it's empty, generate it and set into payload
     // The format of mpuid: user_id;item_id;[transaction_id]

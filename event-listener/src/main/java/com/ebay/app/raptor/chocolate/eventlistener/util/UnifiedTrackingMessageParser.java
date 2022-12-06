@@ -795,6 +795,14 @@ public class UnifiedTrackingMessageParser {
     if (isLongNumeric(roiEvent.getUniqueTransactionId())) {
       payloadMap.put("roi_bti", roiEvent.getUniqueTransactionId());
     }
+    // enrich roi payload with sale type
+    Map<String, String> roiPayload = roiEvent.getPayload();
+    if (roiPayload.containsKey("saleTypeId") && StringUtils.isNotEmpty(roiPayload.get("saleTypeId"))) {
+      payloadMap.put("saleTypeId", roiPayload.get("saleTypeId"));
+    }
+    if (roiPayload.containsKey("saleTypeFlow") && StringUtils.isNotEmpty(roiPayload.get("saleTypeFlow"))) {
+      payloadMap.put("saleTypeFlow", roiPayload.get("saleTypeFlow"));
+    }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }

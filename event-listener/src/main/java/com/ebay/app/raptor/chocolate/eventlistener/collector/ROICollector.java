@@ -22,8 +22,11 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.container.ContainerRequestContext;
 
+import java.util.Map;
+
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_ACTION;
 import static com.ebay.app.raptor.chocolate.constant.Constants.CHANNEL_TYPE;
+import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isIntegerNumeric;
 import static com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil.isLongNumeric;
 
 @Component
@@ -125,6 +128,14 @@ public class ROICollector {
     if (isLongNumeric(baseEvent.getRoiEvent().getTransactionTimestamp())) {
       requestTracker.addTag("producereventts", Long.parseLong(baseEvent.getRoiEvent().getTransactionTimestamp()),
           Long.class);
+    }
+    // enrich roi soj with sale type
+    Map<String, String> roiPayload = baseEvent.getRoiEvent().getPayload();
+    if (roiPayload.containsKey("saleTypeId") && isIntegerNumeric(roiPayload.get("saleTypeId"))) {
+      requestTracker.addTag("saleTypeId", Integer.parseInt(roiPayload.get("saleTypeId")), Integer.class);
+    }
+    if (roiPayload.containsKey("saleTypeFlow") && !StringUtils.isEmpty(roiPayload.get("saleTypeFlow"))) {
+      requestTracker.addTag("saleTypeFlow", roiPayload.get("saleTypeFlow"), String.class);
     }
   }
 }
