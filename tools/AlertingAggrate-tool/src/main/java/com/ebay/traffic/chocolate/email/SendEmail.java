@@ -35,6 +35,13 @@ public class SendEmail {
     this.runPeriod = runPeriod;
     this.cluster = cluster;
   }
+  public void init(String emailHostServer, String toEmail, String date, String time, String runPeriod) {
+    this.emailHostServer = emailHostServer;
+    this.toEmail = toEmail;
+    this.date = date;
+    this.time = time;
+    this.runPeriod = runPeriod;
+  }
 
   public static SendEmail getInstance() {
     return sendEmail;
@@ -90,6 +97,9 @@ public class SendEmail {
           break;
         case "hourly":
           message.setSubject("Hourly report for tracking (Chocolate team)! " + time);
+          break;
+        case "batchDone":
+          message.setSubject("Batch done report for tracking (Chocolate team)! " + time);
           break;
         default:
           message.setSubject("Wrong email message" + time);

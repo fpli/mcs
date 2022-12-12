@@ -29,6 +29,15 @@ public class HourlyEmailHtml {
             return "getDoneFileHtml";
         }
     }
+    public static String getBatchDoneFileHtml() {
+        try {
+            return "<style>a{text-decoration: none;}</style>"+BatchDoneFileTable.parseBatchDoneFileProject(BatchDoneFileUtil.getDoneFileInfos());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return "getBatchDoneFileHtml";
+        }
+    }
+
 
     public static String getRotationAlertHtml() {
         try {

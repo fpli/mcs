@@ -11,6 +11,8 @@ public class HTMLParse {
                 return parseDaily();
             case "hourly":
                 return parseHourly(cluster);
+            case "batchDone":
+                return parseBatchDone();
             default:
                 return "page is wrong!";
         }
@@ -41,4 +43,9 @@ public class HTMLParse {
         return html.toString();
     }
 
+    public static String parseBatchDone() {
+        StringBuilder html = new StringBuilder();
+        html.append(HourlyEmailHtml.getBatchDoneFileHtml());
+        return html.toString();
+    }
 }
