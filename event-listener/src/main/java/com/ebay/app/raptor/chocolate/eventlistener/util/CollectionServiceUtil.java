@@ -215,10 +215,6 @@ public class CollectionServiceUtil {
     payloadMap.remove(TRANSACTION_ID);
     payloadMap.remove(ITEM_ID);
 
-    // do not append sale type in query string
-    payloadMap.remove("saleTypeId");
-    payloadMap.remove("saleTypeFlow");
-
     // If MPUID is not inside payload or it's empty, generate it and set into payload
     // The format of mpuid: user_id;item_id;[transaction_id]
     // MPUID is used in imkETL process
