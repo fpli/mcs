@@ -201,6 +201,8 @@ public class UtpMonitorApp {
             String site = nullVerifier(String.valueOf(message.getSiteId()));
             String uxe = nullVerifier(getUxe(message.getPayload()));
             String uxt = nullVerifier(getUxt(message.getPayload()));
+            String campaign = nullVerifier(message.getCampaignId());
+            String xt = nullVerifier(getXt(message.getPayload()));
             try {
                 /*
                 getCounter(getRuntimeContext(), "unified_tracking_incoming_v2",
@@ -219,7 +221,9 @@ public class UtpMonitorApp {
                         Field.of("isBot", isBot),
                         Field.of("isUEP", isUep),
                         Field.of("platform", platform),
-                        Field.of("site", site)
+                        Field.of("site", site),
+                        Field.of("xt", xt),
+                        Field.of("campaign", campaign)
                 );
 
                 sherlockioMetrics.meterByGauge("unified_tracking_latency_total",
@@ -547,5 +551,8 @@ public class UtpMonitorApp {
     public static String getUxt(Map<String, String> payload) {
         return payload.getOrDefault("!uxt", "NULL");
     }
-    
+
+    public static String getXt(Map<String, String> payload) {
+        return payload.getOrDefault("xt", "NULL");
+    }
 }
