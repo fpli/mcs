@@ -20,7 +20,9 @@ public class Constants {
     public static String TRACKING_EVENT_DIR = TOOLS_BASE_DIR + "/data_check/trackingEvent";
     public static String ROTATION_DIR = "/home/_choco_admin/rotation/";
     public static String Uc4_DIR = PREFIX_CONF_DIR + "uc4-hourly.xml";
-    public static String LOG4J_DIR = TOOLS_BASE_DIR+"log/1.txt";
+    public static String LOG4J_DIR = TOOLS_BASE_DIR + "log/1.txt";
+    public static String BATCH_DONE = PREFIX_CONF_DIR + "batch-done.xml";
+    public static String ALL_DONE_FILES = PREFIX_TMP_DIR + "all_done_files/" + "all_done_files.txt";
 
     // Airflow 27
     public static String AIRFLOW_GET_DAG_API_URL_27 = "http://airflowprod-web.mrkttech-tracking-ns.svc.27.tess.io:8080/api/v1/dags";
@@ -46,6 +48,18 @@ public class Constants {
     public static String AUTH_USER_NAME = "_PaaS_Provisioning";
     public static String AUTH_PASSWD = "Cloud2018#E2Eebay@123";
     public static String AUTH_PASSWD_BASE64 = "Q2xvdWQyMDE4I0UyRWViYXlAMTIz";
+
+    // BatchDone
+    public static String APOLLO_RNO = "apollo-rno";
+    public static String HERCULES = "hercules";
+    public static String COLON = ":";
+    public static String NONE = "None";
+    public static String OK = "Ok";
+    public static String H_2 = "H-2";
+    public static String T_1 = "T-1";
+    public static String CRITICAL = "Critical";
+    public static String WARNING = "Warning";
+    public static String SUPPORT_DOC = "Oncall doc";
 
 
 }

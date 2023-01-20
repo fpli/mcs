@@ -1,5 +1,6 @@
 package com.ebay.traffic.chocolate.util;
 
+import com.ebay.traffic.chocolate.pojo.BatchDoneConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DoneFileReadUtil {
     private static final Logger logger = LoggerFactory.getLogger(DoneFileReadUtil.class);
@@ -64,5 +66,41 @@ public class DoneFileReadUtil {
         }
 
         return list;
+    }
+
+    public static HashMap<String, String> getAllJobMap(String path, ArrayList<BatchDoneConfig> configList) {
+        try {
+            HashMap<String, String> allJobMap = readFilesToMap(path, configList);
+            logger.info("getAllJobMap end: ");
+
+            return allJobMap;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static HashMap<String, String> readFilesToMap(String path, ArrayList<BatchDoneConfig> configList) throws Exception {
+        File file = new File(path);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        HashMap<String, String> allJobMap = new HashMap<>();
+
+        String allStr = "";
+        String str = "";
+        while ((allStr = br.readLine()) != null) {
+            String[] strs = allStr.split("/");
+            // get last
+            str = strs[strs.length - 1];
+
+            if (allStr.contains(Constants.APOLLO_RNO)) {
+                allJobMap.put(Constants.APOLLO_RNO + Constants.COLON + str, str);
+            } else if (allStr.contains(Constants.HERCULES)) {
+                allJobMap.put(Constants.HERCULES + Constants.COLON + str, str);
+            }
+        }
+
+        return allJobMap;
     }
 }

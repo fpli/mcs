@@ -185,6 +185,18 @@ public class CollectionServiceUtil {
     return true;
   }
 
+  public static boolean isIntegerNumeric(String strNum) {
+    if (StringUtils.isEmpty(strNum)) {
+      return false;
+    }
+    try {
+      Integer i = Integer.parseInt(strNum);
+    } catch (NumberFormatException nfe) {
+      return false;
+    }
+    return true;
+  }
+
   public static String generateQueryString(ROIEvent roiEvent, Map<String, String> payloadMap, String localTimestamp,
                                            String userId) throws UnsupportedEncodingException {
     String queryString = "tranType="
