@@ -803,6 +803,15 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("saleTypeFlow") && StringUtils.isNotEmpty(roiPayload.get("saleTypeFlow"))) {
       payloadMap.put("saleTypeFlow", roiPayload.get("saleTypeFlow"));
     }
+    if (roiPayload.containsKey("order_type") && StringUtils.isNotEmpty(roiPayload.get("order_type"))) {
+      payloadMap.put("order_type", roiPayload.get("order_type"));
+    }
+    if (roiPayload.containsKey("is_committed") && StringUtils.isNotEmpty(roiPayload.get("is_committed"))) {
+      payloadMap.put("is_committed", roiPayload.get("is_committed"));
+    }
+    if (roiPayload.containsKey("ff2") && StringUtils.isNotEmpty(roiPayload.get("ff2"))) {
+      payloadMap.put("ff2", roiPayload.get("ff2"));
+    }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
