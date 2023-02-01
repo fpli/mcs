@@ -12,7 +12,10 @@ import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
-import com.ebay.app.raptor.chocolate.gen.model.*;
+import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
+import com.ebay.app.raptor.chocolate.gen.model.Event;
+import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
+import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -81,14 +84,6 @@ public class CollectionService {
   private UnifiedTrackingMessageParser utpParser;
   private static final String TYPE_INFO = "Info";
   private static final String STATUS_OK = "0";
-
-  private static final String FLEX_FIELD_2 = "ff2";
-  private static final String IS_COMMITTED = "is_committed";
-  private static final String ORDER_TYPE = "order_type";
-  private static final String TXNFLOW = "TXNFLOW";
-  private static final String CHECKOUT = "CHECKOUT";
-  private static final String SALE_TYPE_ID = "saleTypeId";
-
 
   @Autowired
   private PerformanceMarketingCollector performanceMarketingCollector;
@@ -738,28 +733,12 @@ public class CollectionService {
 
     producer.send(new ProducerRecord<>(kafkaTopic, message.getSnapshotId(), message), KafkaSink.callback);
 
-    // Committed & non-sco wont go to UBI
-    EventPayload payload = baseEvent.getPayload();
-    boolean fromTxnFlow = false;
-    boolean fromCheckout = false;
-
-    if (payload != null) {
-      String isCommitted = payload.getTags().get(IS_COMMITTED);
-      String orderType = payload.getTags().get(ORDER_TYPE);
-      String publisher = payload.getTags().get(FLEX_FIELD_2);
-      String saleTypeId = payload.getTags().get(SALE_TYPE_ID);
-
-      fromTxnFlow = TXNFLOW.equals(publisher);
-      fromCheckout = CHECKOUT.equals(publisher) && ("0".equals(isCommitted) || ("1".equals(isCommitted) && "SELLER".equals(orderType) && ("7".equals(saleTypeId) || "9".equals(saleTypeId))));
-    }
     // 2. track ubi
     // Checkout ROI won't go to UBI
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.info("CheckoutAPIROI", 1);
     } else {
-      if (fromCheckout || fromTxnFlow) {
-        roiCollector.trackUbi(containerRequestContext, baseEvent);
-      }
+      roiCollector.trackUbi(containerRequestContext, baseEvent);
     }
 
     // 3. fire utp event

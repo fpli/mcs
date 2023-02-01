@@ -81,13 +81,6 @@ public class UTPImkTransformApp {
   // The maximum number of concurrent checkpoint attempts
   protected static final int MAX_CONCURRENT_CHECK_POINTS = 1;
 
-  private static final String FLEX_FIELD_2 = "ff2";
-  private static final String IS_COMMITTED = "is_committed";
-  private static final String ORDER_TYPE = "order_type";
-  private static final String TXNFLOW = "TXNFLOW";
-  private static final String CHECKOUT = "CHECKOUT";
-  private static final String SALE_TYPE_ID = "saleTypeId";
-
   private static final OutputTag<UnifiedTrackingImkMessage> DUP_TAG = new OutputTag<UnifiedTrackingImkMessage>("dup"){};
 
   public static void main(String[] args) throws Exception {
@@ -259,12 +252,9 @@ public class UTPImkTransformApp {
       if (StringUtils.isEmpty(actionType)) {
         return false;
       }
-
-      Map<String, String> utpPayload = sourceRecord.getPayload();
-      if (!isImkEvent(channelType) && !isValidROI(utpPayload, actionType)) {
+      if (!isImkEvent(channelType, actionType)) {
         return false;
       }
-
       boolean bot = isBot(channelType, sourceRecord);
       if (bot) {
         numBotRecordsInRate.markEvent();
@@ -273,22 +263,10 @@ public class UTPImkTransformApp {
       return !bot;
     }
 
-    private boolean isValidROI(Map<String, String> utpPayload, String actionType) {
+    private boolean isImkEvent(String channelType, String actionType) {
       if (actionType.equals(ActionTypeEnum.ROI.getValue())) {
         return true;
       }
-
-      String isCommitted = utpPayload.get(IS_COMMITTED);
-      String orderType = utpPayload.get(ORDER_TYPE);
-      String publisher = utpPayload.get(FLEX_FIELD_2);
-      String saleTypeId = utpPayload.get(SALE_TYPE_ID);
-
-      return TXNFLOW.equals(publisher) ||
-              (CHECKOUT.equals(publisher) &&
-                      ("0".equals(isCommitted) || ("1".equals(isCommitted) && "SELLER".equals(orderType) && ("7".equals(saleTypeId) || "9".equals(saleTypeId)))));
-    }
-
-    private boolean isImkEvent(String channelType) {
       if (ChannelTypeEnum.PLA.getValue().equals(channelType)) {
         return true;
       }
