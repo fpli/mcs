@@ -274,8 +274,8 @@ public class UTPImkTransformApp {
     }
 
     private boolean isValidROI(Map<String, String> utpPayload, String actionType) {
-      if (!actionType.equals(ActionTypeEnum.ROI.getValue())) {
-        return false;
+      if (actionType.equals(ActionTypeEnum.ROI.getValue())) {
+        return true;
       }
 
       String isCommitted = utpPayload.get(IS_COMMITTED);
