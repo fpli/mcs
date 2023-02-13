@@ -81,6 +81,21 @@ public class UTPImkTransformApp {
   // The maximum number of concurrent checkpoint attempts
   protected static final int MAX_CONCURRENT_CHECK_POINTS = 1;
 
+  private static final String ROI_SRC = "roisrc";
+  private static final String FLEX_FIELD_2 = "ff2";
+  private static final String SALE_TYPE_ID = "saleTypeId";
+  private static final String IS_COMMITTED = "is_committed";
+  private static final String ORDER_TYPE = "order_type";
+
+  private static final String BES_SRC = "1";
+  private static final String TXNFLOW = "TXNFLOW";
+  private static final String CHECKOUT = "CHECKOUT";
+  private static final String SCO = "SELLER";
+  private static final String STORE_FIXED_PRICE = "7";
+  private static final String BASIC_FIXED_PRICE = "9";
+  private static final String TRUE_FLAG = "1";
+  private static final String FALSE_FLAG = "0";
+
   private static final OutputTag<UnifiedTrackingImkMessage> DUP_TAG = new OutputTag<UnifiedTrackingImkMessage>("dup"){};
 
   public static void main(String[] args) throws Exception {
@@ -252,9 +267,12 @@ public class UTPImkTransformApp {
       if (StringUtils.isEmpty(actionType)) {
         return false;
       }
-      if (!isImkEvent(channelType, actionType)) {
+
+      Map<String, String> utpPayload = sourceRecord.getPayload();
+      if (!isImkEvent(channelType) && !isValidROI(utpPayload, actionType)) {
         return false;
       }
+
       boolean bot = isBot(channelType, sourceRecord);
       if (bot) {
         numBotRecordsInRate.markEvent();
@@ -263,10 +281,48 @@ public class UTPImkTransformApp {
       return !bot;
     }
 
-    private boolean isImkEvent(String channelType, String actionType) {
-      if (actionType.equals(ActionTypeEnum.ROI.getValue())) {
+    private boolean isValidROI(Map<String, String> utpPayload, String actionType) {
+      if (!actionType.equals(ActionTypeEnum.ROI.getValue())) {
+        return false;
+      }
+      if (utpPayload == null) {
+        return false;
+      }
+
+      String roiSrc = utpPayload.get(ROI_SRC);
+      String publisher = utpPayload.get(FLEX_FIELD_2); // if roisrc = 1, ff2 is not null; else if roisrc <> 1, ff2 is null
+      String saleTypeId = utpPayload.get(SALE_TYPE_ID); // if roisrc = 1, saleTypeId is not null; else if roisrc <> 1, saleTypeId is null
+      String isCommitted = utpPayload.get(IS_COMMITTED); // if roisrc = 1 and ff2 = CHECKOUT, is_committed is not null
+      String orderType = utpPayload.get(ORDER_TYPE); // when roisrc = 1 and ff2 = CHECKOUT. order_type is not null
+      // do not filter null tag events
+      if (roiSrc == null || publisher == null) {
         return true;
       }
+      // not from bes src
+      if (!BES_SRC.equals(roiSrc)) {
+        return true;
+      }
+      // from bes source, but not from ops side
+      if (BES_SRC.equals(roiSrc) && !publisher.startsWith(CHECKOUT)) {
+        return true;
+      }
+      // from bes ops source, but no IS_COMMITTED or ORDER_TYPE tag
+      if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) && (isCommitted == null || orderType == null)) {
+        return true;
+      }
+      // from bes ops source, and un committed
+      if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) && FALSE_FLAG.equals(isCommitted)) {
+        return true;
+      }
+      // from bes ops side, and committed sco fixed_price
+      if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) &&
+              (TRUE_FLAG.equals(isCommitted) && SCO.equals(orderType) && (STORE_FIXED_PRICE.equals(saleTypeId) || BASIC_FIXED_PRICE.equals(saleTypeId)))) {
+        return true;
+      }
+      return false;
+    }
+
+    private boolean isImkEvent(String channelType) {
       if (ChannelTypeEnum.PLA.getValue().equals(channelType)) {
         return true;
       }

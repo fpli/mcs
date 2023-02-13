@@ -92,6 +92,20 @@ public class CollectionServiceUtil {
   private static final List<String> BOT_LIST = Arrays.asList("bot", "proxy", "Mediapartners-Google",
           "facebookexternalhit", "aiohttp", "python-requests", "axios", "Go-http-client", "spider", "curl", "Tumblr");
 
+  private static final String FLEX_FIELD_2 = "ff2";
+  private static final String SALE_TYPE_ID = "saleTypeId";
+  private static final String IS_COMMITTED = "is_committed";
+  private static final String ORDER_TYPE = "order_type";
+
+  private static final String BES_SRC = "1";
+  private static final String TXNFLOW = "TXNFLOW";
+  private static final String CHECKOUT = "CHECKOUT";
+  private static final String SCO = "SELLER";
+  private static final String STORE_FIXED_PRICE = "7";
+  private static final String BASIC_FIXED_PRICE = "9";
+  private static final String TRUE_FLAG = "1";
+  private static final String FALSE_FLAG = "0";
+
 
   // do not dedupe the item clicks from ebay special sites
   private static Pattern ebaySpecialSites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(befr|benl+\\.)?(qa\\.)?ebay\\.(be|nl|pl|ie|ph|com\\.hk|com\\.my|com\\.sg)($|/.*)", Pattern.CASE_INSENSITIVE);
@@ -431,6 +445,50 @@ public class CollectionServiceUtil {
       }
     }
     return isROIFromCheckoutAPI;
+  }
+
+  /**
+   * Determine if it is a valid roi
+   * @param roiPayload
+   * @return
+   */
+  public static Boolean isValidROI(Map<String, String> roiPayload) {
+    if (roiPayload == null) {
+      return false;
+    }
+
+    String roiSrc = roiPayload.get(ROI_SOURCE);
+    String publisher = roiPayload.get(FLEX_FIELD_2); // if roisrc = 1, ff2 is not null; else if roisrc <> 1, ff2 is null
+    String saleTypeId = roiPayload.get(SALE_TYPE_ID); // if roisrc = 1, saleTypeId is not null; else if roisrc <> 1, saleTypeId is null
+    String isCommitted = roiPayload.get(IS_COMMITTED); // if roisrc = 1 and ff2 = CHECKOUT, is_committed is not null
+    String orderType = roiPayload.get(ORDER_TYPE); // when roisrc = 1 and ff2 = CHECKOUT. order_type is not null
+    // do not filter null roisrc ff2 tag events
+    if (roiSrc == null || publisher == null) {
+      return true;
+    }
+    // not from bes src
+    if (!BES_SRC.equals(roiSrc)) {
+      return true;
+    }
+    // from bes source, but not from ops side
+    if (BES_SRC.equals(roiSrc) && !publisher.startsWith(CHECKOUT)) {
+      return true;
+    }
+    // from bes ops source, but no IS_COMMITTED or ORDER_TYPE tag
+    if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) && (isCommitted == null || orderType == null)) {
+      return true;
+    }
+    // from bes ops source, and un committed
+    if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) && FALSE_FLAG.equals(isCommitted)) {
+      return true;
+    }
+    // from bes ops side, and committed sco fixed_price
+    if (BES_SRC.equals(roiSrc) && publisher.startsWith(CHECKOUT) &&
+            (TRUE_FLAG.equals(isCommitted) && SCO.equals(orderType) && (STORE_FIXED_PRICE.equals(saleTypeId) || BASIC_FIXED_PRICE.equals(saleTypeId)))) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
