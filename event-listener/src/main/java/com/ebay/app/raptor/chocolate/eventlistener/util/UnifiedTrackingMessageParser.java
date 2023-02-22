@@ -815,6 +815,12 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("roisrc") && StringUtils.isNotEmpty(roiPayload.get("roisrc"))) {
       payloadMap.put("roisrc", roiPayload.get("roisrc"));
     }
+    if (roiPayload.containsKey("orderId") && StringUtils.isNotEmpty(roiPayload.get("orderId"))) {
+      payloadMap.put("orderId", roiPayload.get("orderId"));
+    }
+    if (roiPayload.containsKey("purchaseOrderId") && StringUtils.isNotEmpty(roiPayload.get("purchaseOrderId"))) {
+      payloadMap.put("purchaseOrderId", roiPayload.get("purchaseOrderId"));
+    }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
