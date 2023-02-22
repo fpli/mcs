@@ -12,10 +12,7 @@ import com.ebay.app.raptor.chocolate.eventlistener.request.CommonRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.request.StaticPageRequestHandler;
 import com.ebay.app.raptor.chocolate.eventlistener.util.*;
-import com.ebay.app.raptor.chocolate.gen.model.AkamaiEvent;
-import com.ebay.app.raptor.chocolate.gen.model.Event;
-import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
-import com.ebay.app.raptor.chocolate.gen.model.UnifiedTrackingEvent;
+import com.ebay.app.raptor.chocolate.gen.model.*;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
@@ -735,10 +732,14 @@ public class CollectionService {
 
     // 2. track ubi
     // Checkout ROI won't go to UBI
+    // Committed & non-sco wont go to UBI
+    Map<String, String> roiPayload = baseEvent.getRoiEvent().getPayload();
     if (baseEvent.isCheckoutApi()) {
       MonitorUtil.info("CheckoutAPIROI", 1);
     } else {
-      roiCollector.trackUbi(containerRequestContext, baseEvent);
+      if (CollectionServiceUtil.isValidROI(roiPayload)) {
+        roiCollector.trackUbi(containerRequestContext, baseEvent);
+      }
     }
 
     // 3. fire utp event

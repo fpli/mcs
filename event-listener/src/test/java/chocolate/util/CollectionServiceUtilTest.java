@@ -451,4 +451,85 @@ public class CollectionServiceUtilTest {
     assertFalse(CollectionServiceUtil.isBot("eBayAndroid/6.7.2"));
     assertFalse(CollectionServiceUtil.isBot(""));
   }
+
+  @Test
+  public void testValidRoiEvents() {
+      // payload is null
+      Map<String, String> roiPayload1 = null;
+      assertFalse(CollectionServiceUtil.isValidROI(roiPayload1));
+      // payload empty
+      Map<String, String> roiPayload2 = new HashMap<>();
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload2));
+      // no roisrc tag
+      Map<String, String> roiPayload3 = new HashMap<>();
+      roiPayload3.put("ff2", "TXNFLOW");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload3));
+      // no publisher tag, and roisrc <> 1
+      Map<String, String> roiPayload4 = new HashMap<>();
+      roiPayload4.put("roisrc", "4");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload4));
+      // TXNFLOW src
+      Map<String, String> roiPayload5 = new HashMap<>();
+      roiPayload5.put("roisrc", "1");
+      roiPayload5.put("ff2", "TXNFLOW");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload5));
+      // CHECKOUT src, no is_committed tag
+      Map<String, String> roiPayload6 = new HashMap<>();
+      roiPayload6.put("roisrc", "1");
+      roiPayload6.put("ff2", "CHECKOUT|123");
+      roiPayload6.put("order_type", "BUYER");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload6));
+      // CHECKOUT src, no order_type tag
+      Map<String, String> roiPayload7 = new HashMap<>();
+      roiPayload7.put("roisrc", "1");
+      roiPayload7.put("ff2", "CHECKOUT|123");
+      roiPayload7.put("is_committed", "1");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload7));
+      // CHECKOUT src, un committed
+      Map<String, String> roiPayload8 = new HashMap<>();
+      roiPayload8.put("roisrc", "1");
+      roiPayload8.put("ff2", "CHECKOUT|123");
+      roiPayload8.put("is_committed", "0");
+      roiPayload6.put("order_type", "BUYER");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload8));
+      // CHECKOUT src, committed, buyer created
+      Map<String, String> roiPayload9 = new HashMap<>();
+      roiPayload9.put("roisrc", "1");
+      roiPayload9.put("ff2", "CHECKOUT|123");
+      roiPayload9.put("is_committed", "1");
+      roiPayload9.put("order_type", "BUYER");
+      assertFalse(CollectionServiceUtil.isValidROI(roiPayload9));
+      // CHECKOUT src, committed, seller created, no saleTypeId tag
+      Map<String, String> roiPayload10 = new HashMap<>();
+      roiPayload10.put("roisrc", "1");
+      roiPayload10.put("ff2", "CHECKOUT|123");
+      roiPayload10.put("is_committed", "1");
+      roiPayload10.put("order_type", "SELLER");
+      assertFalse(CollectionServiceUtil.isValidROI(roiPayload10));
+      // CHECKOUT src, committed, seller created, saleTypeId = 8
+      Map<String, String> roiPayload11 = new HashMap<>();
+      roiPayload11.put("roisrc", "1");
+      roiPayload11.put("ff2", "CHECKOUT|123");
+      roiPayload11.put("is_committed", "1");
+      roiPayload11.put("order_type", "SELLER");
+      roiPayload11.put("saleTypeId", "8");
+      assertFalse(CollectionServiceUtil.isValidROI(roiPayload11));
+      // CHECKOUT src, committed, seller created, saleTypeId = 7
+      Map<String, String> roiPayload12 = new HashMap<>();
+      roiPayload12.put("roisrc", "1");
+      roiPayload12.put("ff2", "CHECKOUT|123");
+      roiPayload12.put("is_committed", "1");
+      roiPayload12.put("order_type", "SELLER");
+      roiPayload12.put("saleTypeId", "7");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload12));
+      // CHECKOUT src, committed, seller created, saleTypeId = 9
+      Map<String, String> roiPayload13 = new HashMap<>();
+      roiPayload13.put("roisrc", "1");
+      roiPayload13.put("ff2", "CHECKOUT|123");
+      roiPayload13.put("is_committed", "1");
+      roiPayload13.put("order_type", "SELLER");
+      roiPayload13.put("saleTypeId", "9");
+      assertTrue(CollectionServiceUtil.isValidROI(roiPayload13));
+
+  }
 }
