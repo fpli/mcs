@@ -1,5 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <projects>
+    <project project_name="Rotation Daily Dump Done File">
+        <df done_name="offsite_rotation_meta_daily_dump"
+            done_template="offsite_rotation_meta_daily_dump_$.done"
+            date_format="yyyyMMdd"
+            done_time="0"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="0"/>
+        <df done_name="offsite_rotation_meta_dump_to_tmp"
+            done_template="offsite_rotation_meta_dump_to_tmp_$.done"
+            date_format="yyyyMMdd"
+            done_time="0"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="0"/>
+        <df done_name="offsite_rotation_meta_dump_to_tmp_check.complete"
+            done_template="offsite_rotation_meta_dump_to_tmp_check_$.complete.done"
+            date_format="yyyyMMdd"
+            done_time="0"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="0"/>
+        <df done_name="offsite_rotation_meta_dump_to_tmp_check.error"
+            done_template="offsite_rotation_meta_dump_to_tmp_check_$.error.done"
+            date_format="yyyyMMdd"
+            done_time="23"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="48"/>
+    </project>
+    <project project_name="Legacy Rotation Daily Dump Done File">
+        <df done_name="rotation_daily"
+            done_template="rotation_daily.done.$"
+            date_format="yyyyMMdd"
+            done_time="3"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="0"/>
+        <df done_name="rotation_daily"
+            done_template="rotation_daily.done.$"
+            date_format="yyyyMMdd"
+            done_time="3"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9848004"
+            support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
+            cluster="hercules"
+            cal_type="T-1"
+            threshold="0"/>
+    </project>
     <project project_name="Core Done File Monitor">
         <df done_name="imk_rvr_trckng_event_hourly"
             done_template="imk_rvr_trckng_event_hourly.done.$00000000"
@@ -239,6 +297,24 @@
             threshold="48"/>
     </project>
     <project project_name="Utp Batch Done File Monitor">
+        <df done_name="utp_event.complete"
+            done_template="utp_event_$.complete.done"
+            date_format="yyyyMMdd"
+            done_time="9"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9983018&amp;item=9974855"
+            support="https://docs.google.com/document/d/1xHvhoW2sMms9uOvxHCALFWRbONXNid9FQvFntjDm8-A/edit#heading=h.z0j7ffl7chc5"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="0"/>
+        <df done_name="utp_event.error"
+            done_template="utp_event_$.error.done"
+            date_format="yyyyMMdd"
+            done_time="23"
+            job_link="https://uc4dwawi.vip.ebay.com/awi/#PROD:1400@pa/explorer&amp;folder=9983018&amp;item=9974855"
+            support="https://docs.google.com/document/d/1xHvhoW2sMms9uOvxHCALFWRbONXNid9FQvFntjDm8-A/edit#heading=h.z0j7ffl7chc5"
+            cluster="apollo-rno"
+            cal_type="T-1"
+            threshold="48"/>
         <df done_name="utpbatch_overall_target"
             done_template="utpbatch_overall_target_$.done"
             date_format="yyyyMMdd"
@@ -248,24 +324,6 @@
             cluster="apollo-rno"
             cal_type="T-1"
             threshold="0"/>
-        <df done_name="utpbatch_overall_target.complete"
-            done_template="utpbatch_overall_target_$.complete.done"
-            date_format="yyyyMMdd"
-            done_time="17"
-            job_link="http://airflowprod-web.mrkttech-tracking-ns.svc.27.tess.io:8080/home"
-            support="https://docs.google.com/document/d/1xHvhoW2sMms9uOvxHCALFWRbONXNid9FQvFntjDm8-A/edit#heading=h.z0j7ffl7chc5"
-            cluster="apollo-rno"
-            cal_type="T-1"
-            threshold="0"/>
-        <df done_name="utpbatch_overall_target.error"
-            done_template="utpbatch_overall_target_$.error.done"
-            date_format="yyyyMMdd"
-            done_time="23"
-            job_link="http://airflowprod-web.mrkttech-tracking-ns.svc.27.tess.io:8080/home"
-            support="https://docs.google.com/document/d/1xHvhoW2sMms9uOvxHCALFWRbONXNid9FQvFntjDm8-A/edit#heading=h.z0j7ffl7chc5"
-            cluster="apollo-rno"
-            cal_type="T-1"
-            threshold="48"/>
         <df done_name="utpbatch_datasrc_ubi_skew_working"
             done_template="utpbatch_datasrc_ubi_skew_working_$.done"
             date_format="yyyyMMdd"
@@ -274,7 +332,7 @@
             support="https://docs.google.com/document/d/1FAg85XHQb2SIeDv2S3e8cRBr2fEMN2cO-lh6r1t-Qvc/edit#heading=h.3fphmx8uxp0p"
             cluster="apollo-rno"
             cal_type="T-1"
-            threshold="48"/>
+            threshold="0"/>
         <df done_name="utpbatch_datasrc_ubi_working"
             done_template="utpbatch_datasrc_ubi_working_$.done"
             date_format="yyyyMMdd"
