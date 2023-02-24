@@ -7,7 +7,6 @@ import java.util
 import java.util.Properties
 import java.util.regex.Pattern
 import java.util.{Properties, StringJoiner}
-
 import com.couchbase.client.java.document.{JsonArrayDocument, JsonDocument}
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum
 import com.ebay.kernel.util.HeaderMultiValue
@@ -17,6 +16,7 @@ import com.ebay.dukes.{CacheClient, OperationFuture}
 import com.ebay.traffic.chocolate.sparknrt.couchbaseV2.CorpCouchbaseClientV2
 import com.ebay.traffic.chocolate.sparknrt.epnnrt._
 import com.ebay.traffic.chocolate.sparknrt.utils.{MyID, MyIDV2, XIDResponse, XIDResponseV2}
+import com.ebay.traffic.monitoring.Field
 import com.ebay.traffic.sherlockio.pushgateway.SherlockioMetrics
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -67,7 +67,13 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
 
   lazy val JSON_STRING_AMS_PUBLISHER_ID = "{\"ams_publisher_id\":\""
 
-  lazy val TIMEOUT_PER_REQUEST = 2000
+  lazy val TIMEOUT_PER_REQUEST = properties.getProperty("epnnrt.nukv.asyncgettimeout").toInt
+
+  lazy val ASYNC_GET_LIMIT = properties.getProperty("epnnrt.nukv.ayncgetlimit").toInt
+
+  @transient lazy val metric_status_failed = Field.of[String, AnyRef]("status", "failed")
+  @transient lazy val metric_status_success = Field.of[String, AnyRef]("status", "success")
+
   val cbData = asyncCouchbaseGet(df)
 
   /**
@@ -1271,6 +1277,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   }
 
   def batchGetPublisherStatusV2(list: Array[String]): HashMap[String, String] = {
+    list.sliding(ASYNC_GET_LIMIT, ASYNC_GET_LIMIT).toList.map(l => doBatchGetPublisherStatusV2(l)).reduce(_ ++ _)
+  }
+
+  def doBatchGetPublisherStatusV2(list: Array[String]): HashMap[String, String] = {
+    metrics.meterByGauge("doBatchGetPublisherStatusV2Size", list.length)
+
     val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
     val start: Long = System.currentTimeMillis()
     var end: Long = start
@@ -1293,10 +1305,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
               if (publisherInfo != null) {
                 res = res + (publisherInfo.getAms_publisher_id -> publisherInfo.getApplication_status_enum)
               }
+              metrics.meter("getPublisherStatusV2", 1, metric_status_success)
+              metrics.mean("getPublisherStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
             } catch {
               case e: Exception =>
                 logger.error("Corp Couchbase error while publisher status " + e)
-                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+                metrics.meter("getPublisherStatusV2", 1, metric_status_failed)
+                metrics.mean("getPublisherStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+                throw new Exception("CouchBase Call Failure")
             }
             iterator.remove()
           } else {
@@ -1305,6 +1321,10 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         }
         end = System.currentTimeMillis()
       }
+
+      metrics.meter("doBatchGetPublisherStatusV2", 1, metric_status_success)
+      metrics.mean("doBatchGetPublisherStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
+
       if (result.size() != list.length) {
         for (i <- list.indices) {
           if (!res.contains(list(i)))
@@ -1314,11 +1334,15 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception =>
         logger.error("Corp Couchbase error while publisher status " + e)
-        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+        metrics.meter("doBatchGetPublisherStatusV2", 1, metric_status_failed)
+        metrics.mean("doBatchGetPublisherStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+        throw new Exception("CouchBase Call Failure")
     }
+
     CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
   }
+
   def batchGetCampaignStatus(list: Array[String]): HashMap[String, String] = {
     var res = new HashMap[String, String]
     val (cacheClient, bucket) = CorpCouchbaseClientV2.getBucketFunc()
@@ -1359,6 +1383,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   }
 
   def batchGetCampaignStatusV2(list: Array[String]): HashMap[String, String] = {
+    list.sliding(ASYNC_GET_LIMIT, ASYNC_GET_LIMIT).toList.map(l => doBatchGetCampaignStatusV2(l)).reduce(_ ++ _)
+  }
+
+  def doBatchGetCampaignStatusV2(list: Array[String]): HashMap[String, String] = {
+    metrics.meterByGauge("doBatchGetCampaignStatusV2Size", list.length)
+
     val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
     val start: Long = System.currentTimeMillis()
     var end: Long = start
@@ -1383,11 +1413,15 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
                 flag = true
                 res = res + (campaign_sts.getAms_publisher_campaign_id -> campaign_sts.getStatus_enum)
               }
+              metrics.meter("getCampaignStatusV2", 1, metric_status_success)
+              metrics.mean("getCampaignStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
               iterator.remove()
             } catch {
               case e: Exception =>
                 logger.error("Corp Couchbase error while getting campaign status " + e)
-                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+                metrics.meter("getCampaignStatusV2", 1, metric_status_failed)
+                metrics.mean("getCampaignStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+                throw new Exception("CouchBase Call Failure")
             }
           } else {
             Thread.sleep(1)
@@ -1395,6 +1429,10 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         }
         end = System.currentTimeMillis()
       }
+
+      metrics.mean("doBatchGetCampaignStatusV2", 1, metric_status_success)
+      metrics.mean("doBatchGetCampaignStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
+
       if (flag && (res.size != list.length)) {
         for (i <- list.indices) {
           if (!res.contains(list(i)))
@@ -1404,8 +1442,11 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception =>
         logger.error("Corp Couchbase error while getting campaign status " + e)
-        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+        metrics.mean("doBatchGetCampaignStatusV2", 1, metric_status_failed)
+        metrics.mean("doBatchGetCampaignStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+        throw new Exception("CouchBase Call Failure")
     }
+
     CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
   }
@@ -1452,6 +1493,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   }
 
   def batchGetProgMapStatusV2(list: Array[String]): HashMap[String, String] = {
+    list.sliding(ASYNC_GET_LIMIT, ASYNC_GET_LIMIT).toList.map(l => doBatchGetProgMapStatusV2(l)).reduce(_ ++ _)
+  }
+
+  def doBatchGetProgMapStatusV2(list: Array[String]): HashMap[String, String] = {
+    metrics.meterByGauge("doBatchGetProgMapStatusV2Size", list.length)
+
     val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
     val start: Long = System.currentTimeMillis()
     var end: Long = start
@@ -1477,10 +1524,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
                 flag = true
                 res = res + ((progPubMap.getAms_publisher_id + "_" + progPubMap.getAms_program_id) -> progPubMap.getStatus_enum)
               }
+              metrics.meter("getProgMapStatusV2", 1, metric_status_success)
+              metrics.mean("getProgMapStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
             } catch {
               case e: Exception =>
                 logger.error("Corp Couchbase error while getting progmap status " + e)
-                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+                metrics.meter("getProgMapStatusV2", 1, metric_status_failed)
+                metrics.mean("getProgMapStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+                throw new Exception("CouchBase Call Failure")
             }
             iterator.remove()
           } else {
@@ -1489,6 +1540,10 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         }
         end = System.currentTimeMillis()
       }
+
+      metrics.meter("doBatchGetProgMapStatusV2", 1, metric_status_success)
+      metrics.mean("doBatchGetProgMapStatusV2Latency", System.currentTimeMillis() - start, metric_status_success)
+
       if (flag && (res.size() != list.length)) {
         for (i <- list.indices) {
           if (!res.contains(list(i)))
@@ -1498,7 +1553,9 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception =>
         logger.error("Corp Couchbase error while getting progmap status " + e)
-        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+        metrics.meter("doBatchGetProgMapStatusV2", 1, metric_status_failed)
+        metrics.mean("doBatchGetProgMapStatusV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+        throw new Exception("CouchBase Call Failure")
     }
     CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
@@ -1547,6 +1604,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   }
 
   def batchGetAdvClickFilterMapV2(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
+    list.sliding(ASYNC_GET_LIMIT, ASYNC_GET_LIMIT).toList.map(l => doBatchGetAdvClickFilterMapV2(l)).reduce(_ ++ _)
+  }
+
+  def doBatchGetAdvClickFilterMapV2(list: Array[String]): HashMap[String, ListBuffer[PubAdvClickFilterMapInfo]] = {
+    metrics.meterByGauge("doBatchGetAdvClickFilterMapV2Size", list.length)
+
     val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
     val start: Long = System.currentTimeMillis()
     var end: Long = start
@@ -1577,10 +1640,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
                 }
                 res = res + (infoList.head.getAms_publisher_id -> objectList)
               }
+              metrics.meter("getAdvClickFilterMapV2", 1, metric_status_success)
+              metrics.mean("getAdvClickFilterMapV2Latency", System.currentTimeMillis() - start, metric_status_success)
             } catch {
               case e: Exception =>
                 logger.error("Corp Couchbase error while getting advClickFilterMap " + e)
-                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+                metrics.meter("getAdvClickFilterMapV2", 1, metric_status_failed)
+                metrics.mean("getAdvClickFilterMapV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+                throw new Exception("CouchBase Call Failure")
             }
             iterator.remove()
           } else {
@@ -1589,6 +1656,9 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         }
         end = System.currentTimeMillis()
       }
+      metrics.meterByGauge("doBatchGetAdvClickFilterMapV2", 1, metric_status_success)
+      metrics.mean("doBatchGetAdvClickFilterMapV2Latency", System.currentTimeMillis() - start, metric_status_success)
+
       if (res.size() != list.length) {
         for (i <- list.indices) {
           if (!res.contains(list(i)))
@@ -1598,11 +1668,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception =>
         logger.error("Corp Couchbase error while getting advClickFilterMap " + e)
-        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+        metrics.meterByGauge("doBatchGetAdvClickFilterMapV2", 1, metric_status_failed)
+        metrics.mean("doBatchGetAdvClickFilterMapV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+        throw new Exception("CouchBase Call Failure")
     }
     CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
   }
+
   def batchGetPubDomainMap(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
     var res = new HashMap[String, ListBuffer[PubDomainInfo]]
     val (cacheClient, bucket) = CorpCouchbaseClientV2.getBucketFunc()
@@ -1647,6 +1720,12 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
   }
 
   def batchGetPubDomainMapV2(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
+    list.sliding(ASYNC_GET_LIMIT, ASYNC_GET_LIMIT).toList.map(l => doBatchGetPubDomainMapV2(l)).reduce(_ ++ _)
+  }
+
+  def doBatchGetPubDomainMapV2(list: Array[String]): HashMap[String, ListBuffer[PubDomainInfo]] = {
+    metrics.meterByGauge("doBatchGetPubDomainMapV2Size", list.length)
+
     val timeoutLimit: Int = list.length * TIMEOUT_PER_REQUEST
     val start: Long = System.currentTimeMillis()
     var end: Long = start
@@ -1677,10 +1756,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
                 }
                 res = res + (infoList.head.getAms_publisher_id -> objectList)
               }
+              metrics.meter("getPubDomainMapV2", 1, metric_status_success)
+              metrics.mean("getPubDomainMapV2Latency", System.currentTimeMillis() - start, metric_status_success)
             } catch {
               case e: Exception =>
                 logger.error("Corp Couchbase error while getting pubDomainMap " + e)
-                metrics.meterByGauge("CouchbaseErrorFailover", 1)
+                metrics.meter("getPubDomainMapV2", 1, metric_status_failed)
+                metrics.mean("getPubDomainMapV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+                throw new Exception("CouchBase Call Failure")
             }
             iterator.remove()
           } else {
@@ -1689,6 +1772,10 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
         }
         end = System.currentTimeMillis()
       }
+
+      metrics.meter("doBatchGetPubDomainMapV2", 1, metric_status_success)
+      metrics.mean("doBatchGetPubDomainMapV2Latency", System.currentTimeMillis() - start, metric_status_success)
+
       if (res.size() != list.length) {
         for (i <- list.indices) {
           if (!res.contains(list(i)))
@@ -1698,11 +1785,14 @@ class EpnNrtCommonV2(params: ParameterV2, df: DataFrame) extends Serializable {
     } catch {
       case e: Exception =>
         logger.error("Corp Couchbase error while getting pubDomainMap " + e)
-        metrics.meterByGauge("CouchbaseErrorFailover", 1)
+        metrics.meter("doBatchGetPubDomainMapV2", 1, metric_status_failed)
+        metrics.mean("doBatchGetPubDomainMapV2Latency", System.currentTimeMillis() - start, metric_status_failed)
+        throw new Exception("CouchBase Call Failure")
     }
     CorpCouchbaseClientV2.returnClient(Option(cacheClient))
     res
   }
+
   /**
     * get related info from uri, like rotation_id and so on
     * for rover uri, get related info from rover.ebay.com/.../
