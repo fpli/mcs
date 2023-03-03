@@ -13,7 +13,7 @@
 
   <properties>
     <swagger.annotations.version>1.5.20</swagger.annotations.version>
-    <esams.component.version>0.15.3-RELEASE</esams.component.version>
+    
     
 
   </properties>

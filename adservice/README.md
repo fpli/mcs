@@ -5,9 +5,9 @@
 
 ## Application Metadata
 
-Application name: `chocofil`
+Application name: `adservice`
 
-Cloud Console: `https://cloud.ebay.com/app/detail/chocofil`
+Cloud Console: `https://cloud.ebay.com/app/detail/adservice`
 
 ## Building and Running
 
