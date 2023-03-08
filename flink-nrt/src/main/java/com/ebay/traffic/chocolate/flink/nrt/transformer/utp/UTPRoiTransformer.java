@@ -82,7 +82,13 @@ public class UTPRoiTransformer extends UTPImkTransformer {
 
   @Override
   protected String getTransactionType() {
-    return getParamValueFromQuery(query, TransformerConstants.TRAN_TYPE);
+    String transType = getParamValueFromQuery(query, TransformerConstants.TRAN_TYPE);
+
+    if ("unknown".equals(transType.toLowerCase())) {
+      transType = "BIN-STORE";
+    }
+
+    return transType;
   }
 
   // TODO weird logic
