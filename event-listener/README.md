@@ -5,9 +5,9 @@
 
 ## Application Metadata
 
-Application name: `chocofil`
+Application name: `mktcollectionsvc`
 
-Cloud Console: `https://cloud.ebay.com/app/detail/chocofil`
+Cloud Console: `https://cloud.ebay.com/app/detail/mktcollectionsvc`
 
 ## Building and Running
 
