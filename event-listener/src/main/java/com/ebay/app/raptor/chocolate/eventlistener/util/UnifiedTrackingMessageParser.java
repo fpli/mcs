@@ -282,7 +282,7 @@ public class UnifiedTrackingMessageParser {
 
     // site id
     String siteId = parameters.getFirst(Constants.SITEID);
-    if (ActionTypeEnum.OPEN.getValue().equals(actionType) && StringUtils.isNotEmpty(siteId)) {
+    if ((ActionTypeEnum.OPEN.getValue().equals(actionType) || ActionTypeEnum.ROI.getValue().equals(actionType)) && StringUtils.isNotEmpty(siteId)) {
       record.setSiteId(Integer.valueOf(siteId));
     } else {
       record.setSiteId(domainRequest.getSiteId());
@@ -821,6 +821,20 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("purchaseOrderId") && StringUtils.isNotEmpty(roiPayload.get("purchaseOrderId"))) {
       payloadMap.put("purchaseOrderId", roiPayload.get("purchaseOrderId"));
     }
+
+    if (roiPayload.containsKey("quantity") && StringUtils.isNotEmpty(roiPayload.get("quantity"))) {
+      payloadMap.put("quantity", roiPayload.get("quantity"));
+    }
+    if (roiPayload.containsKey("orderTotal") && StringUtils.isNotEmpty(roiPayload.get("orderTotal"))) {
+      payloadMap.put("orderTotal", roiPayload.get("orderTotal"));
+    }
+    if (roiPayload.containsKey("primaryCategoryId") && StringUtils.isNotEmpty(roiPayload.get("primaryCategoryId"))) {
+      payloadMap.put("primaryCategoryId", roiPayload.get("primaryCategoryId"));
+    }
+    if (roiPayload.containsKey("secondaryCategoryId") && StringUtils.isNotEmpty(roiPayload.get("secondaryCategoryId"))) {
+      payloadMap.put("secondaryCategoryId", roiPayload.get("secondaryCategoryId"));
+    }
+
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
