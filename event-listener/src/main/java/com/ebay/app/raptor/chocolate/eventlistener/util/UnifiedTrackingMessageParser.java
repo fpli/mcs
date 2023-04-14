@@ -828,6 +828,9 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("orderTotal") && StringUtils.isNotEmpty(roiPayload.get("orderTotal"))) {
       payloadMap.put("orderTotal", roiPayload.get("orderTotal"));
     }
+    if (roiPayload.containsKey("currency") && StringUtils.isNotEmpty(roiPayload.get("currency"))) {
+      payloadMap.put("currency", roiPayload.get("currency"));
+    }
     if (roiPayload.containsKey("primaryCategoryId") && StringUtils.isNotEmpty(roiPayload.get("primaryCategoryId"))) {
       payloadMap.put("primaryCategoryId", roiPayload.get("primaryCategoryId"));
     }
