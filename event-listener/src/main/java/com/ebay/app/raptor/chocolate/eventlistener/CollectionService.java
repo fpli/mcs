@@ -52,6 +52,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.constant.ChannelActionEnum.*;
 import static com.ebay.app.raptor.chocolate.constant.ChannelIdEnum.parse;
@@ -304,7 +305,6 @@ public class CollectionService {
 
     // UFES metrics
     MonitorUtil.info("UFESTraffic", 1, Field.of("isUFES", CollectionServiceUtil.isFromUFES(requestHeaders).toString()),
-        Field.of(LANDING_PAGE_TYPE, landingPageType),
         Field.of("statusCode", request.getHeader(NODE_REDIRECTION_HEADER_NAME)),
         Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
 
@@ -324,6 +324,15 @@ public class CollectionService {
 
     String action = CLICK.toString();
     String type = urlRefChannel.getRight().getLogicalChannel().getAvro().toString();
+
+    if (Arrays.asList(SITE_EMAIL.toString(),MRKT_EMAIL.toString(),GCX_EMAIL.toString(),SITE_MESSAGE_CENTER.toString(),
+            MRKT_MESSAGE_CENTER.toString(),GCX_MESSAGE_CENTER.toString()).contains(type)){
+      MonitorUtil.info("LandingPageType", 1,
+              Field.of(LANDING_PAGE_TYPE, landingPageType),
+              Field.of(CHANNEL_TYPE, type),
+              Field.of(IS_BOT_TRAFFIC, CollectionServiceUtil.isBot(userAgent)));
+    }
+
 
     // Self-service events, send them to couchbase
     if (parameters.containsKey(SELF_SERVICE) && parameters.containsKey(SELF_SERVICE_ID)) {
@@ -350,8 +359,7 @@ public class CollectionService {
     // 3rd party click flag
     boolean isThirdParty = CollectionServiceUtil.isThirdParityClick(parameters);
 
-    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, landingPageType));
+    long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform));
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
@@ -431,7 +439,7 @@ public class CollectionService {
     }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
-     Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, landingPageType));
+     Field.of(PLATFORM, platform));
 
     return true;
   }
@@ -503,8 +511,7 @@ public class CollectionService {
     String platform = CollectionServiceUtil.getPlatform(agentInfo);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()),
-        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, "NULL"));
+        Field.of(CHANNEL_TYPE, ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
     String queryString = CollectionServiceUtil.generateQueryString(roiEvent, payloadMap, localTimestamp, userId);
     String targetUrl = request.getRequestURL() + "?" + queryString;
@@ -566,7 +573,7 @@ public class CollectionService {
 
     stopTimerAndLogData(startTime,
         Field.of(CHANNEL_ACTION, ChannelActionEnum.ROI.toString()), Field.of(CHANNEL_TYPE,
-            ChannelType.ROI.toString()), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
+            ChannelType.ROI.toString()), Field.of(PLATFORM, platform));
 
     return true;
   }
@@ -669,8 +676,7 @@ public class CollectionService {
     UserPrefsCtx userPrefsCtx = (UserPrefsCtx) requestContext.getProperty(RaptorConstants.USERPREFS_CONTEXT_KEY);
 
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type)
-            , Field.of(PLATFORM, platform),
-            Field.of(LANDING_PAGE_TYPE, "NULL"));
+            , Field.of(PLATFORM, platform));
 
     // remote ip
     String remoteIp = commonRequestHandler.getRemoteIp(request);
@@ -706,7 +712,7 @@ public class CollectionService {
     }
 
     stopTimerAndLogData(baseEvent, Field.of(CHANNEL_ACTION, action),
-        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform), Field.of(LANDING_PAGE_TYPE, "NULL"));
+        Field.of(CHANNEL_TYPE, type), Field.of(PLATFORM, platform));
 
     return true;
   }
@@ -864,8 +870,8 @@ public class CollectionService {
    */
   public void collectUnifiedTrackingEvent(UnifiedTrackingEvent event) {
     long startTime = startTimerAndLogData(Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PLATFORM, "NULL"),
-            Field.of(LANDING_PAGE_TYPE, "NULL"));
+        Field.of(CHANNEL_TYPE, event.getChannelType()),Field.of(PLATFORM, "NULL"));
+
 
     UnifiedTrackingMessage message = utpParser.parse(event);
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, message.getEventId());
@@ -878,7 +884,7 @@ public class CollectionService {
           UnifiedTrackingKafkaSink.callback);
 
     stopTimerAndLogData(startTime, Field.of(CHANNEL_ACTION, event.getActionType()),
-        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"), Field.of(LANDING_PAGE_TYPE, "NULL"));
+        Field.of(CHANNEL_TYPE, event.getChannelType()), Field.of(PLATFORM, "NULL"));
   }
 
   /**
