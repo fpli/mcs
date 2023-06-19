@@ -103,21 +103,16 @@ public class AdserviceCookie {
         adguid = DEFAULT_ADGUID;
       }
 
-      ResponseCookie cookie;
-      if(ApplicationOptions.getInstance().isSecureCookie()) {
-        cookie = ResponseCookie.from(ADGUID, adguid)
-            .maxAge(COOKIE_EXPIRY)
-            .sameSite("None")
-            .httpOnly(true)
-            .secure(true)
-            .build();
-      } else {
-        cookie = ResponseCookie.from(ADGUID, adguid)
-            .maxAge(COOKIE_EXPIRY)
-            .sameSite("None")
-            .httpOnly(true)
-            .build();
-      }
+      ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(ADGUID, adguid)
+              .maxAge(COOKIE_EXPIRY)
+              .sameSite("None")
+              .path("/")
+              .httpOnly(true);
+
+      if(ApplicationOptions.getInstance().isSecureCookie())
+        builder.secure(true);
+
+      ResponseCookie cookie = builder.build();
 
       response.addHeader("Set-Cookie", cookie.toString());
     }
