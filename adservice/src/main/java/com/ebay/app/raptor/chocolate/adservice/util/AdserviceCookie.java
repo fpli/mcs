@@ -107,10 +107,8 @@ public class AdserviceCookie {
               .maxAge(COOKIE_EXPIRY)
               .sameSite("None")
               .path("/")
+              .secure(ApplicationOptions.getInstance().isSecureCookie())
               .httpOnly(true);
-
-      if(ApplicationOptions.getInstance().isSecureCookie())
-        builder.secure(true);
 
       ResponseCookie cookie = builder.build();
 
