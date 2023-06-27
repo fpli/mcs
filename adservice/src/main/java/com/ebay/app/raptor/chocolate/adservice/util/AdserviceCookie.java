@@ -39,6 +39,7 @@ public class AdserviceCookie {
   private static final String METRIC_NO_ADGUID_IN_COOKIE = "METRIC_NO_ADGUID_IN_COOKIE";
   private static final String METRIC_HAS_ADGUID_IN_COOKIE = "METRIC_HAS_ADGUID_IN_COOKIE";
   private static final String METRIC_SET_NEW_ADGUID = "METRIC_SET_NEW_ADGUID";
+  private static final String METRIC_ADGUID_COOKIE_PATH_CORRECTION = "METRIC_ADGUID_COOKIE_PATH_CORRECTION";
   private static final String METRIC_ERROR_CREATE_ADGUID = "METRIC_ERROR_CREATE_ADGUID";
 
   @Autowired
@@ -124,6 +125,11 @@ public class AdserviceCookie {
 
     // in case we don't have cookie or Path != "/" - make sure all the properties are correct
     if(adguidCookie == null || adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH)) {
+      // track whenever we are here to fix the Path property
+      if (adguidCookie != null && (adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH))) {
+        MonitorUtil.info(METRIC_ADGUID_COOKIE_PATH_CORRECTION);
+      }
+
       // preserve previous expiration date for consistency
       int expiry = adguidCookie != null ? adguidCookie.getMaxAge() : COOKIE_EXPIRY;
       ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
