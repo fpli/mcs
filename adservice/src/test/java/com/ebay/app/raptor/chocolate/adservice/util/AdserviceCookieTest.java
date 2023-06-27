@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 public class AdserviceCookieTest {
 
-  private boolean initialized = false;
+  private Boolean initialized = false;
 
   @Before
   public void setUp() throws IOException {
