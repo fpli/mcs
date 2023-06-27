@@ -99,50 +99,62 @@ public class AdserviceCookie {
   }
 
   /**
-   * Set adguid in cookie if there is no
+   * Set adguid in cookie within response if there is no cookie presented in request
+   * Makes sure the cookie Path is "/"
+   *
    * @param request http request
    * @param response http response
+   *
    * @return adguid in String
    */
   public String setAdguid(HttpServletRequest request, HttpServletResponse response) {
-    String adguid;
     Cookie adguidCookie = getAdguidCookie(request);
 
-    // in case we don't have cookie - we create new adguid
-    if (adguidCookie == null) {
-      MonitorUtil.info(METRIC_SET_NEW_ADGUID);
-      try {
-        // same format as current guid, 32 digits
-        adguid = UUID.randomUUID().toString().replaceAll("-", "");
-      } catch (Exception e) {
-        MonitorUtil.info(METRIC_ERROR_CREATE_ADGUID);
-        logger.warn(e.toString());
-        adguid = DEFAULT_ADGUID;
-      }
-    } else {
-      adguid = adguidCookie.getValue();
+    // we have cookie
+    // we have the correct path
+    // return cookie value immediately
+    if (adguidCookie != null && adguidCookie.getPath() != null && adguidCookie.getPath().equals(ADGUID_COOKIE_PATH)) {
+      return adguidCookie.getValue();
     }
 
-    // in case we don't have cookie or Path != "/" - make sure all the properties are correct
-    if(adguidCookie == null || adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH)) {
-      // track whenever we are here to fix the Path property
-      if (adguidCookie != null && (adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH))) {
-        MonitorUtil.info(METRIC_ADGUID_COOKIE_PATH_CORRECTION);
-      }
+    // in case we don't have cookie - we generate new adguid
+    // otherwise - get the value of the cookie
+    String adguid = adguidCookie == null ?
+            generateAdguid() :
+            adguidCookie.getValue();
 
-      // preserve previous expiration date for consistency
-      int expiry = adguidCookie != null ? adguidCookie.getMaxAge() : COOKIE_EXPIRY;
-      ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
-              .maxAge(expiry)
-              .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
-              .path(ADGUID_COOKIE_PATH)
-              .secure(ApplicationOptions.getInstance().isSecureCookie())
-              .httpOnly(true)
-              .build();
-
-      response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    // if Path of the existing cookie is incorrect - we're here to fix it
+    if (adguidCookie == null || (adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH))) {
+      MonitorUtil.info(METRIC_ADGUID_COOKIE_PATH_CORRECTION);
     }
 
+    // preserve previous expiration date for consistency
+    int expiry = adguidCookie != null ? adguidCookie.getMaxAge() : COOKIE_EXPIRY;
+
+    ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
+            .maxAge(expiry)
+            .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
+            .path(ADGUID_COOKIE_PATH)
+            .secure(ApplicationOptions.getInstance().isSecureCookie())
+            .httpOnly(true)
+            .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    return adguid;
+  }
+
+  private static String generateAdguid() {
+    String adguid;
+    MonitorUtil.info(METRIC_SET_NEW_ADGUID);
+    try {
+      // same format as current guid, 32 digits
+      adguid = UUID.randomUUID().toString().replaceAll("-", "");
+    } catch (Exception e) {
+      MonitorUtil.info(METRIC_ERROR_CREATE_ADGUID);
+      logger.warn(e.toString());
+      adguid = DEFAULT_ADGUID;
+    }
     return adguid;
   }
 
