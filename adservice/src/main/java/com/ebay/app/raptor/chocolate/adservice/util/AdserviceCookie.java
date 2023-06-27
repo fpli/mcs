@@ -107,7 +107,7 @@ public class AdserviceCookie {
     String adguid;
     Cookie adguidCookie = getAdguidCookie(request);
 
-    // in case we don't have cookie - we create one
+    // in case we don't have cookie - we create new adguid
     if (adguidCookie == null) {
       MonitorUtil.info(METRIC_SET_NEW_ADGUID);
       try {
