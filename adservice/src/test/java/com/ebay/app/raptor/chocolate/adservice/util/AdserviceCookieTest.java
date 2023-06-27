@@ -64,7 +64,7 @@ public class AdserviceCookieTest {
     String cookieVal = new AdserviceCookie().setAdguid(req, res);
     Cookie resCookie = res.getCookie(ADGUID);
 
-    assertEquals(cookieGuid, cookieVal);
+    assertEquals(cookieVal, cookieGuid);
     assertNull(resCookie);
   }
 
@@ -87,9 +87,10 @@ public class AdserviceCookieTest {
     String cookieVal = new AdserviceCookie().setAdguid(req, res);
     Cookie resCookie = res.getCookie(ADGUID);
 
-    assertEquals(cookieGuid, cookieVal);
     assertNotNull(resCookie);
-    assertEquals(resCookie.getPath(), "/");
+    assertEquals(cookieGuid, cookieVal);
+    assertEquals(cookieGuid, resCookie.getValue());
+    assertEquals("/", resCookie.getPath());
   }
 
   @Test
@@ -110,9 +111,10 @@ public class AdserviceCookieTest {
     String cookieVal = new AdserviceCookie().setAdguid(req, res);
     Cookie resCookie = res.getCookie(ADGUID);
 
-    assertEquals(cookieGuid, cookieVal);
     assertNotNull(resCookie);
-    assertEquals(resCookie.getPath(), "/");
+    assertEquals(cookieGuid, cookieVal);
+    assertEquals(cookieGuid, resCookie.getValue());
+    assertEquals("/", resCookie.getPath());
   }
 
   @Test
@@ -125,6 +127,7 @@ public class AdserviceCookieTest {
 
     assertNotNull(cookieVal);
     assertNotNull(resCookie);
-    assertEquals(resCookie.getPath(), "/");
+    assertNotNull(resCookie.getValue(), cookieVal);
+    assertEquals("/", resCookie.getPath());
   }
 }
