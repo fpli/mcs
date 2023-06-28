@@ -128,11 +128,8 @@ public class AdserviceCookie {
       MonitorUtil.info(METRIC_ADGUID_COOKIE_PATH_CORRECTION);
     }
 
-    // preserve previous expiration date for consistency
-    int expiry = adguidCookie != null ? adguidCookie.getMaxAge() : COOKIE_EXPIRY;
-
     ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
-            .maxAge(expiry)
+            .maxAge(COOKIE_EXPIRY)
             .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
             .path(ADGUID_COOKIE_PATH)
             .secure(ApplicationOptions.getInstance().isSecureCookie())
