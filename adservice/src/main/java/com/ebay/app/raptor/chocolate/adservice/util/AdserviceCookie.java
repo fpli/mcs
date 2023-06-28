@@ -112,9 +112,9 @@ public class AdserviceCookie {
 
     // in case we don't have cookie - we generate new adguid
     // otherwise - get the value of the existing cookie
-    String adguid = adguidCookie == null ?
-            generateAdguid() :
-            adguidCookie.getValue();
+    String adguid = adguidCookie == null
+            ? generateAdguid()
+            : adguidCookie.getValue();
 
     ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
             .maxAge(COOKIE_EXPIRY)
