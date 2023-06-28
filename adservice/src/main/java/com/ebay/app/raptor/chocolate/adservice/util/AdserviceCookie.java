@@ -111,7 +111,7 @@ public class AdserviceCookie {
     Cookie adguidCookie = getAdguidCookie(request);
 
     // in case we don't have cookie - we generate new adguid
-    // otherwise - get the value of the cookie
+    // otherwise - get the value of the existing cookie
     String adguid = adguidCookie == null ?
             generateAdguid() :
             adguidCookie.getValue();
