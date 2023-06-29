@@ -44,9 +44,8 @@ public class AdserviceCookieTest {
     }
   }
 
-
   @Test
-  public void setAdguidTestHaveCookieInRequestAllIsCorrect() {
+  public void setAdguidTestHaveCookieInRequest() {
     String cookieGuid = UUID.fromString("b3bb72cb-dd9c-4ae8-8aae-2ad51705db88")
             .toString()
             .replaceAll("-", "");
@@ -55,33 +54,6 @@ public class AdserviceCookieTest {
     MockHttpServletResponse res = new MockHttpServletResponse();
 
     Cookie cookie = new Cookie(ADGUID, cookieGuid);
-    cookie.setPath("/");
-    cookie.setSecure(true);
-    cookie.setHttpOnly(true);
-    cookie.setMaxAge(60);
-    req.setCookies(cookie);
-
-    String cookieVal = new AdserviceCookie().setAdguid(req, res);
-    Cookie resCookie = res.getCookie(ADGUID);
-
-    assertEquals(cookieVal, cookieGuid);
-    assertNull(resCookie);
-  }
-
-  @Test
-  public void setAdguidTestHaveCookieInRequestWrongPath() {
-    String cookieGuid = UUID.fromString("b3bb72cb-dd9c-4ae8-8aae-2ad51705db88")
-            .toString()
-            .replaceAll("-", "");
-
-    MockHttpServletRequest req = new MockHttpServletRequest();
-    MockHttpServletResponse res = new MockHttpServletResponse();
-
-    Cookie cookie = new Cookie(ADGUID, cookieGuid);
-    cookie.setPath("somepath");
-    cookie.setSecure(true);
-    cookie.setHttpOnly(true);
-    cookie.setMaxAge(60);
     req.setCookies(cookie);
 
     String cookieVal = new AdserviceCookie().setAdguid(req, res);
@@ -90,30 +62,8 @@ public class AdserviceCookieTest {
     assertNotNull(resCookie);
     assertEquals(cookieGuid, cookieVal);
     assertEquals(cookieGuid, resCookie.getValue());
-    assertEquals("/", resCookie.getPath());
-  }
-
-  @Test
-  public void setAdguidTestHaveCookieInRequestNoPath() {
-    String cookieGuid = UUID.fromString("b3bb72cb-dd9c-4ae8-8aae-2ad51705db88")
-            .toString()
-            .replaceAll("-", "");
-
-    MockHttpServletRequest req = new MockHttpServletRequest();
-    MockHttpServletResponse res = new MockHttpServletResponse();
-
-    Cookie cookie = new Cookie(ADGUID, cookieGuid);
-    cookie.setSecure(true);
-    cookie.setHttpOnly(true);
-    cookie.setMaxAge(60);
-    req.setCookies(cookie);
-
-    String cookieVal = new AdserviceCookie().setAdguid(req, res);
-    Cookie resCookie = res.getCookie(ADGUID);
-
-    assertNotNull(resCookie);
-    assertEquals(cookieGuid, cookieVal);
-    assertEquals(cookieGuid, resCookie.getValue());
+    assertEquals(cookie.getValue(), resCookie.getValue());
+    assertEquals(90*24*60*60, resCookie.getMaxAge());
     assertEquals("/", resCookie.getPath());
   }
 
@@ -128,6 +78,7 @@ public class AdserviceCookieTest {
     assertNotNull(cookieVal);
     assertNotNull(resCookie);
     assertNotNull(resCookie.getValue(), cookieVal);
+    assertEquals(90*24*60*60, resCookie.getMaxAge());
     assertEquals("/", resCookie.getPath());
   }
 }

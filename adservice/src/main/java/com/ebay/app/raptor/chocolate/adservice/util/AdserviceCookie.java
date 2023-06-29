@@ -110,29 +110,14 @@ public class AdserviceCookie {
   public String setAdguid(HttpServletRequest request, HttpServletResponse response) {
     Cookie adguidCookie = getAdguidCookie(request);
 
-    // we have cookie
-    // we have the correct path
-    // return cookie value immediately
-    if (adguidCookie != null && adguidCookie.getPath() != null && adguidCookie.getPath().equals(ADGUID_COOKIE_PATH)) {
-      return adguidCookie.getValue();
-    }
-
     // in case we don't have cookie - we generate new adguid
-    // otherwise - get the value of the cookie
-    String adguid = adguidCookie == null ?
-            generateAdguid() :
-            adguidCookie.getValue();
-
-    // if Path of the existing cookie is incorrect - we're here to fix it
-    if (adguidCookie == null || (adguidCookie.getPath() == null || !adguidCookie.getPath().equals(ADGUID_COOKIE_PATH))) {
-      MonitorUtil.info(METRIC_ADGUID_COOKIE_PATH_CORRECTION);
-    }
-
-    // preserve previous expiration date for consistency
-    int expiry = adguidCookie != null ? adguidCookie.getMaxAge() : COOKIE_EXPIRY;
+    // otherwise - get the value of the existing cookie
+    String adguid = adguidCookie == null
+            ? generateAdguid()
+            : adguidCookie.getValue();
 
     ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
-            .maxAge(expiry)
+            .maxAge(COOKIE_EXPIRY)
             .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
             .path(ADGUID_COOKIE_PATH)
             .secure(ApplicationOptions.getInstance().isSecureCookie())
