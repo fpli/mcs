@@ -33,6 +33,6 @@ source:
 sink:
   name: sink
   uid: sink
-  appKey: C5fd0e7e347a49ed835b40b017dafb25
-  appSecret: 5Dll8FeORzHwO0ELicK9skOEnMGEYKRnYQweJQC8yZnHjZZedxTtQUOZLygZMO5x
+  appKey: 977d5596606b45058da66ee59b13fbce
+  appSecret: kGHLoHDGJ716H5aHOe5zoNn8AmTdIFzFi3M8YEHsKvLuNS2DCdneeYySuJRau6AL
   uri: https://esutptracer-datarno.vip.ebay.com
