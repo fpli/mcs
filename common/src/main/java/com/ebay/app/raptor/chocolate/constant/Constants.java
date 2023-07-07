@@ -249,6 +249,11 @@ public class Constants {
           .put("rank", "rank")
           .put("sid", SOURCE_ID)
           .put("xt", XT)
+          .put("trkId", "trkId")
+          .put("mesgId", "mesgId")
+          .put("plmtId", "plmtId")
+          .put("recoId", "recoId")
+          .put("recoPos", "recoPos")
           .build();
 
   /**
