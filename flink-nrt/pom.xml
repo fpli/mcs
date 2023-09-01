@@ -341,6 +341,10 @@
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-dns-insight-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-resilience-starter</artifactId>
+        </dependency>
 
     </dependencies>
 

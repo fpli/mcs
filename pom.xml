@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.18.0-RELEASE</version>
+    <version>0.18.1-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -306,6 +306,16 @@
         <artifactId>reload4j</artifactId>
         <version>1.2.22</version>
       </dependency>
+
+      
+
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-sql_2.11</artifactId>
+        <version>2.4.7</version>
+      </dependency>
+
+      
 
       <!-- UTP -->
 
