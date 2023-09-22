@@ -677,10 +677,12 @@ public class UnifiedTrackingMessageParser {
     }
   
     // add device info for parsing Epsrv api channelId
+    // refrence: https://github.corp.ebay.com/experimentation-platform/raptor-experimentation-component/blob/0.18.0-RELEASE-TAG/raptor-experimentation-autoconfigure/src/main/java/com/ebay/experimentation/util/DeviceUtil.java#L34
     UserAgentInfo userAgentInfo = baseEvent.getUserAgentInfo();
     if (userAgentInfo != null) {
       payload.put("isNativeApp", String.valueOf(userAgentInfo.isNativeApp()));
-      payload.put("isMobileWeb", String.valueOf(userAgentInfo.requestIsWeb()));
+      payload.put("isWeb", String.valueOf(userAgentInfo.requestIsWeb()));
+      payload.put("isMobileWeb", String.valueOf(userAgentInfo.requestIsMobileWeb()));
       DDSResponse deviceInfo = userAgentInfo.getDeviceInfo();
       if (deviceInfo != null) {
         payload.put("osiOS", String.valueOf(deviceInfo.osiOS()));
