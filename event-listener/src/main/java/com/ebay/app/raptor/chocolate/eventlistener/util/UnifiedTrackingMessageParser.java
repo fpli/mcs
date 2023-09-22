@@ -16,11 +16,13 @@ import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
+import com.ebay.raptor.user.experience.classfication.UserExperienceClass;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
@@ -672,6 +674,22 @@ public class UnifiedTrackingMessageParser {
       payload.put(Constants.EMAIL_USER_ID, String.valueOf(emailUserId));
     } else {
       payload.put(Constants.EMAIL_USER_ID, "0");
+    }
+  
+    // add device info for parsing Epsrv api channelId
+    UserAgentInfo userAgentInfo = baseEvent.getUserAgentInfo();
+    if (userAgentInfo != null) {
+      payload.put("isNativeApp", String.valueOf(userAgentInfo.isNativeApp()));
+      payload.put("isMobileWeb", String.valueOf(userAgentInfo.requestIsWeb()));
+      DDSResponse deviceInfo = userAgentInfo.getDeviceInfo();
+      if (deviceInfo != null) {
+        payload.put("osiOS", String.valueOf(deviceInfo.osiOS()));
+        payload.put("osAndroid", String.valueOf(deviceInfo.osAndroid()));
+      }
+      UserExperienceClass userExpClass = userAgentInfo.getUserExperienceClass();
+      if (userExpClass != null) {
+        payload.put("userExpClass", userExpClass.name());
+      }
     }
 
     return encodeTags(payload);
