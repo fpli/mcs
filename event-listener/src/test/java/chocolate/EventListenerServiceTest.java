@@ -1568,12 +1568,12 @@ public class EventListenerServiceTest {
     Event event = new Event();
     event.setReferrer("https://www.gumtree.com/v1/stick?q=carpet");
 
-    event.setTargetUrl("https://www.ebay.com/itm/174786149522?mkcid=16&mkevt=1&mkrid=711-127632-2357-0&ssspo=BrFgdYNlQsq&sssrc=2047675&ssuid=&widget_ver=artemis&media=FB&store_cat=A&_sacat=a");
+    event.setTargetUrl("https://www.ebay.com/itm/174786149522?mkcid=16&mkevt=1&mkrid=711-127632-2357-0&ssspo=BrFgdYNlQsq&sssrc=2047675&ssuid=&widget_ver=artemis&media=FB&store_cat=A&_sacat=a&jobId=aa7d2235-2560-4e85-ab10-1daa38d2f26c");
     Response response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
 
     event.setReferrer("https://www.gumtree.com/v1/stick?q=carpet");
-    event.setTargetUrl("ebay://link?nav=item.view&id=174786149522&mkrid=711-127632-2357-0&mkevt=1&_trksid=p2349624.m46890.l49286&mkcid=16&media=FB&sssrc=2047675&ssuid=1234567&ssspo=1234567&store_cat=A&_sacat=a");
+    event.setTargetUrl("ebay://link?nav=item.view&id=174786149522&mkrid=711-127632-2357-0&mkevt=1&_trksid=p2349624.m46890.l49286&mkcid=16&media=FB&sssrc=2047675&ssuid=1234567&ssspo=1234567&store_cat=A&_sacat=a&jobId=aa7d2235-2560-4e85-ab10-1daa38d2f26c");
     response = postMcsResponse(eventsPath, endUserCtxDesktop, tracking, event);
     assertEquals(HttpStatus.CREATED.value(), response.getStatus());
   }

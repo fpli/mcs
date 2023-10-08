@@ -282,6 +282,7 @@ public class Constants {
           .put("ssspo", "ssspo")
           .put("_sacat", "_sacat")
           .put("store_cat", "store_cat")
+          .put("jobId","jobId")
           .build();
 
   /**
