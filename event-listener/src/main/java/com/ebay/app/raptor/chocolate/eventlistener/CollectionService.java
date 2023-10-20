@@ -545,7 +545,8 @@ public class CollectionService {
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
-    baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
+//    baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
+    baseEvent.setTimestamp(Long.parseLong(roiEvent.getPayload().get("placedDate")));
     baseEvent.setUrl(targetUrl);
     baseEvent.setReferer(referer);
     baseEvent.setRemoteIp(remoteIp);
