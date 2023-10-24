@@ -115,6 +115,8 @@ public class CollectionService {
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
   private static final String ROI_TRANS_TYPE = "roiTransType";
 
+  private  static final String FLEX_FIELD_2 = "ff2";
+
   @PostConstruct
   public void postInit() throws Exception {
     this.listenerMessageParser = ListenerMessageParser.getInstance();
@@ -545,8 +547,16 @@ public class CollectionService {
 
     // construct the common event before parsing to different events (ubi, utp, filter, message tracker)
     BaseEvent baseEvent = new BaseEvent();
-//    baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
-    baseEvent.setTimestamp(Long.parseLong(roiEvent.getPayload().get("placedDate")));
+
+    boolean isBesSrc = payloadMap.containsKey(ROI_SOURCE) && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.BES_SOURCE.getId()));
+    boolean isCheckoutFf2 = payloadMap.containsKey(FLEX_FIELD_2) && payloadMap.get(FLEX_FIELD_2).startsWith("CHECKOUT");
+    long placedDate = Long.parseLong(roiEvent.getPayload().get("placedDate"));
+    if (isBesSrc && isCheckoutFf2 && placedDate > 0) {
+      baseEvent.setTimestamp(placedDate);
+    } else {
+      baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
+    }
+
     baseEvent.setUrl(targetUrl);
     baseEvent.setReferer(referer);
     baseEvent.setRemoteIp(remoteIp);
