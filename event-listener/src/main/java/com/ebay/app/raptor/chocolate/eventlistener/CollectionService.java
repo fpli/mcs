@@ -115,7 +115,9 @@ public class CollectionService {
           "http://ebay.mtag.io", "http://ebay.pissedconsumer.com", "http://secureir.ebaystatic.com");
   private static final String ROI_TRANS_TYPE = "roiTransType";
 
-  private  static final String FLEX_FIELD_2 = "ff2";
+  private static final String FLEX_FIELD_2 = "ff2";
+
+  private static final String PLACED_DATE = "placedDate";
 
   @PostConstruct
   public void postInit() throws Exception {
@@ -550,11 +552,21 @@ public class CollectionService {
 
     boolean isBesSrc = payloadMap.containsKey(ROI_SOURCE) && payloadMap.get(ROI_SOURCE).equals(String.valueOf(RoiSourceEnum.BES_SOURCE.getId()));
     boolean isCheckoutFf2 = payloadMap.containsKey(FLEX_FIELD_2) && payloadMap.get(FLEX_FIELD_2).startsWith("CHECKOUT");
-    long placedDate = Long.parseLong(roiEvent.getPayload().get("placedDate"));
-    if (isBesSrc && isCheckoutFf2 && placedDate > 0) {
-      baseEvent.setTimestamp(placedDate);
+    boolean hasPlacedDate = payloadMap.containsKey(PLACED_DATE);
+    long transEventTs = Long.parseLong(roiEvent.getTransactionTimestamp());
+
+    if (isBesSrc && isCheckoutFf2 && hasPlacedDate) {
+      String strPlacedDate = payloadMap.get(PLACED_DATE);
+      Long placedDate = Longs.tryParse(strPlacedDate);
+      if (placedDate != null) {
+        baseEvent.setTimestamp(placedDate);
+        MonitorUtil.info("BESCheckoutValidPlacedDate", 1);
+      } else {
+        baseEvent.setTimestamp(transEventTs);
+        MonitorUtil.info("BESCheckoutInvalidPlacedDate", 1);
+      }
     } else {
-      baseEvent.setTimestamp(Long.parseLong(roiEvent.getTransactionTimestamp()));
+      baseEvent.setTimestamp(transEventTs);
     }
 
     baseEvent.setUrl(targetUrl);
