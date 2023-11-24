@@ -70,6 +70,7 @@ public class AdserviceResourceTest {
   private static final String USERID_PATH = "/marketingtracking/v1/uid";
   private static final String PLACEMENT_PATH = "/marketingtracking/v1/placement";
   private static final String AKAMAI_PATH = "/marketingtracking/v1/akamai";
+  private static final String CONVERSION_PATH = "/marketingtracking/v1/conversion";
 
 
   @Autowired
@@ -585,5 +586,25 @@ public class AdserviceResourceTest {
         .accept(MediaType.TEXT_PLAIN)
         .post(Entity.text(akamaiEventList));
     assertEquals(401, response.getStatus());
+  }
+
+  @Test
+  public void conversionForAttributionReporting() {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("gmv", "100");
+    Response response = getAdserviceResponse(CONVERSION_PATH, parameters);
+    assertEquals(200, response.getStatus());
+  }
+
+  @Test
+  public void impressionForAttributionReporting() {
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("mkevt", "4");
+    parameters.put("mkcid", "1");
+    parameters.put("mkrid", "123-123-123");
+    parameters.put("enableTest", "true");
+    parameters.put("destinations", "https%3A%2F%2Fwww.ebay.com%2Chttps%3A%2F%2Fwww.ebay.de");
+    Response response = getAdserviceResponse(IMPRESSION_PATH, parameters);
+    assertEquals(200, response.getStatus());
   }
 }
