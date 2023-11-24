@@ -34,6 +34,7 @@ public class AdsClickCollector {
     private static final String AMDATA = "amdata";
     private static final String CAMP_ID = "campid";
     private static final String CLICK_TIME = "|tsp:";
+    private static final String ONE = "1";
     private static final Logger LOGGER = LoggerFactory.getLogger(AdsClickCollector.class);
 
     public void processPromotedListingClick(IEndUserContext endUserContext, Event event,
@@ -44,7 +45,7 @@ public class AdsClickCollector {
                 AdsCollectionSvcRequest adsCollectionSvcRequest = createAdsRequest(event, adsSignals.left);
                 adsCollectionSvcClient.invokeService(adsCollectionSvcRequest, event.getReferrer(), requestHeaders);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             LOGGER.warn(e.getMessage(), e);
         }
     }
@@ -69,23 +70,19 @@ public class AdsClickCollector {
 
     protected ImmutablePair<String, Boolean> getAdsSignals(Event event) {
         String amdata = null;
-        Boolean payloadLessEpn = Boolean.FALSE;
+        Boolean offebay = Boolean.FALSE;
         if (event == null) {
-            return new ImmutablePair<>(amdata, payloadLessEpn);
+            return new ImmutablePair<>(amdata, offebay);
         }
         MultiValueMap<String, String> parameters =
                 UriComponentsBuilder.fromUriString(event.getTargetUrl()).build().getQueryParams();
         if (!CollectionUtils.isEmpty(parameters)) {
             amdata = parameters.getFirst(AMDATA);
-            if (ChannelIdEnum.EPN.getValue().equals(parameters.getFirst(Constants.MKCID)) && campIdPresent(parameters)) {
-                payloadLessEpn = Boolean.TRUE;
+            if (ONE.equals(parameters.getFirst(Constants.MKEVT))) {
+                offebay = Boolean.TRUE;
             }
         }
-        return new ImmutablePair<>(amdata, payloadLessEpn);
-    }
-
-    private boolean campIdPresent(MultiValueMap<String, String> parameters) {
-        return StringUtils.isNumeric(parameters.getFirst(CAMP_ID));
+        return new ImmutablePair<>(amdata, offebay);
     }
 
     protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals) {
@@ -99,11 +96,11 @@ public class AdsClickCollector {
         return !StringUtils.isBlank(amdata);
     }
 
-    private boolean isNative(IEndUserContext endUserContext){
-        if (endUserContext != null && StringUtils.isNotBlank(endUserContext.getUserAgent())){
+    private boolean isNative(IEndUserContext endUserContext) {
+        if (endUserContext != null && StringUtils.isNotBlank(endUserContext.getUserAgent())) {
             String userAgentNormalized = endUserContext.getUserAgent().trim().toLowerCase();
             if (userAgentNormalized.startsWith(EBAY_USER_AGENT) || userAgentNormalized.contains(ANDROID)
-                    || userAgentNormalized.contains(IPHONE)){
+                    || userAgentNormalized.contains(IPHONE)) {
                 return true;
             }
         }

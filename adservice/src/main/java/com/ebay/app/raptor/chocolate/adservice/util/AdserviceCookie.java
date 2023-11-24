@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class AdserviceCookie {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceCookie.class);
   private static final String ADGUID = "adguid";
+  private static final String ADGUID_COOKIE_PATH = "/";
   // expires in 90 days
   private static final int COOKIE_EXPIRY = 90 * 24 * 60 * 60;
   private static final String DEFAULT_ADGUID = "00000000000000000000000000000000";
@@ -36,6 +39,7 @@ public class AdserviceCookie {
   private static final String METRIC_NO_ADGUID_IN_COOKIE = "METRIC_NO_ADGUID_IN_COOKIE";
   private static final String METRIC_HAS_ADGUID_IN_COOKIE = "METRIC_HAS_ADGUID_IN_COOKIE";
   private static final String METRIC_SET_NEW_ADGUID = "METRIC_SET_NEW_ADGUID";
+  private static final String METRIC_ADGUID_COOKIE_PATH_CORRECTION = "METRIC_ADGUID_COOKIE_PATH_CORRECTION";
   private static final String METRIC_ERROR_CREATE_ADGUID = "METRIC_ERROR_CREATE_ADGUID";
 
   @Autowired
@@ -53,17 +57,27 @@ public class AdserviceCookie {
    */
   public String readAdguid(HttpServletRequest request) {
     MonitorUtil.info(METRIC_READ_ADGUID);
+
+    Cookie cookie = getAdguidCookie(request);
+    if (cookie != null) {
+      MonitorUtil.info(METRIC_HAS_ADGUID_IN_COOKIE);
+      return cookie.getValue();
+    }
+
+    MonitorUtil.info(METRIC_NO_ADGUID_IN_COOKIE);
+    return null;
+  }
+
+  public Cookie getAdguidCookie(HttpServletRequest request) {
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
-      for (Cookie cookie :
-          cookies) {
+      for (Cookie cookie : cookies) {
         if(cookie.getName().equalsIgnoreCase(ADGUID)) {
-          MonitorUtil.info(METRIC_HAS_ADGUID_IN_COOKIE);
-          return cookie.getValue();
+          return cookie;
         }
       }
     }
-    MonitorUtil.info(METRIC_NO_ADGUID_IN_COOKIE);
+
     return null;
   }
 
@@ -85,41 +99,46 @@ public class AdserviceCookie {
   }
 
   /**
-   * Set adguid in cookie if there is no
+   * Set adguid in cookie within response if there is no cookie presented in request
+   * Makes sure the cookie Path is "/"
+   *
    * @param request http request
    * @param response http response
+   *
    * @return adguid in String
    */
   public String setAdguid(HttpServletRequest request, HttpServletResponse response) {
-    String adguid = readAdguid(request);
-    if(adguid == null) {
-      MonitorUtil.info(METRIC_SET_NEW_ADGUID);
-      try {
-        // same format as current guid, 32 digits
-        adguid = UUID.randomUUID().toString().replaceAll("-","");
-      } catch(Exception e) {
-        MonitorUtil.info(METRIC_ERROR_CREATE_ADGUID);
-        logger.warn(e.toString());
-        adguid = DEFAULT_ADGUID;
-      }
+    Cookie adguidCookie = getAdguidCookie(request);
 
-      ResponseCookie cookie;
-      if(ApplicationOptions.getInstance().isSecureCookie()) {
-        cookie = ResponseCookie.from(ADGUID, adguid)
+    // in case we don't have cookie - we generate new adguid
+    // otherwise - get the value of the existing cookie
+    String adguid = adguidCookie == null
+            ? generateAdguid()
+            : adguidCookie.getValue();
+
+    ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
             .maxAge(COOKIE_EXPIRY)
-            .sameSite("None")
-            .httpOnly(true)
-            .secure(true)
-            .build();
-      } else {
-        cookie = ResponseCookie.from(ADGUID, adguid)
-            .maxAge(COOKIE_EXPIRY)
-            .sameSite("None")
+            .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
+            .path(ADGUID_COOKIE_PATH)
+            .secure(ApplicationOptions.getInstance().isSecureCookie())
             .httpOnly(true)
             .build();
-      }
 
-      response.addHeader("Set-Cookie", cookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    return adguid;
+  }
+
+  private static String generateAdguid() {
+    String adguid;
+    MonitorUtil.info(METRIC_SET_NEW_ADGUID);
+    try {
+      // same format as current guid, 32 digits
+      adguid = UUID.randomUUID().toString().replaceAll("-", "");
+    } catch (Exception e) {
+      MonitorUtil.info(METRIC_ERROR_CREATE_ADGUID);
+      logger.warn(e.toString());
+      adguid = DEFAULT_ADGUID;
     }
     return adguid;
   }

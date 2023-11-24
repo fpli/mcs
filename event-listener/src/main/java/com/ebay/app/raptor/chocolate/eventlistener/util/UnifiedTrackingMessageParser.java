@@ -16,11 +16,13 @@ import com.ebay.app.raptor.chocolate.utp.UepPayloadHelper;
 import com.ebay.kernel.presentation.constants.PresentationConstants;
 import com.ebay.kernel.util.FastURLEncoder;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.raptor.domain.request.api.DomainRequestData;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
+import com.ebay.raptor.user.experience.classfication.UserExperienceClass;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
 import com.ebay.traffic.chocolate.utp.common.ActionTypeEnum;
 import com.ebay.traffic.chocolate.utp.common.ChannelTypeEnum;
@@ -282,7 +284,7 @@ public class UnifiedTrackingMessageParser {
 
     // site id
     String siteId = parameters.getFirst(Constants.SITEID);
-    if (ActionTypeEnum.OPEN.getValue().equals(actionType) && StringUtils.isNotEmpty(siteId)) {
+    if ((ActionTypeEnum.OPEN.getValue().equals(actionType) || ActionTypeEnum.ROI.getValue().equals(actionType)) && StringUtils.isNotEmpty(siteId)) {
       record.setSiteId(Integer.valueOf(siteId));
     } else {
       record.setSiteId(domainRequest.getSiteId());
@@ -673,6 +675,24 @@ public class UnifiedTrackingMessageParser {
     } else {
       payload.put(Constants.EMAIL_USER_ID, "0");
     }
+  
+    // add device info for parsing Epsrv api channelId
+    // refrence: https://github.corp.ebay.com/experimentation-platform/raptor-experimentation-component/blob/0.18.0-RELEASE-TAG/raptor-experimentation-autoconfigure/src/main/java/com/ebay/experimentation/util/DeviceUtil.java#L34
+    UserAgentInfo userAgentInfo = baseEvent.getUserAgentInfo();
+    if (userAgentInfo != null) {
+      payload.put("isNativeApp", String.valueOf(userAgentInfo.isNativeApp()));
+      payload.put("isWeb", String.valueOf(userAgentInfo.requestIsWeb()));
+      payload.put("isMobileWeb", String.valueOf(userAgentInfo.requestIsMobileWeb()));
+      DDSResponse deviceInfo = userAgentInfo.getDeviceInfo();
+      if (deviceInfo != null) {
+        payload.put("osiOS", String.valueOf(deviceInfo.osiOS()));
+        payload.put("osAndroid", String.valueOf(deviceInfo.osAndroid()));
+      }
+      UserExperienceClass userExpClass = userAgentInfo.getUserExperienceClass();
+      if (userExpClass != null) {
+        payload.put("userExpClass", userExpClass.name());
+      }
+    }
 
     return encodeTags(payload);
   }
@@ -821,6 +841,29 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("purchaseOrderId") && StringUtils.isNotEmpty(roiPayload.get("purchaseOrderId"))) {
       payloadMap.put("purchaseOrderId", roiPayload.get("purchaseOrderId"));
     }
+
+    if (roiPayload.containsKey("quantity") && StringUtils.isNotEmpty(roiPayload.get("quantity"))) {
+      payloadMap.put("quantity", roiPayload.get("quantity"));
+    }
+    if (roiPayload.containsKey("orderTotal") && StringUtils.isNotEmpty(roiPayload.get("orderTotal"))) {
+      payloadMap.put("orderTotal", roiPayload.get("orderTotal"));
+    }
+    if (roiPayload.containsKey("currency") && StringUtils.isNotEmpty(roiPayload.get("currency"))) {
+      payloadMap.put("currency", roiPayload.get("currency"));
+    }
+    if (roiPayload.containsKey("primaryCategoryId") && StringUtils.isNotEmpty(roiPayload.get("primaryCategoryId"))) {
+      payloadMap.put("primaryCategoryId", roiPayload.get("primaryCategoryId"));
+    }
+    if (roiPayload.containsKey("secondaryCategoryId") && StringUtils.isNotEmpty(roiPayload.get("secondaryCategoryId"))) {
+      payloadMap.put("secondaryCategoryId", roiPayload.get("secondaryCategoryId"));
+    }
+    if (roiPayload.containsKey("creationDate") && StringUtils.isNotEmpty(roiPayload.get("creationDate"))) {
+      payloadMap.put("creationDate", roiPayload.get("creationDate"));
+    }
+    if (roiPayload.containsKey("placedDate") && StringUtils.isNotEmpty(roiPayload.get("placedDate"))) {
+      payloadMap.put("placedDate", roiPayload.get("placedDate"));
+    }
+
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }

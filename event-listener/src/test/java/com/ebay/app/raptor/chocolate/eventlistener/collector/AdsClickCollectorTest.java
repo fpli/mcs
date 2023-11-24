@@ -136,9 +136,9 @@ public class AdsClickCollectorTest {
     }
 
     @Test
-    public void payloadLessMissingMkcid() {
+    public void payloadLessMissingMkevt() {
         Event event = new Event();
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkrid=711-117182-37290-0&mkcid" +
                 "=&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=&campid=" +
                 "33333&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
                 "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
@@ -147,7 +147,7 @@ public class AdsClickCollectorTest {
         assertFalse(adsSignals.right);
         assertNull(adsSignals.left);
 
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkrid=711-117182-37290-0&mkcid" +
                 "=2&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=&campid=" +
                 "3333&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
                 "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
@@ -156,40 +156,9 @@ public class AdsClickCollectorTest {
         assertFalse(adsSignals.right);
         assertNull(adsSignals.left);
 
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0" +
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkrid=711-117182-37290-0" +
                 "&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=" +
                 "333&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
-                "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
-                "yBcQAvD_BwE");
-        adsSignals = adsClickCollector.getAdsSignals(event);
-        assertFalse(adsSignals.right);
-        assertNull(adsSignals.left);
-    }
-
-    @Test
-    public void payloadLessMissingCampId() {
-        Event event = new Event();
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
-                "=1&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=&campid=" +
-                "&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
-                "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
-                "yBcQAvD_BwE");
-        ImmutablePair<String, Boolean> adsSignals = adsClickCollector.getAdsSignals(event);
-        assertFalse(adsSignals.right);
-        assertNull(adsSignals.left);
-
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
-                "=1&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=&campid=" +
-                "xxx&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
-                "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
-                "yBcQAvD_BwE");
-        adsSignals = adsClickCollector.getAdsSignals(event);
-        assertFalse(adsSignals.right);
-        assertNull(adsSignals.left);
-
-        event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
-                "=1&itemid=174202315485&targetid=917373795544&device=m&mktype=pla&googleloc=9026251&poi=" +
-                "xxx&mkgroupid=103102745668&rlsatarget=aud-622524041518:pla-917373795544&abcId=1139336&merch" +
                 "antid=6296724&gclid=CjwKCAjw_-D3BRBIEiwAjVMy7B4Jv46jyG-zi3ZwE5NjtbUikf1dId1ikR6X35Pc8w4qDxXfaRIPvBoC" +
                 "yBcQAvD_BwE");
         adsSignals = adsClickCollector.getAdsSignals(event);

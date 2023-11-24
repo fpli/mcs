@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.17.0-RELEASE</version>
+    <version>0.18.3-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -18,7 +18,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <CodeCacheSize>512m</CodeCacheSize>
     <encoding>UTF-8</encoding>
-    <ep.component.version>0.16.10-RELEASE</ep.component.version>
+    
     <scala.version>2.11.8</scala.version>
     <scala.compat.version>2.11</scala.compat.version>
     <slf4j.version>1.7.7</slf4j.version>
@@ -294,6 +294,30 @@
         <artifactId>kafka-clients</artifactId>
         <version>${kafka.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20231013</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.reload4j</groupId>
+        <artifactId>reload4j</artifactId>
+        <version>1.2.22</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-sql_2.11</artifactId>
+        <version>2.4.7</version>
+      </dependency>
+
+
+
+      
+
+
 
       <!-- UTP -->
 

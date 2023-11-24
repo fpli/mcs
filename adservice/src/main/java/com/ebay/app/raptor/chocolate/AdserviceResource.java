@@ -93,6 +93,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
   private static final String METRIC_NO_MKCID_IN_IMPRESSION = "METRIC_NO_MKCID_IN_IMPRESSION";
   private static final String METRIC_NO_MKRID_IN_AR = "METRIC_NO_MKRID_IN_AR";
   private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
+  private static final String METRIC_RESPONSE = "METRIC_RESPONSE";
   private static final String METRIC_NO_MKRID_IN_IMPRESSION = "METRIC_NO_MKRID_IN_IMPRESSION";
   private static final String METRIC_ERROR_IN_ASYNC_MODEL = "METRIC_ERROR_IN_ASYNC_MODEL";
   private static final String METRIC_AKAMAI_INCOMING = "METRIC_AKAMAI_INCOMING";
@@ -431,6 +432,14 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
     MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "guid"));
     String adguid = adserviceCookie.readAdguid(request);
     String guid = idMapping.getGuidByAdguid(adguid);
+
+    MonitorUtil.info(
+      METRIC_RESPONSE,
+      1,
+      Field.of("path", "guid"),
+      Field.of("status", guid.isEmpty() ? "empty" : "success")
+    );
+
     return Response.status(Response.Status.OK).entity(guid).build();
   }
 
