@@ -5,7 +5,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV7;
 import com.ebay.traffic.chocolate.flink.nrt.constant.PropertyConstants;
 import com.ebay.traffic.chocolate.flink.nrt.provider.mtid.MtIdService;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
@@ -26,13 +26,12 @@ import java.util.concurrent.Future;
  * @author xiangli4
  * @since 2020/6/09
  */
-public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV6, FilterMessageV6> {
+public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV7, FilterMessageV7> {
 
   @Override
-  public void asyncInvoke(FilterMessageV6 input, ResultFuture<FilterMessageV6> resultFuture) throws Exception {
+  public void asyncInvoke(FilterMessageV7 input, ResultFuture<FilterMessageV7> resultFuture) throws Exception {
 
     if( ChannelAction.CLICK.equals(input.getChannelAction())
-        && input.getUserId() != null
         &&  (Objects.equals(input.getUserId(), 0L) || (Objects.equals(input.getUserId(), -1L)))) {
       long timeMillis = System.currentTimeMillis();
       final Future<Long> accountId = MtIdService.getInstance().getAccountId(input.getGuid(), "GUID");
@@ -45,7 +44,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV6, FilterM
         } catch (InterruptedException | ExecutionException e) {
           return input;
         }
-      }).thenAccept((FilterMessageV6 outputFilterMessage) -> {
+      }).thenAccept((FilterMessageV7 outputFilterMessage) -> {
         resultFuture.complete(Collections.singleton(outputFilterMessage));
       });
     } else {
@@ -60,7 +59,7 @@ public class AsyncDataRequest extends RichAsyncFunction<FilterMessageV6, FilterM
    * @throws Exception exception
    */
   @Override
-  public void timeout(FilterMessageV6 input, ResultFuture<FilterMessageV6> resultFuture) throws Exception {
+  public void timeout(FilterMessageV7 input, ResultFuture<FilterMessageV7> resultFuture) throws Exception {
     resultFuture.complete(Collections.singleton(input));
   }
 }

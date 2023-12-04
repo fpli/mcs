@@ -265,6 +265,10 @@ public class Constants {
       .put("trkId", "trkId")
       .build();
 
+  public static final ImmutableMultimap<String, String> partnerEmailParamTags = new ImmutableMultimap.Builder<String, String>()
+          .put("chnl", MKCID)
+          .build();
+
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
           = new HashMap<ChannelType, ImmutableMultimap<String, String>>() {{
     put(ChannelType.MRKT_EMAIL, mktEmailParamTags);
@@ -273,6 +277,7 @@ public class Constants {
     put(ChannelType.SITE_MESSAGE_CENTER, siteEmailParamTags);
     put(ChannelType.GCX_EMAIL, gcxEmailParamTags);
     put(ChannelType.GCX_MESSAGE_CENTER, gcxEmailParamTags);
+    put(ChannelType.PARTNER_EMAIL, partnerEmailParamTags);
   }};
 
   public static final ImmutableMultimap<String, String> socialMediaParamTags = new ImmutableMultimap.Builder<String, String>()

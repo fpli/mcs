@@ -86,8 +86,8 @@ public class TestKafkaWithFallbackProducer {
     consumer.close();
 
     Assert.assertEquals(messages.size(), 3);
-    Assert.assertEquals(1L, messages.get(1L).getSnapshotId().longValue());
-    Assert.assertEquals(2L, messages.get(2L).getSnapshotId().longValue());
-    Assert.assertEquals(3L, messages.get(3L).getSnapshotId().longValue());
+    Assert.assertEquals(1L, messages.get(1L).getSnapshotId());
+    Assert.assertEquals(2L, messages.get(2L).getSnapshotId());
+    Assert.assertEquals(3L, messages.get(3L).getSnapshotId());
   }
 }

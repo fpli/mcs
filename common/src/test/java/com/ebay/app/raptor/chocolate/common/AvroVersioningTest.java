@@ -47,7 +47,7 @@ public class AvroVersioningTest {
         String omjson = om.writeToJSON();
 
         ListenerMessage tm2 = ListenerMessage.readFromJSON(omjson);
-        assertEquals(1234L, tm2.getSnapshotId().longValue());
+        assertEquals(1234L, tm2.getSnapshotId());
         assertEquals("foo", tm2.getSnid());
         assertEquals(ChannelType.EPN, tm2.getChannelType());
         assertEquals(ChannelAction.CLICK, tm2.getChannelAction());
@@ -88,7 +88,7 @@ public class AvroVersioningTest {
         String json = out.toString();
 
         ListenerMessage tm = ListenerMessage.readFromJSON(json);
-        assertEquals(1234L, tm.getSnapshotId().longValue());
+        assertEquals(1234L, tm.getSnapshotId());
         assertEquals(ChannelType.EPN, tm.getChannelType());
         assertEquals(ChannelAction.CLICK, tm.getChannelAction());
     }
@@ -122,7 +122,7 @@ public class AvroVersioningTest {
         String omjson = om.writeToJSON();
 
         FilterMessage tm2 = FilterMessage.readFromJSON(omjson);
-        assertEquals(1234L, tm2.getSnapshotId().longValue());
+        assertEquals(1234L, tm2.getSnapshotId());
         assertEquals("foo", tm2.getSnid());
         assertEquals(ChannelType.EPN, tm2.getChannelType());
         assertEquals(ChannelAction.CLICK, tm2.getChannelAction());
@@ -163,7 +163,7 @@ public class AvroVersioningTest {
         String json = out.toString();
 
         FilterMessage tm = FilterMessage.readFromJSON(json);
-        assertEquals(1234L, tm.getSnapshotId().longValue());
+        assertEquals(1234L, tm.getSnapshotId());
         assertEquals(ChannelType.EPN, tm.getChannelType());
         assertEquals(ChannelAction.CLICK, tm.getChannelAction());
     }

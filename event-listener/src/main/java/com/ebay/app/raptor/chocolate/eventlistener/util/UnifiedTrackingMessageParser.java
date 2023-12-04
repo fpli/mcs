@@ -377,6 +377,8 @@ public class UnifiedTrackingMessageParser {
         return ChannelTypeEnum.MRKT_SMS;
       case SITE_SMS:
         return ChannelTypeEnum.SITE_SMS;
+      case PARTNER_EMAIL:
+        return ChannelTypeEnum.PARTNER_EMAIL;
       default:
         return ChannelTypeEnum.GENERIC;
     }

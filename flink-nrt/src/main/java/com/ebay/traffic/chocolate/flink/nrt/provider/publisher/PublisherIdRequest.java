@@ -5,7 +5,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider.publisher;
 
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV7;
 import com.ebay.dukes.CacheClient;
 import com.ebay.dukes.CacheFactory;
 import com.ebay.dukes.OperationFuture;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @author zhiyuawang
  * @since 2020/12/28
  */
-public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV6, ListenerMessageV6> {
+public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV7, ListenerMessageV7> {
   private final String cacheName;
   private final Integer timeout;
   private final TimeUnit timeUnitForTimeout;
@@ -139,7 +139,7 @@ public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV6, Lis
 
   @SuppressWarnings("UnstableApiUsage")
   @Override
-  public void asyncInvoke(ListenerMessageV6 input, ResultFuture<ListenerMessageV6> resultFuture) throws Exception {
+  public void asyncInvoke(ListenerMessageV7 input, ResultFuture<ListenerMessageV7> resultFuture) throws Exception {
     if (input.getPublisherId() != DEFAULT_PUBLISHER_ID) {
       this.numPublisherIdExistRate.markEvent();
       resultFuture.complete(Collections.singleton(input));
@@ -197,7 +197,7 @@ public class PublisherIdRequest extends RichAsyncFunction<ListenerMessageV6, Lis
    * @throws Exception exception
    */
   @Override
-  public void timeout(ListenerMessageV6 input, ResultFuture<ListenerMessageV6> resultFuture) throws Exception {
+  public void timeout(ListenerMessageV7 input, ResultFuture<ListenerMessageV7> resultFuture) throws Exception {
     this.numGetPublisherIdAsyncIOTimeoutRate.markEvent();
     resultFuture.complete(Collections.singleton(input));
   }

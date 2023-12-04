@@ -88,6 +88,8 @@ public class CollectionService {
   @Autowired
   private MrktEmailCollector mrktEmailCollector;
   @Autowired
+  private PartnerEmailCollector partnerEmailCollector;
+  @Autowired
   private SiteEmailCollector siteEmailCollector;
   @Autowired
   private ROICollector roiCollector;
@@ -439,7 +441,9 @@ public class CollectionService {
           fireCmEvent(baseEvent, requestContext, smsCollector);
         } else if (channel == GCX_EMAIL || channel == GCX_MESSAGE_CENTER) {
           fireGCXEvent(baseEvent, requestContext);
-      }
+        } else if (channel == PARTNER_EMAIL) {
+          fireCmEvent(baseEvent, requestContext, partnerEmailCollector);
+        }
     }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -728,7 +732,7 @@ public class CollectionService {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
     } else if (channelType == MRKT_EMAIL || channelType == MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-    } else if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
+    }  else if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
       fireGCXEvent(baseEvent, requestContext);
     } else {
       firePMEvent(baseEvent, requestContext);

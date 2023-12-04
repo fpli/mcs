@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.filter.service;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV7;
 import com.ebay.traffic.chocolate.flink.nrt.filter.configs.FilterRuleContent;
 import com.ebay.traffic.chocolate.flink.nrt.filter.configs.FilterRuleType;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
@@ -59,7 +59,7 @@ public class FilterContainer extends HashMap<ChannelType, HashMap<FilterRuleType
    * @param request event to test
    * @return filtering result summary (is event valid? where did it fail if not valid?)
    */
-  public long test(ListenerMessageV6 request) {
+  public long test(ListenerMessageV7 request) {
     FilterRequest internalReq = new FilterRequest(request);
     long rtRuleResult = 0;
 

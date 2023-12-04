@@ -96,7 +96,12 @@ public enum ChannelIdEnum {
   /**
    * Channel 30 -- GCX Message Center
    */
-  GCX_MESSAGE_CENTER("30", LogicalChannelEnum.GCX_MESSAGE_CENTER, false);
+  GCX_MESSAGE_CENTER("30", LogicalChannelEnum.GCX_MESSAGE_CENTER, false),
+
+  /**
+   * Channel 31 -- PARTNER_EMAIL
+   */
+  PARTNER_EMAIL("31", LogicalChannelEnum.PARTNER_EMAIL, false);
 
   /**
    * The human-parsable channel name.

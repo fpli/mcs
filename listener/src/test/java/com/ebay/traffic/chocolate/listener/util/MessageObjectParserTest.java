@@ -88,8 +88,8 @@ public class MessageObjectParserTest {
 
         assertEquals("Some: Header", record.getRequestHeaders());
         assertEquals("SomeMore: Headers", record.getResponseHeaders());
-        assertEquals(Long.valueOf(-1L), record.getPublisherId());
-        assertEquals(Long.valueOf(startTime), record.getTimestamp());
+        assertEquals(Long.valueOf(-1L), Long.valueOf(record.getPublisherId()));
+        assertEquals(Long.valueOf(startTime), Long.valueOf(record.getTimestamp()));
         assertEquals(action.getAvro(), record.getChannelAction());
         assertEquals(logicalChannel.getAvro(), record.getChannelType());
         assertEquals(HttpMethodEnum.parse("GET").getAvro(), record.getHttpMethod());
@@ -107,11 +107,11 @@ public class MessageObjectParserTest {
             "pub=5575378759&ipn=psmain&cguid=65df17ec1680a16d64e44a85fbec5649&rvrrefts=7c2acce61680aa469cd0273ffff7a5c4");
         record = parser.parseHeader(mockClientRequest, mockProxyResponse, startTime, wrongCampaingId, logicalChannel.getAvro(), action, null, null);
 
-        assertEquals(wrongCampaingId, record.getCampaignId());
+        assertEquals(wrongCampaingId, Long.valueOf(record.getCampaignId()));
         assertEquals("http://rover.ebay.com/a/b/c", record.getUri());
         assertEquals("Some: Header|a: b", record.getRequestHeaders());
         assertEquals("65df17ec1680a16d64e44a85fbec5649", record.getCguid());
-        assertEquals(Long.valueOf(-1L), record.getPublisherId());
+        assertEquals(Long.valueOf(-1L), Long.valueOf(record.getPublisherId()));
         assertEquals("", record.getSnid());
         String result = record.writeToJSON();
         System.out.println(result);

@@ -95,8 +95,8 @@ public class FilterServiceTest {
     consumerEPN.close();
 
     Assert.assertEquals(3, filterMessagesEPN.size());
-    Assert.assertEquals(1L, filterMessagesEPN.get(1L).getSnapshotId().longValue());
-    Assert.assertEquals(2L, filterMessagesEPN.get(2L).getSnapshotId().longValue());
-    Assert.assertEquals(3L, filterMessagesEPN.get(3L).getSnapshotId().longValue());
+    Assert.assertEquals(1L, filterMessagesEPN.get(1L).getSnapshotId());
+    Assert.assertEquals(2L, filterMessagesEPN.get(2L).getSnapshotId());
+    Assert.assertEquals(3L, filterMessagesEPN.get(3L).getSnapshotId());
   }
 }

@@ -2,8 +2,8 @@ package com.ebay.traffic.chocolate.flink.nrt.app;
 
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
 import com.ebay.app.raptor.chocolate.avro.*;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV7;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV7;
 import com.ebay.traffic.chocolate.flink.nrt.filter.FilterRuleMgr;
 import com.ebay.traffic.chocolate.flink.nrt.filter.configs.FilterRuleType;
 import com.ebay.traffic.chocolate.flink.nrt.filter.service.FilterContainer;
@@ -115,7 +115,7 @@ public class EPNFilterApp
   @SuppressWarnings("unchecked")
   @Override
   protected DataStream<Tuple3<String, Long, byte[]>> transform(DataStreamSource<ConsumerRecord<byte[], byte[]>> dataStreamSource) {
-    SingleOutputStreamOperator<ListenerMessageV6> stream = dataStreamSource.map(new Deserialize()).name("deserialize").uid("deserialize");
+    SingleOutputStreamOperator<ListenerMessageV7> stream = dataStreamSource.map(new Deserialize()).name("deserialize").uid("deserialize");
 
     Map<String, Object> asyncNukv = (Map<String, Object>) env_config.get("asyncNukv");
     String name = (String) asyncNukv.get("name");
@@ -135,7 +135,7 @@ public class EPNFilterApp
   }
 
   protected static class Process
-          extends RichMapFunction<ListenerMessageV6, FilterMessageV6> {
+          extends RichMapFunction<ListenerMessageV7, FilterMessageV7> {
     private transient FilterContainer filters;
     private transient Meter numRtRulesErrorRate;
 
@@ -149,7 +149,7 @@ public class EPNFilterApp
     }
 
     @Override
-    public FilterMessageV6 map(ListenerMessageV6 message) throws Exception {
+    public FilterMessageV7 map(ListenerMessageV7 message) throws Exception {
       FilterMessage outMessage = new FilterMessage();
       outMessage.setSnapshotId(message.getSnapshotId());
       outMessage.setShortSnapshotId(message.getShortSnapshotId());
@@ -190,7 +190,7 @@ public class EPNFilterApp
   }
 
   protected static class Deserialize
-          extends RichMapFunction<ConsumerRecord<byte[], byte[]>, ListenerMessageV6> {
+          extends RichMapFunction<ConsumerRecord<byte[], byte[]>, ListenerMessageV7> {
     private transient Schema rheosHeaderSchema;
 
     private transient Histogram beforeFilterLatency;
@@ -232,7 +232,7 @@ public class EPNFilterApp
     }
 
     @Override
-    public ListenerMessageV6 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public ListenerMessageV7 map(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
       ListenerMessage message = ListenerMessage.decodeRheos(rheosHeaderSchema, consumerRecord.value());
       long currentTimeMillis = System.currentTimeMillis();
       long latency = currentTimeMillis - message.getTimestamp();
@@ -259,7 +259,7 @@ public class EPNFilterApp
   /**
    * Apply ETL on listener message
    */
-  protected static class Serialize extends RichMapFunction<FilterMessageV6, Tuple3<String, Long, byte[]>> {
+  protected static class Serialize extends RichMapFunction<FilterMessageV7, Tuple3<String, Long, byte[]>> {
     private int schemaId;
     private transient Schema schema;
     private String producer;
@@ -326,7 +326,7 @@ public class EPNFilterApp
     }
 
     @Override
-    public Tuple3<String, Long, byte[]> map(FilterMessageV6 message) throws Exception {
+    public Tuple3<String, Long, byte[]> map(FilterMessageV7 message) throws Exception {
       long currentTimeMillis = System.currentTimeMillis();
       long latency = currentTimeMillis - message.getTimestamp();
       this.afterFilterLatency.update(latency);

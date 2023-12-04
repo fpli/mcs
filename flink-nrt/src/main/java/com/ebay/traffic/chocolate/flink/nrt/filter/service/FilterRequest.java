@@ -2,7 +2,7 @@ package com.ebay.traffic.chocolate.flink.nrt.filter.service;
 
 import com.ebay.app.raptor.chocolate.avro.ChannelAction;
 import com.ebay.app.raptor.chocolate.avro.HttpMethod;
-import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV7;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +44,7 @@ public class FilterRequest {
      *
      * @param message Source ListenerMessage
      */
-    public FilterRequest(ListenerMessageV6 message) {
+    public FilterRequest(ListenerMessageV7 message) {
         HashMap<String, String> requestHeaders = processHeaders(message.getRequestHeaders());
 
         for (Map.Entry<String, String> item : requestHeaders.entrySet()) {

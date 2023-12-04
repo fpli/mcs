@@ -110,7 +110,7 @@ public class MessageObjectParser {
         // Get snapshotId and short snapshotId from request
         Long snapshotId = SnapshotId.getNext(ListenerOptions.getInstance().getDriverId(), startTime).getRepresentation();
         record.setSnapshotId(snapshotId);
-        ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId().longValue());
+        ShortSnapshotId shortSnapshotId = new ShortSnapshotId(record.getSnapshotId());
         record.setShortSnapshotId(shortSnapshotId.getRepresentation());
 
         record.setCampaignId(campaignId);
