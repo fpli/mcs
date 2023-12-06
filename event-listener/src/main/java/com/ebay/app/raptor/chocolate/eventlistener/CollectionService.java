@@ -958,7 +958,8 @@ public class CollectionService {
               || ChannelTypeEnum.GCX_EMAIL.getValue().equals(channel)
               || ChannelTypeEnum.GCX_MESSAGE_CENTER.getValue().equals(channel)
               || ChannelTypeEnum.MRKT_SMS.getValue().equals(channel)
-              || ChannelTypeEnum.SITE_SMS.getValue().equals(channel))
+              || ChannelTypeEnum.SITE_SMS.getValue().equals(channel)
+              || ChannelTypeEnum.PARTNER_EMAIL.getValue().equals(channel))
               && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType()) && !baseEvent.isThirdParty()) {
         MonitorUtil.info("UTPSkipChocolateEmailClick");
       } else {
