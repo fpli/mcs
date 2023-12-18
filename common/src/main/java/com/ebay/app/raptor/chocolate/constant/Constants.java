@@ -267,6 +267,8 @@ public class Constants {
 
   public static final ImmutableMultimap<String, String> partnerEmailParamTags = new ImmutableMultimap.Builder<String, String>()
           .put("chnl", MKCID)
+          .put("pe_partner","partner")
+          .put("pe_campaign","campaign")
           .build();
 
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
