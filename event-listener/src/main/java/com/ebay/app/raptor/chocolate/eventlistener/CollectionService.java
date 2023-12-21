@@ -52,7 +52,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.constant.ChannelActionEnum.*;
 import static com.ebay.app.raptor.chocolate.constant.ChannelIdEnum.parse;
@@ -407,7 +406,7 @@ public class CollectionService {
 
     // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-        baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
+        baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo(), parameters);
 
     // filter duplicate clicks which are caused by ULK link and send to internal topic: XC-4032
     boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
@@ -466,9 +465,11 @@ public class CollectionService {
     }
   }
 
-  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo,
+                                  MultiValueMap<String, String> parameters) {
     if (CollectionServiceUtil.inRefererWhitelist(referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)
-         || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)) {
+         || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)
+            || CollectionServiceUtil.inSpecialCase(channelType, parameters)) {
       return false;
     } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType
             || ChannelType.GCX_MESSAGE_CENTER == channelType) {

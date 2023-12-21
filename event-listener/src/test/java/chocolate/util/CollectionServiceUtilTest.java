@@ -8,11 +8,13 @@ import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -531,5 +533,18 @@ public class CollectionServiceUtilTest {
       roiPayload13.put("saleTypeId", "9");
       assertTrue(CollectionServiceUtil.isValidROI(roiPayload13));
 
+  }
+  
+  @Test
+  public void testInSpecialCase() {
+    MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+    assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.ROI, parameters));
+    assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.EPN, parameters));
+    parameters.put("campid", Arrays.asList(new String[] {"5339006474"}));
+    assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.ROI, parameters));
+    assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.EPN, parameters));
+    parameters.put("ul_noapp", Arrays.asList(new String[] {"true"}));
+    assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.ROI, parameters));
+    assertTrue(CollectionServiceUtil.inSpecialCase(ChannelType.EPN, parameters));
   }
 }

@@ -159,6 +159,8 @@ public class Constants {
   public static final String STATUS_OK = "0";
 
   public static final String IS_BOT_TRAFFIC = "IsBotTraffic";
+  
+  public static final String UL_NOAPP = "ul_noapp";
 
   /**
    * Performance marketing channels
