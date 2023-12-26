@@ -318,7 +318,7 @@ public class FilterWorker extends Thread {
     // set postcode for not EPN Channels
     // checked imk history data, only click has geoid
     if (message.getChannelType() != ChannelType.EPN && message.getChannelAction() == ChannelAction.CLICK &&
-      !isPollFailed && (outMessage.getGeoId() == null || outMessage.getGeoId() == 0)) {
+      !isPollFailed && (outMessage.getGeoId() == 0)) {
       try {
         outMessage.setGeoId(LBSClient.getInstance().getPostalCodeByIp(outMessage.getRemoteIp()));
       } catch (Exception e) {

@@ -88,7 +88,12 @@ public enum LogicalChannelEnum {
   /**
    * GCX Message Center channel
    */
-  GCX_MESSAGE_CENTER(ChannelType.GCX_MESSAGE_CENTER, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN);
+  GCX_MESSAGE_CENTER(ChannelType.GCX_MESSAGE_CENTER, ChannelActionEnum.CLICK, ChannelActionEnum.EMAIL_OPEN),
+
+  /**
+   * GCX Message Center channel
+   */
+  PARTNER_EMAIL(ChannelType.PARTNER_EMAIL, ChannelActionEnum.CLICK);
 
   /* *//**
    * New ROI Test channel

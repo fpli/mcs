@@ -120,6 +120,8 @@ public class UTPChocolateEmailClickTransformer {
           .put("statusCode","statusCode")
           .put("xt", "xt")
           .put("X-UFES-EDGTRKSVC-INT", "X-UFES-EDGTRKSVC-INT")
+          .put("pe_partner","partner")
+          .put("pe_campaign","campaign")
           .build();
 
   private static final String GET_METHOD_PREFIX = "get";

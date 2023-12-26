@@ -1,13 +1,14 @@
 package com.ebay.traffic.chocolate.flink.nrt.provider;
 
 import com.ebay.app.raptor.chocolate.avro.FilterMessage;
-import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV6;
+import com.ebay.app.raptor.chocolate.avro.versions.FilterMessageV7;
 import com.ebay.traffic.chocolate.flink.nrt.util.PropertyMgr;
 import org.apache.flink.api.common.typeutils.base.IntSerializer;
 import org.apache.flink.formats.avro.typeutils.AvroSerializer;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.functions.async.AsyncFunction;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
+import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.api.operators.StreamMap;
 import org.apache.flink.streaming.api.operators.StreamSource;
 import org.apache.flink.streaming.api.operators.async.AsyncWaitOperator;
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +40,7 @@ public class AsyncDataRequestTest {
 
   }
 
-  private FilterMessageV6 createSourceRecord(String json) throws IOException {
+  private FilterMessageV7 createSourceRecord(String json) throws IOException {
     return FilterMessage.readFromJSON(json);
   }
 
@@ -55,15 +57,15 @@ public class AsyncDataRequestTest {
 
   @Test
   public void test() throws Exception {
-    final OneInputStreamOperatorTestHarness<FilterMessageV6, FilterMessageV6> testHarness =
+    final OneInputStreamOperatorTestHarness<FilterMessageV7, FilterMessageV7> testHarness =
             new OneInputStreamOperatorTestHarness<>(
-                    new AsyncWaitOperatorFactory<>(new AsyncDataRequest(), TIMEOUT, 1, AsyncDataStream.OutputMode.UNORDERED),
-                    new AvroSerializer<>(FilterMessageV6.class));
+                    (OneInputStreamOperator<FilterMessageV7, FilterMessageV7>) new AsyncWaitOperatorFactory<>(new AsyncDataRequest(), TIMEOUT, 1, AsyncDataStream.OutputMode.UNORDERED),
+                    new AvroSerializer<>(FilterMessageV7.class));
     testHarness.open();
 
     String json = PropertyMgr.getInstance().loadFile("filter-message.json");
 
-    FilterMessageV6 filterMessage = createSourceRecord(json);
+    FilterMessageV7 filterMessage = createSourceRecord(json);
     filterMessage.setUserId(-1L);
 
     long initialTime = System.currentTimeMillis();
@@ -76,8 +78,8 @@ public class AsyncDataRequestTest {
     }
 
     ConcurrentLinkedQueue<Object> output = testHarness.getOutput();
-    StreamRecord<FilterMessageV6> poll = (StreamRecord<FilterMessageV6>) output.poll();
+    StreamRecord<FilterMessageV7> poll = (StreamRecord<FilterMessageV7>) output.poll();
     assertNotNull(poll);
-    assertEquals(Long.valueOf(0L), poll.getValue().getUserId());
+    assertEquals(0l, poll.getValue().getUserId());
   }
 }

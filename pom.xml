@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.18.3-RELEASE</version>
+    <version>0.18.4-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <groupId>com.ebay.traffic</groupId>
@@ -43,7 +43,7 @@
     <logback.kafkaAppender.version>0.1.0</logback.kafkaAppender.version>
     <logback.encoder.version>4.11</logback.encoder.version>
 
-    <utp.version>1.4.1-RELEASE</utp.version>
+    <utp.version>1.4.7-RELEASE</utp.version>
     <docker.image.prefix>hub.tess.io/raptorontess</docker.image.prefix>
 
 
@@ -312,6 +312,8 @@
         <artifactId>spark-sql_2.11</artifactId>
         <version>2.4.7</version>
       </dependency>
+
+      
 
 
 

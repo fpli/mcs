@@ -42,7 +42,7 @@ public class PerformanceMarketingCollectorTest {
     ListenerMessage message = new ListenerMessage();
     performanceMarketingCollector.eraseByGdpr(gdprConsentDomain, message);
     assertEquals("", message.getRemoteIp());
-    assertEquals(0L, message.getUserId().longValue());
+    assertEquals(0L, message.getUserId());
 
   }
 

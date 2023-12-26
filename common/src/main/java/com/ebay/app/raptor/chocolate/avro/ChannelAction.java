@@ -4,10 +4,10 @@
  * DO NOT EDIT DIRECTLY
  */
 package com.ebay.app.raptor.chocolate.avro;
-@SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
-public enum ChannelAction {
+public enum ChannelAction implements org.apache.avro.generic.GenericEnumSymbol<ChannelAction> {
   CLICK, IMPRESSION, VIEWABLE, SERVE, PAGE_IMP, VIEW_ITEM, VIEW_TIME, APP_FIRST_START, ROI, EMAIL_OPEN, NOTIFICATION  ;
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\",\"ROI\",\"EMAIL_OPEN\",\"NOTIFICATION\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
+  public org.apache.avro.Schema getSchema() { return SCHEMA$; }
 }

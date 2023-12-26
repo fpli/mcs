@@ -52,7 +52,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 import static com.ebay.app.raptor.chocolate.constant.ChannelActionEnum.*;
 import static com.ebay.app.raptor.chocolate.constant.ChannelIdEnum.parse;
@@ -87,6 +86,8 @@ public class CollectionService {
   private PerformanceMarketingCollector performanceMarketingCollector;
   @Autowired
   private MrktEmailCollector mrktEmailCollector;
+  @Autowired
+  private PartnerEmailCollector partnerEmailCollector;
   @Autowired
   private SiteEmailCollector siteEmailCollector;
   @Autowired
@@ -405,7 +406,7 @@ public class CollectionService {
 
     // filter click whose referer is internal, and send to internal topic
     boolean isInternalRef = isInternalRef(baseEvent.getChannelType().getLogicalChannel().getAvro(),
-        baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
+        baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo(), parameters);
 
     // filter duplicate clicks which are caused by ULK link and send to internal topic: XC-4032
     boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
@@ -439,7 +440,9 @@ public class CollectionService {
           fireCmEvent(baseEvent, requestContext, smsCollector);
         } else if (channel == GCX_EMAIL || channel == GCX_MESSAGE_CENTER) {
           fireGCXEvent(baseEvent, requestContext);
-      }
+        } else if (channel == PARTNER_EMAIL) {
+          fireCmEvent(baseEvent, requestContext, partnerEmailCollector);
+        }
     }
     }
     stopTimerAndLogData(baseEvent,Field.of(CHANNEL_ACTION, action), Field.of(CHANNEL_TYPE, type),
@@ -462,9 +465,11 @@ public class CollectionService {
     }
   }
 
-  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo) {
+  protected boolean isInternalRef(ChannelType channelType, String referer, String finalUrl, UserAgentInfo userAgentInfo,
+                                  MultiValueMap<String, String> parameters) {
     if (CollectionServiceUtil.inRefererWhitelist(referer) || CollectionServiceUtil.inPageWhitelist(finalUrl)
-         || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)) {
+         || CollectionServiceUtil.inAdobePageWhitelist(channelType, referer, finalUrl, userAgentInfo)
+            || CollectionServiceUtil.inSpecialCase(channelType, parameters)) {
       return false;
     } else if (ChannelType.SITE_MESSAGE_CENTER == channelType || ChannelType.MRKT_MESSAGE_CENTER == channelType
             || ChannelType.GCX_MESSAGE_CENTER == channelType) {
@@ -728,7 +733,7 @@ public class CollectionService {
       fireCmEvent(baseEvent, requestContext, siteEmailCollector);
     } else if (channelType == MRKT_EMAIL || channelType == MRKT_MESSAGE_CENTER) {
       fireCmEvent(baseEvent, requestContext, mrktEmailCollector);
-    } else if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
+    }  else if (channelType == GCX_EMAIL || channelType == GCX_MESSAGE_CENTER) {
       fireGCXEvent(baseEvent, requestContext);
     } else {
       firePMEvent(baseEvent, requestContext);
@@ -954,7 +959,8 @@ public class CollectionService {
               || ChannelTypeEnum.GCX_EMAIL.getValue().equals(channel)
               || ChannelTypeEnum.GCX_MESSAGE_CENTER.getValue().equals(channel)
               || ChannelTypeEnum.MRKT_SMS.getValue().equals(channel)
-              || ChannelTypeEnum.SITE_SMS.getValue().equals(channel))
+              || ChannelTypeEnum.SITE_SMS.getValue().equals(channel)
+              || ChannelTypeEnum.PARTNER_EMAIL.getValue().equals(channel))
               && ActionTypeEnum.CLICK.getValue().equals(utpMessage.getActionType()) && !baseEvent.isThirdParty()) {
         MonitorUtil.info("UTPSkipChocolateEmailClick");
       } else {

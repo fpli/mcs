@@ -720,4 +720,22 @@ public class CollectionServiceUtil {
 
     return false;
   }
+  
+  /**
+   * handle "Mobile Deep Link for Bank of America"
+   * @param channelType channelType
+   * @param parameters parameters: decode from url
+   * @return in whitelist or not
+   */
+  public static boolean inSpecialCase(ChannelType channelType, MultiValueMap<String, String> parameters) {
+    if(parameters == null || parameters.isEmpty()) {
+      return false;
+    }
+    String campaignId = parameters.getFirst(CAMP_ID);
+    String ulNoapp = parameters.getFirst(UL_NOAPP);
+    if(channelType == ChannelType.EPN && "5339006474".equals(campaignId) && "true".equalsIgnoreCase(ulNoapp)) {
+      return true;
+    }
+    return false;
+  }
 }

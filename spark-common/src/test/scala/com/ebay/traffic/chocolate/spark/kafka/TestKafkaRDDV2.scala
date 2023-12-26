@@ -61,13 +61,13 @@ class TestKafkaRDDV2 extends BaseFunSuite {
     producer.flush()
 
     // consume the data using KafkaRDD, and do not commit offsets
-    assertKafkaRDD(topic, false, Map(message1.getSnapshotId -> message1,
-      message2.getSnapshotId -> message2, message3.getSnapshotId -> message3))
+    assertKafkaRDD(topic, false, Map(Long.box(message1.getSnapshotId) -> message1,
+      Long.box(message2.getSnapshotId) -> message2, Long.box(message3.getSnapshotId) -> message3))
 
     // consume the data using kafkaRDD, and commit offsets
     // Should be able to consume all records since offsets was not committed.
-    assertKafkaRDD(topic, true, Map(message1.getSnapshotId -> message1,
-      message2.getSnapshotId -> message2, message3.getSnapshotId -> message3))
+    assertKafkaRDD(topic, true, Map(Long.box(message1.getSnapshotId) -> message1,
+      Long.box(message2.getSnapshotId) -> message2, Long.box(message3.getSnapshotId) -> message3))
 
     // consume the data using kafkaRDD, and commit offsets
     // Should not be able to consume any record since offsets was committed
@@ -85,8 +85,8 @@ class TestKafkaRDDV2 extends BaseFunSuite {
 
     // consume the data using KafkaRDD, and commit offsets
     // Should be able to consume records since there are more records
-    assertKafkaRDD(topic, true, Map(message4.getSnapshotId -> message4,
-      message5.getSnapshotId -> message5))
+    assertKafkaRDD(topic, true, Map(Long.box(message4.getSnapshotId) -> message4,
+      Long.box(message5.getSnapshotId) -> message5))
 
     // consume the data using kafkaRDD, and commit offsets
     // Should not be able to consume any record since offsets was committed

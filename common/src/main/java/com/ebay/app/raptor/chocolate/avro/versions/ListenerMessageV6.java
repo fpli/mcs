@@ -5,19 +5,22 @@
  */
 package com.ebay.app.raptor.chocolate.avro.versions;
 
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.specific.SpecificData;
+import org.apache.avro.util.Utf8;
 import org.apache.avro.message.BinaryMessageEncoder;
 import org.apache.avro.message.BinaryMessageDecoder;
 import org.apache.avro.message.SchemaStore;
 
-@SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
   private static final long serialVersionUID = -2120858661193836465L;
+
+
   public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListenerMessageV6\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro.versions\",\"fields\":[{\"name\":\"snapshot_id\",\"type\":\"long\"},{\"name\":\"short_snapshot_id\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":\"long\"},{\"name\":\"user_id\",\"type\":\"long\"},{\"name\":\"guid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"cguid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"remote_ip\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"lang_cd\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"user_agent\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"geo_id\",\"type\":\"long\"},{\"name\":\"udid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"referer\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"publisher_id\",\"type\":\"long\"},{\"name\":\"campaign_id\",\"type\":\"long\"},{\"name\":\"site_id\",\"type\":\"long\"},{\"name\":\"landing_page_url\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"src_rotation_id\",\"type\":\"long\"},{\"name\":\"dst_rotation_id\",\"type\":\"long\"},{\"name\":\"request_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"uri\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"response_headers\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}},{\"name\":\"channel_action\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelAction\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CLICK\",\"IMPRESSION\",\"VIEWABLE\",\"SERVE\",\"PAGE_IMP\",\"VIEW_ITEM\",\"VIEW_TIME\",\"APP_FIRST_START\",\"ROI\",\"EMAIL_OPEN\",\"NOTIFICATION\"]}},{\"name\":\"channel_type\",\"type\":{\"type\":\"enum\",\"name\":\"ChannelType\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"DEFAULT\",\"EPN\",\"DISPLAY\",\"PAID_SEARCH\",\"SOCIAL_MEDIA\",\"PAID_SOCIAL\",\"ROI\",\"SITE_EMAIL\",\"MRKT_EMAIL\",\"SITE_MESSAGE_CENTER\",\"MRKT_MESSAGE_CENTER\",\"NATURAL_SEARCH\",\"NOTIFICATION\",\"MRKT_SMS\",\"SITE_SMS\",\"SEARCH_ENGINE_FREE_LISTINGS\",\"GCX_EMAIL\",\"GCX_MESSAGE_CENTER\",\"UNKNOWN\"]}},{\"name\":\"http_method\",\"type\":{\"type\":\"enum\",\"name\":\"HttpMethod\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"symbols\":[\"CONNECT\",\"DELETE\",\"GET\",\"HEAD\",\"OPTIONS\",\"PATCH\",\"POST\",\"PUT\",\"TRACE\"]}},{\"name\":\"snid\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"},\"default\":\"\"},{\"name\":\"is_tracked\",\"type\":\"boolean\",\"default\":false}],\"pk\":[\"snapshot_id\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
-  private static SpecificData MODEL$ = new SpecificData();
+  private static final SpecificData MODEL$ = new SpecificData();
 
   private static final BinaryMessageEncoder<ListenerMessageV6> ENCODER =
       new BinaryMessageEncoder<ListenerMessageV6>(MODEL$, SCHEMA$);
@@ -26,7 +29,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       new BinaryMessageDecoder<ListenerMessageV6>(MODEL$, SCHEMA$);
 
   /**
+   * Return the BinaryMessageEncoder instance used by this class.
+   * @return the message encoder used by this class
+   */
+  public static BinaryMessageEncoder<ListenerMessageV6> getEncoder() {
+    return ENCODER;
+  }
+
+  /**
    * Return the BinaryMessageDecoder instance used by this class.
+   * @return the message decoder used by this class
    */
   public static BinaryMessageDecoder<ListenerMessageV6> getDecoder() {
     return DECODER;
@@ -35,48 +47,58 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   /**
    * Create a new BinaryMessageDecoder instance for this class that uses the specified {@link SchemaStore}.
    * @param resolver a {@link SchemaStore} used to find schemas by fingerprint
+   * @return a BinaryMessageDecoder instance for this class backed by the given SchemaStore
    */
   public static BinaryMessageDecoder<ListenerMessageV6> createDecoder(SchemaStore resolver) {
     return new BinaryMessageDecoder<ListenerMessageV6>(MODEL$, SCHEMA$, resolver);
   }
 
-  /** Serializes this ListenerMessageV6 to a ByteBuffer. */
+  /**
+   * Serializes this ListenerMessageV6 to a ByteBuffer.
+   * @return a buffer holding the serialized data for this instance
+   * @throws java.io.IOException if this instance could not be serialized
+   */
   public java.nio.ByteBuffer toByteBuffer() throws java.io.IOException {
     return ENCODER.encode(this);
   }
 
-  /** Deserializes a ListenerMessageV6 from a ByteBuffer. */
+  /**
+   * Deserializes a ListenerMessageV6 from a ByteBuffer.
+   * @param b a byte buffer holding serialized data for an instance of this class
+   * @return a ListenerMessageV6 instance decoded from the given buffer
+   * @throws java.io.IOException if the given bytes could not be deserialized into an instance of this class
+   */
   public static ListenerMessageV6 fromByteBuffer(
       java.nio.ByteBuffer b) throws java.io.IOException {
     return DECODER.decode(b);
   }
 
-   private long snapshot_id;
-   private long short_snapshot_id;
-   private long timestamp;
-   private long user_id;
-   private java.lang.String guid;
-   private java.lang.String cguid;
-   private java.lang.String remote_ip;
-   private java.lang.String lang_cd;
-   private java.lang.String user_agent;
-   private long geo_id;
-   private java.lang.String udid;
-   private java.lang.String referer;
-   private long publisher_id;
-   private long campaign_id;
-   private long site_id;
-   private java.lang.String landing_page_url;
-   private long src_rotation_id;
-   private long dst_rotation_id;
-   private java.lang.String request_headers;
-   private java.lang.String uri;
-   private java.lang.String response_headers;
-   private com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
-   private com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
-   private com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
-   private java.lang.String snid;
-   private boolean is_tracked;
+  private long snapshot_id;
+  private long short_snapshot_id;
+  private long timestamp;
+  private long user_id;
+  private java.lang.String guid;
+  private java.lang.String cguid;
+  private java.lang.String remote_ip;
+  private java.lang.String lang_cd;
+  private java.lang.String user_agent;
+  private long geo_id;
+  private java.lang.String udid;
+  private java.lang.String referer;
+  private long publisher_id;
+  private long campaign_id;
+  private long site_id;
+  private java.lang.String landing_page_url;
+  private long src_rotation_id;
+  private long dst_rotation_id;
+  private java.lang.String request_headers;
+  private java.lang.String uri;
+  private java.lang.String response_headers;
+  private com.ebay.app.raptor.chocolate.avro.ChannelAction channel_action;
+  private com.ebay.app.raptor.chocolate.avro.ChannelType channel_type;
+  private com.ebay.app.raptor.chocolate.avro.HttpMethod http_method;
+  private java.lang.String snid;
+  private boolean is_tracked;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -143,6 +165,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     this.is_tracked = is_tracked;
   }
 
+  public org.apache.avro.specific.SpecificData getSpecificData() { return MODEL$; }
   public org.apache.avro.Schema getSchema() { return SCHEMA$; }
   // Used by DatumWriter.  Applications should not call.
   public java.lang.Object get(int field$) {
@@ -173,7 +196,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     case 23: return http_method;
     case 24: return snid;
     case 25: return is_tracked;
-    default: throw new org.apache.avro.AvroRuntimeException("Bad index");
+    default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
 
@@ -185,29 +208,29 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     case 1: short_snapshot_id = (java.lang.Long)value$; break;
     case 2: timestamp = (java.lang.Long)value$; break;
     case 3: user_id = (java.lang.Long)value$; break;
-    case 4: guid = (java.lang.String)value$; break;
-    case 5: cguid = (java.lang.String)value$; break;
-    case 6: remote_ip = (java.lang.String)value$; break;
-    case 7: lang_cd = (java.lang.String)value$; break;
-    case 8: user_agent = (java.lang.String)value$; break;
+    case 4: guid = value$ != null ? value$.toString() : null; break;
+    case 5: cguid = value$ != null ? value$.toString() : null; break;
+    case 6: remote_ip = value$ != null ? value$.toString() : null; break;
+    case 7: lang_cd = value$ != null ? value$.toString() : null; break;
+    case 8: user_agent = value$ != null ? value$.toString() : null; break;
     case 9: geo_id = (java.lang.Long)value$; break;
-    case 10: udid = (java.lang.String)value$; break;
-    case 11: referer = (java.lang.String)value$; break;
+    case 10: udid = value$ != null ? value$.toString() : null; break;
+    case 11: referer = value$ != null ? value$.toString() : null; break;
     case 12: publisher_id = (java.lang.Long)value$; break;
     case 13: campaign_id = (java.lang.Long)value$; break;
     case 14: site_id = (java.lang.Long)value$; break;
-    case 15: landing_page_url = (java.lang.String)value$; break;
+    case 15: landing_page_url = value$ != null ? value$.toString() : null; break;
     case 16: src_rotation_id = (java.lang.Long)value$; break;
     case 17: dst_rotation_id = (java.lang.Long)value$; break;
-    case 18: request_headers = (java.lang.String)value$; break;
-    case 19: uri = (java.lang.String)value$; break;
-    case 20: response_headers = (java.lang.String)value$; break;
+    case 18: request_headers = value$ != null ? value$.toString() : null; break;
+    case 19: uri = value$ != null ? value$.toString() : null; break;
+    case 20: response_headers = value$ != null ? value$.toString() : null; break;
     case 21: channel_action = (com.ebay.app.raptor.chocolate.avro.ChannelAction)value$; break;
     case 22: channel_type = (com.ebay.app.raptor.chocolate.avro.ChannelType)value$; break;
     case 23: http_method = (com.ebay.app.raptor.chocolate.avro.HttpMethod)value$; break;
-    case 24: snid = (java.lang.String)value$; break;
+    case 24: snid = value$ != null ? value$.toString() : null; break;
     case 25: is_tracked = (java.lang.Boolean)value$; break;
-    default: throw new org.apache.avro.AvroRuntimeException("Bad index");
+    default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
 
@@ -215,15 +238,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'snapshot_id' field.
    * @return The value of the 'snapshot_id' field.
    */
-  public java.lang.Long getSnapshotId() {
+  public long getSnapshotId() {
     return snapshot_id;
   }
+
 
   /**
    * Sets the value of the 'snapshot_id' field.
    * @param value the value to set.
    */
-  public void setSnapshotId(java.lang.Long value) {
+  public void setSnapshotId(long value) {
     this.snapshot_id = value;
   }
 
@@ -231,15 +255,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'short_snapshot_id' field.
    * @return The value of the 'short_snapshot_id' field.
    */
-  public java.lang.Long getShortSnapshotId() {
+  public long getShortSnapshotId() {
     return short_snapshot_id;
   }
+
 
   /**
    * Sets the value of the 'short_snapshot_id' field.
    * @param value the value to set.
    */
-  public void setShortSnapshotId(java.lang.Long value) {
+  public void setShortSnapshotId(long value) {
     this.short_snapshot_id = value;
   }
 
@@ -247,15 +272,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'timestamp' field.
    * @return The value of the 'timestamp' field.
    */
-  public java.lang.Long getTimestamp() {
+  public long getTimestamp() {
     return timestamp;
   }
+
 
   /**
    * Sets the value of the 'timestamp' field.
    * @param value the value to set.
    */
-  public void setTimestamp(java.lang.Long value) {
+  public void setTimestamp(long value) {
     this.timestamp = value;
   }
 
@@ -263,15 +289,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'user_id' field.
    * @return The value of the 'user_id' field.
    */
-  public java.lang.Long getUserId() {
+  public long getUserId() {
     return user_id;
   }
+
 
   /**
    * Sets the value of the 'user_id' field.
    * @param value the value to set.
    */
-  public void setUserId(java.lang.Long value) {
+  public void setUserId(long value) {
     this.user_id = value;
   }
 
@@ -282,6 +309,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getGuid() {
     return guid;
   }
+
 
   /**
    * Sets the value of the 'guid' field.
@@ -299,6 +327,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return cguid;
   }
 
+
   /**
    * Sets the value of the 'cguid' field.
    * @param value the value to set.
@@ -314,6 +343,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getRemoteIp() {
     return remote_ip;
   }
+
 
   /**
    * Sets the value of the 'remote_ip' field.
@@ -331,6 +361,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return lang_cd;
   }
 
+
   /**
    * Sets the value of the 'lang_cd' field.
    * @param value the value to set.
@@ -347,6 +378,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return user_agent;
   }
 
+
   /**
    * Sets the value of the 'user_agent' field.
    * @param value the value to set.
@@ -359,15 +391,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'geo_id' field.
    * @return The value of the 'geo_id' field.
    */
-  public java.lang.Long getGeoId() {
+  public long getGeoId() {
     return geo_id;
   }
+
 
   /**
    * Sets the value of the 'geo_id' field.
    * @param value the value to set.
    */
-  public void setGeoId(java.lang.Long value) {
+  public void setGeoId(long value) {
     this.geo_id = value;
   }
 
@@ -378,6 +411,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getUdid() {
     return udid;
   }
+
 
   /**
    * Sets the value of the 'udid' field.
@@ -395,6 +429,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return referer;
   }
 
+
   /**
    * Sets the value of the 'referer' field.
    * @param value the value to set.
@@ -407,15 +442,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'publisher_id' field.
    * @return The value of the 'publisher_id' field.
    */
-  public java.lang.Long getPublisherId() {
+  public long getPublisherId() {
     return publisher_id;
   }
+
 
   /**
    * Sets the value of the 'publisher_id' field.
    * @param value the value to set.
    */
-  public void setPublisherId(java.lang.Long value) {
+  public void setPublisherId(long value) {
     this.publisher_id = value;
   }
 
@@ -423,15 +459,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'campaign_id' field.
    * @return The value of the 'campaign_id' field.
    */
-  public java.lang.Long getCampaignId() {
+  public long getCampaignId() {
     return campaign_id;
   }
+
 
   /**
    * Sets the value of the 'campaign_id' field.
    * @param value the value to set.
    */
-  public void setCampaignId(java.lang.Long value) {
+  public void setCampaignId(long value) {
     this.campaign_id = value;
   }
 
@@ -439,15 +476,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'site_id' field.
    * @return The value of the 'site_id' field.
    */
-  public java.lang.Long getSiteId() {
+  public long getSiteId() {
     return site_id;
   }
+
 
   /**
    * Sets the value of the 'site_id' field.
    * @param value the value to set.
    */
-  public void setSiteId(java.lang.Long value) {
+  public void setSiteId(long value) {
     this.site_id = value;
   }
 
@@ -458,6 +496,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getLandingPageUrl() {
     return landing_page_url;
   }
+
 
   /**
    * Sets the value of the 'landing_page_url' field.
@@ -471,15 +510,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'src_rotation_id' field.
    * @return The value of the 'src_rotation_id' field.
    */
-  public java.lang.Long getSrcRotationId() {
+  public long getSrcRotationId() {
     return src_rotation_id;
   }
+
 
   /**
    * Sets the value of the 'src_rotation_id' field.
    * @param value the value to set.
    */
-  public void setSrcRotationId(java.lang.Long value) {
+  public void setSrcRotationId(long value) {
     this.src_rotation_id = value;
   }
 
@@ -487,15 +527,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'dst_rotation_id' field.
    * @return The value of the 'dst_rotation_id' field.
    */
-  public java.lang.Long getDstRotationId() {
+  public long getDstRotationId() {
     return dst_rotation_id;
   }
+
 
   /**
    * Sets the value of the 'dst_rotation_id' field.
    * @param value the value to set.
    */
-  public void setDstRotationId(java.lang.Long value) {
+  public void setDstRotationId(long value) {
     this.dst_rotation_id = value;
   }
 
@@ -506,6 +547,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getRequestHeaders() {
     return request_headers;
   }
+
 
   /**
    * Sets the value of the 'request_headers' field.
@@ -523,6 +565,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return uri;
   }
 
+
   /**
    * Sets the value of the 'uri' field.
    * @param value the value to set.
@@ -538,6 +581,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public java.lang.String getResponseHeaders() {
     return response_headers;
   }
+
 
   /**
    * Sets the value of the 'response_headers' field.
@@ -555,6 +599,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return channel_action;
   }
 
+
   /**
    * Sets the value of the 'channel_action' field.
    * @param value the value to set.
@@ -570,6 +615,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
   public com.ebay.app.raptor.chocolate.avro.ChannelType getChannelType() {
     return channel_type;
   }
+
 
   /**
    * Sets the value of the 'channel_type' field.
@@ -587,6 +633,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return http_method;
   }
 
+
   /**
    * Sets the value of the 'http_method' field.
    * @param value the value to set.
@@ -603,6 +650,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     return snid;
   }
 
+
   /**
    * Sets the value of the 'snid' field.
    * @param value the value to set.
@@ -615,15 +663,16 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * Gets the value of the 'is_tracked' field.
    * @return The value of the 'is_tracked' field.
    */
-  public java.lang.Boolean getIsTracked() {
+  public boolean getIsTracked() {
     return is_tracked;
   }
+
 
   /**
    * Sets the value of the 'is_tracked' field.
    * @param value the value to set.
    */
-  public void setIsTracked(java.lang.Boolean value) {
+  public void setIsTracked(boolean value) {
     this.is_tracked = value;
   }
 
@@ -641,7 +690,11 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * @return A new ListenerMessageV6 RecordBuilder
    */
   public static com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder other) {
-    return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder(other);
+    if (other == null) {
+      return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder();
+    } else {
+      return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder(other);
+    }
   }
 
   /**
@@ -650,12 +703,17 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
    * @return A new ListenerMessageV6 RecordBuilder
    */
   public static com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder newBuilder(com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6 other) {
-    return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder(other);
+    if (other == null) {
+      return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder();
+    } else {
+      return new com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6.Builder(other);
+    }
   }
 
   /**
    * RecordBuilder for ListenerMessageV6 instances.
    */
+  @org.apache.avro.specific.AvroGenerated
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<ListenerMessageV6>
     implements org.apache.avro.data.RecordBuilder<ListenerMessageV6> {
 
@@ -688,7 +746,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
 
     /** Creates a new Builder */
     private Builder() {
-      super(SCHEMA$);
+      super(SCHEMA$, MODEL$);
     }
 
     /**
@@ -699,107 +757,107 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       super(other);
       if (isValidValue(fields()[0], other.snapshot_id)) {
         this.snapshot_id = data().deepCopy(fields()[0].schema(), other.snapshot_id);
-        fieldSetFlags()[0] = true;
+        fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
       if (isValidValue(fields()[1], other.short_snapshot_id)) {
         this.short_snapshot_id = data().deepCopy(fields()[1].schema(), other.short_snapshot_id);
-        fieldSetFlags()[1] = true;
+        fieldSetFlags()[1] = other.fieldSetFlags()[1];
       }
       if (isValidValue(fields()[2], other.timestamp)) {
         this.timestamp = data().deepCopy(fields()[2].schema(), other.timestamp);
-        fieldSetFlags()[2] = true;
+        fieldSetFlags()[2] = other.fieldSetFlags()[2];
       }
       if (isValidValue(fields()[3], other.user_id)) {
         this.user_id = data().deepCopy(fields()[3].schema(), other.user_id);
-        fieldSetFlags()[3] = true;
+        fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
       if (isValidValue(fields()[4], other.guid)) {
         this.guid = data().deepCopy(fields()[4].schema(), other.guid);
-        fieldSetFlags()[4] = true;
+        fieldSetFlags()[4] = other.fieldSetFlags()[4];
       }
       if (isValidValue(fields()[5], other.cguid)) {
         this.cguid = data().deepCopy(fields()[5].schema(), other.cguid);
-        fieldSetFlags()[5] = true;
+        fieldSetFlags()[5] = other.fieldSetFlags()[5];
       }
       if (isValidValue(fields()[6], other.remote_ip)) {
         this.remote_ip = data().deepCopy(fields()[6].schema(), other.remote_ip);
-        fieldSetFlags()[6] = true;
+        fieldSetFlags()[6] = other.fieldSetFlags()[6];
       }
       if (isValidValue(fields()[7], other.lang_cd)) {
         this.lang_cd = data().deepCopy(fields()[7].schema(), other.lang_cd);
-        fieldSetFlags()[7] = true;
+        fieldSetFlags()[7] = other.fieldSetFlags()[7];
       }
       if (isValidValue(fields()[8], other.user_agent)) {
         this.user_agent = data().deepCopy(fields()[8].schema(), other.user_agent);
-        fieldSetFlags()[8] = true;
+        fieldSetFlags()[8] = other.fieldSetFlags()[8];
       }
       if (isValidValue(fields()[9], other.geo_id)) {
         this.geo_id = data().deepCopy(fields()[9].schema(), other.geo_id);
-        fieldSetFlags()[9] = true;
+        fieldSetFlags()[9] = other.fieldSetFlags()[9];
       }
       if (isValidValue(fields()[10], other.udid)) {
         this.udid = data().deepCopy(fields()[10].schema(), other.udid);
-        fieldSetFlags()[10] = true;
+        fieldSetFlags()[10] = other.fieldSetFlags()[10];
       }
       if (isValidValue(fields()[11], other.referer)) {
         this.referer = data().deepCopy(fields()[11].schema(), other.referer);
-        fieldSetFlags()[11] = true;
+        fieldSetFlags()[11] = other.fieldSetFlags()[11];
       }
       if (isValidValue(fields()[12], other.publisher_id)) {
         this.publisher_id = data().deepCopy(fields()[12].schema(), other.publisher_id);
-        fieldSetFlags()[12] = true;
+        fieldSetFlags()[12] = other.fieldSetFlags()[12];
       }
       if (isValidValue(fields()[13], other.campaign_id)) {
         this.campaign_id = data().deepCopy(fields()[13].schema(), other.campaign_id);
-        fieldSetFlags()[13] = true;
+        fieldSetFlags()[13] = other.fieldSetFlags()[13];
       }
       if (isValidValue(fields()[14], other.site_id)) {
         this.site_id = data().deepCopy(fields()[14].schema(), other.site_id);
-        fieldSetFlags()[14] = true;
+        fieldSetFlags()[14] = other.fieldSetFlags()[14];
       }
       if (isValidValue(fields()[15], other.landing_page_url)) {
         this.landing_page_url = data().deepCopy(fields()[15].schema(), other.landing_page_url);
-        fieldSetFlags()[15] = true;
+        fieldSetFlags()[15] = other.fieldSetFlags()[15];
       }
       if (isValidValue(fields()[16], other.src_rotation_id)) {
         this.src_rotation_id = data().deepCopy(fields()[16].schema(), other.src_rotation_id);
-        fieldSetFlags()[16] = true;
+        fieldSetFlags()[16] = other.fieldSetFlags()[16];
       }
       if (isValidValue(fields()[17], other.dst_rotation_id)) {
         this.dst_rotation_id = data().deepCopy(fields()[17].schema(), other.dst_rotation_id);
-        fieldSetFlags()[17] = true;
+        fieldSetFlags()[17] = other.fieldSetFlags()[17];
       }
       if (isValidValue(fields()[18], other.request_headers)) {
         this.request_headers = data().deepCopy(fields()[18].schema(), other.request_headers);
-        fieldSetFlags()[18] = true;
+        fieldSetFlags()[18] = other.fieldSetFlags()[18];
       }
       if (isValidValue(fields()[19], other.uri)) {
         this.uri = data().deepCopy(fields()[19].schema(), other.uri);
-        fieldSetFlags()[19] = true;
+        fieldSetFlags()[19] = other.fieldSetFlags()[19];
       }
       if (isValidValue(fields()[20], other.response_headers)) {
         this.response_headers = data().deepCopy(fields()[20].schema(), other.response_headers);
-        fieldSetFlags()[20] = true;
+        fieldSetFlags()[20] = other.fieldSetFlags()[20];
       }
       if (isValidValue(fields()[21], other.channel_action)) {
         this.channel_action = data().deepCopy(fields()[21].schema(), other.channel_action);
-        fieldSetFlags()[21] = true;
+        fieldSetFlags()[21] = other.fieldSetFlags()[21];
       }
       if (isValidValue(fields()[22], other.channel_type)) {
         this.channel_type = data().deepCopy(fields()[22].schema(), other.channel_type);
-        fieldSetFlags()[22] = true;
+        fieldSetFlags()[22] = other.fieldSetFlags()[22];
       }
       if (isValidValue(fields()[23], other.http_method)) {
         this.http_method = data().deepCopy(fields()[23].schema(), other.http_method);
-        fieldSetFlags()[23] = true;
+        fieldSetFlags()[23] = other.fieldSetFlags()[23];
       }
       if (isValidValue(fields()[24], other.snid)) {
         this.snid = data().deepCopy(fields()[24].schema(), other.snid);
-        fieldSetFlags()[24] = true;
+        fieldSetFlags()[24] = other.fieldSetFlags()[24];
       }
       if (isValidValue(fields()[25], other.is_tracked)) {
         this.is_tracked = data().deepCopy(fields()[25].schema(), other.is_tracked);
-        fieldSetFlags()[25] = true;
+        fieldSetFlags()[25] = other.fieldSetFlags()[25];
       }
     }
 
@@ -808,7 +866,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
      * @param other The existing instance to copy.
      */
     private Builder(com.ebay.app.raptor.chocolate.avro.versions.ListenerMessageV6 other) {
-            super(SCHEMA$);
+      super(SCHEMA$, MODEL$);
       if (isValidValue(fields()[0], other.snapshot_id)) {
         this.snapshot_id = data().deepCopy(fields()[0].schema(), other.snapshot_id);
         fieldSetFlags()[0] = true;
@@ -919,9 +977,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'snapshot_id' field.
       * @return The value.
       */
-    public java.lang.Long getSnapshotId() {
+    public long getSnapshotId() {
       return snapshot_id;
     }
+
 
     /**
       * Sets the value of the 'snapshot_id' field.
@@ -957,9 +1016,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'short_snapshot_id' field.
       * @return The value.
       */
-    public java.lang.Long getShortSnapshotId() {
+    public long getShortSnapshotId() {
       return short_snapshot_id;
     }
+
 
     /**
       * Sets the value of the 'short_snapshot_id' field.
@@ -995,9 +1055,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'timestamp' field.
       * @return The value.
       */
-    public java.lang.Long getTimestamp() {
+    public long getTimestamp() {
       return timestamp;
     }
+
 
     /**
       * Sets the value of the 'timestamp' field.
@@ -1033,9 +1094,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'user_id' field.
       * @return The value.
       */
-    public java.lang.Long getUserId() {
+    public long getUserId() {
       return user_id;
     }
+
 
     /**
       * Sets the value of the 'user_id' field.
@@ -1074,6 +1136,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public java.lang.String getGuid() {
       return guid;
     }
+
 
     /**
       * Sets the value of the 'guid' field.
@@ -1114,6 +1177,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return cguid;
     }
 
+
     /**
       * Sets the value of the 'cguid' field.
       * @param value The value of 'cguid'.
@@ -1152,6 +1216,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public java.lang.String getRemoteIp() {
       return remote_ip;
     }
+
 
     /**
       * Sets the value of the 'remote_ip' field.
@@ -1192,6 +1257,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return lang_cd;
     }
 
+
     /**
       * Sets the value of the 'lang_cd' field.
       * @param value The value of 'lang_cd'.
@@ -1231,6 +1297,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return user_agent;
     }
 
+
     /**
       * Sets the value of the 'user_agent' field.
       * @param value The value of 'user_agent'.
@@ -1266,9 +1333,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'geo_id' field.
       * @return The value.
       */
-    public java.lang.Long getGeoId() {
+    public long getGeoId() {
       return geo_id;
     }
+
 
     /**
       * Sets the value of the 'geo_id' field.
@@ -1307,6 +1375,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public java.lang.String getUdid() {
       return udid;
     }
+
 
     /**
       * Sets the value of the 'udid' field.
@@ -1347,6 +1416,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return referer;
     }
 
+
     /**
       * Sets the value of the 'referer' field.
       * @param value The value of 'referer'.
@@ -1382,9 +1452,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'publisher_id' field.
       * @return The value.
       */
-    public java.lang.Long getPublisherId() {
+    public long getPublisherId() {
       return publisher_id;
     }
+
 
     /**
       * Sets the value of the 'publisher_id' field.
@@ -1420,9 +1491,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'campaign_id' field.
       * @return The value.
       */
-    public java.lang.Long getCampaignId() {
+    public long getCampaignId() {
       return campaign_id;
     }
+
 
     /**
       * Sets the value of the 'campaign_id' field.
@@ -1458,9 +1530,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'site_id' field.
       * @return The value.
       */
-    public java.lang.Long getSiteId() {
+    public long getSiteId() {
       return site_id;
     }
+
 
     /**
       * Sets the value of the 'site_id' field.
@@ -1500,6 +1573,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return landing_page_url;
     }
 
+
     /**
       * Sets the value of the 'landing_page_url' field.
       * @param value The value of 'landing_page_url'.
@@ -1535,9 +1609,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'src_rotation_id' field.
       * @return The value.
       */
-    public java.lang.Long getSrcRotationId() {
+    public long getSrcRotationId() {
       return src_rotation_id;
     }
+
 
     /**
       * Sets the value of the 'src_rotation_id' field.
@@ -1573,9 +1648,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'dst_rotation_id' field.
       * @return The value.
       */
-    public java.lang.Long getDstRotationId() {
+    public long getDstRotationId() {
       return dst_rotation_id;
     }
+
 
     /**
       * Sets the value of the 'dst_rotation_id' field.
@@ -1614,6 +1690,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public java.lang.String getRequestHeaders() {
       return request_headers;
     }
+
 
     /**
       * Sets the value of the 'request_headers' field.
@@ -1654,6 +1731,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return uri;
     }
 
+
     /**
       * Sets the value of the 'uri' field.
       * @param value The value of 'uri'.
@@ -1692,6 +1770,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public java.lang.String getResponseHeaders() {
       return response_headers;
     }
+
 
     /**
       * Sets the value of the 'response_headers' field.
@@ -1732,6 +1811,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return channel_action;
     }
 
+
     /**
       * Sets the value of the 'channel_action' field.
       * @param value The value of 'channel_action'.
@@ -1770,6 +1850,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     public com.ebay.app.raptor.chocolate.avro.ChannelType getChannelType() {
       return channel_type;
     }
+
 
     /**
       * Sets the value of the 'channel_type' field.
@@ -1810,6 +1891,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return http_method;
     }
 
+
     /**
       * Sets the value of the 'http_method' field.
       * @param value The value of 'http_method'.
@@ -1849,6 +1931,7 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       return snid;
     }
 
+
     /**
       * Sets the value of the 'snid' field.
       * @param value The value of 'snid'.
@@ -1884,9 +1967,10 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
       * Gets the value of the 'is_tracked' field.
       * @return The value.
       */
-    public java.lang.Boolean getIsTracked() {
+    public boolean getIsTracked() {
       return is_tracked;
     }
+
 
     /**
       * Sets the value of the 'is_tracked' field.
@@ -1950,6 +2034,8 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
         record.snid = fieldSetFlags()[24] ? this.snid : (java.lang.String) defaultValue(fields()[24]);
         record.is_tracked = fieldSetFlags()[25] ? this.is_tracked : (java.lang.Boolean) defaultValue(fields()[25]);
         return record;
+      } catch (org.apache.avro.AvroMissingFieldException e) {
+        throw e;
       } catch (java.lang.Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);
       }
@@ -1974,4 +2060,243 @@ public class ListenerMessageV6 extends org.apache.avro.specific.SpecificRecordBa
     READER$.read(this, SpecificData.getDecoder(in));
   }
 
+  @Override protected boolean hasCustomCoders() { return true; }
+
+  @Override public void customEncode(org.apache.avro.io.Encoder out)
+    throws java.io.IOException
+  {
+    out.writeLong(this.snapshot_id);
+
+    out.writeLong(this.short_snapshot_id);
+
+    out.writeLong(this.timestamp);
+
+    out.writeLong(this.user_id);
+
+    out.writeString(this.guid);
+
+    out.writeString(this.cguid);
+
+    out.writeString(this.remote_ip);
+
+    out.writeString(this.lang_cd);
+
+    out.writeString(this.user_agent);
+
+    out.writeLong(this.geo_id);
+
+    out.writeString(this.udid);
+
+    out.writeString(this.referer);
+
+    out.writeLong(this.publisher_id);
+
+    out.writeLong(this.campaign_id);
+
+    out.writeLong(this.site_id);
+
+    out.writeString(this.landing_page_url);
+
+    out.writeLong(this.src_rotation_id);
+
+    out.writeLong(this.dst_rotation_id);
+
+    out.writeString(this.request_headers);
+
+    out.writeString(this.uri);
+
+    out.writeString(this.response_headers);
+
+    out.writeEnum(this.channel_action.ordinal());
+
+    out.writeEnum(this.channel_type.ordinal());
+
+    out.writeEnum(this.http_method.ordinal());
+
+    out.writeString(this.snid);
+
+    out.writeBoolean(this.is_tracked);
+
+  }
+
+  @Override public void customDecode(org.apache.avro.io.ResolvingDecoder in)
+    throws java.io.IOException
+  {
+    org.apache.avro.Schema.Field[] fieldOrder = in.readFieldOrderIfDiff();
+    if (fieldOrder == null) {
+      this.snapshot_id = in.readLong();
+
+      this.short_snapshot_id = in.readLong();
+
+      this.timestamp = in.readLong();
+
+      this.user_id = in.readLong();
+
+      this.guid = in.readString();
+
+      this.cguid = in.readString();
+
+      this.remote_ip = in.readString();
+
+      this.lang_cd = in.readString();
+
+      this.user_agent = in.readString();
+
+      this.geo_id = in.readLong();
+
+      this.udid = in.readString();
+
+      this.referer = in.readString();
+
+      this.publisher_id = in.readLong();
+
+      this.campaign_id = in.readLong();
+
+      this.site_id = in.readLong();
+
+      this.landing_page_url = in.readString();
+
+      this.src_rotation_id = in.readLong();
+
+      this.dst_rotation_id = in.readLong();
+
+      this.request_headers = in.readString();
+
+      this.uri = in.readString();
+
+      this.response_headers = in.readString();
+
+      this.channel_action = com.ebay.app.raptor.chocolate.avro.ChannelAction.values()[in.readEnum()];
+
+      this.channel_type = com.ebay.app.raptor.chocolate.avro.ChannelType.values()[in.readEnum()];
+
+      this.http_method = com.ebay.app.raptor.chocolate.avro.HttpMethod.values()[in.readEnum()];
+
+      this.snid = in.readString();
+
+      this.is_tracked = in.readBoolean();
+
+    } else {
+      for (int i = 0; i < 26; i++) {
+        switch (fieldOrder[i].pos()) {
+        case 0:
+          this.snapshot_id = in.readLong();
+          break;
+
+        case 1:
+          this.short_snapshot_id = in.readLong();
+          break;
+
+        case 2:
+          this.timestamp = in.readLong();
+          break;
+
+        case 3:
+          this.user_id = in.readLong();
+          break;
+
+        case 4:
+          this.guid = in.readString();
+          break;
+
+        case 5:
+          this.cguid = in.readString();
+          break;
+
+        case 6:
+          this.remote_ip = in.readString();
+          break;
+
+        case 7:
+          this.lang_cd = in.readString();
+          break;
+
+        case 8:
+          this.user_agent = in.readString();
+          break;
+
+        case 9:
+          this.geo_id = in.readLong();
+          break;
+
+        case 10:
+          this.udid = in.readString();
+          break;
+
+        case 11:
+          this.referer = in.readString();
+          break;
+
+        case 12:
+          this.publisher_id = in.readLong();
+          break;
+
+        case 13:
+          this.campaign_id = in.readLong();
+          break;
+
+        case 14:
+          this.site_id = in.readLong();
+          break;
+
+        case 15:
+          this.landing_page_url = in.readString();
+          break;
+
+        case 16:
+          this.src_rotation_id = in.readLong();
+          break;
+
+        case 17:
+          this.dst_rotation_id = in.readLong();
+          break;
+
+        case 18:
+          this.request_headers = in.readString();
+          break;
+
+        case 19:
+          this.uri = in.readString();
+          break;
+
+        case 20:
+          this.response_headers = in.readString();
+          break;
+
+        case 21:
+          this.channel_action = com.ebay.app.raptor.chocolate.avro.ChannelAction.values()[in.readEnum()];
+          break;
+
+        case 22:
+          this.channel_type = com.ebay.app.raptor.chocolate.avro.ChannelType.values()[in.readEnum()];
+          break;
+
+        case 23:
+          this.http_method = com.ebay.app.raptor.chocolate.avro.HttpMethod.values()[in.readEnum()];
+          break;
+
+        case 24:
+          this.snid = in.readString();
+          break;
+
+        case 25:
+          this.is_tracked = in.readBoolean();
+          break;
+
+        default:
+          throw new java.io.IOException("Corrupt ResolvingDecoder.");
+        }
+      }
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
+

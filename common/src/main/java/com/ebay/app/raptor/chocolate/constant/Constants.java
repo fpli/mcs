@@ -159,6 +159,8 @@ public class Constants {
   public static final String STATUS_OK = "0";
 
   public static final String IS_BOT_TRAFFIC = "IsBotTraffic";
+  
+  public static final String UL_NOAPP = "ul_noapp";
 
   /**
    * Performance marketing channels
@@ -265,6 +267,12 @@ public class Constants {
       .put("trkId", "trkId")
       .build();
 
+  public static final ImmutableMultimap<String, String> partnerEmailParamTags = new ImmutableMultimap.Builder<String, String>()
+          .put("chnl", MKCID)
+          .put("pe_partner","partner")
+          .put("pe_campaign","campaign")
+          .build();
+
   public static final Map<ChannelType, ImmutableMultimap<String, String>> channelParamTagMap
           = new HashMap<ChannelType, ImmutableMultimap<String, String>>() {{
     put(ChannelType.MRKT_EMAIL, mktEmailParamTags);
@@ -273,6 +281,7 @@ public class Constants {
     put(ChannelType.SITE_MESSAGE_CENTER, siteEmailParamTags);
     put(ChannelType.GCX_EMAIL, gcxEmailParamTags);
     put(ChannelType.GCX_MESSAGE_CENTER, gcxEmailParamTags);
+    put(ChannelType.PARTNER_EMAIL, partnerEmailParamTags);
   }};
 
   public static final ImmutableMultimap<String, String> socialMediaParamTags = new ImmutableMultimap.Builder<String, String>()
