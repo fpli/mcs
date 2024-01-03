@@ -483,6 +483,8 @@ components:
           type: string
         streamId:
           type: string
+        asn:
+          type: string
     errorData:
       type: object
       description: >

@@ -31,12 +31,12 @@ public class AkamaiMessage extends AkamaiRheosMessage {
                        String overheadBytes, String totalBytes, String accLang, String cookie, String range,
                        String referer, String xForwardedFor, String maxAgeSec, String reqEndTimeMSec,
                        String errorCode, String dnsLookupTimeMSec, String billingRegion, String edgeIP,
-                       String securityRules, String serverCountry, String streamId) {
+                       String securityRules, String serverCountry, String streamId,String asn) {
     super(version, ewUsageInfo, ewExecutionInfo, country, city, state, cacheStatus, customField, turnAroundTimeMSec,
         transferTimeMSec, cliIP, statusCode, reqHost, reqMethod, bytes, tlsVersion, UA, queryStr, rspContentLen,
         rspContentType, reqPath, reqPort, proto, reqTimeSec, cp, reqId, tlsOverheadTimeMSec, objSize, uncompressedSize,
         overheadBytes, totalBytes, accLang, cookie, range, referer, xForwardedFor, maxAgeSec, reqEndTimeMSec,
-        errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId);
+        errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId,asn);
   }
 
   public static AkamaiMessage decodeRheos(Schema rheosHeaderSchema,
