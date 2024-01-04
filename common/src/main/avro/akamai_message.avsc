@@ -320,11 +320,12 @@
       ]
     },
     {
-      "name": "asn",
-      "type": [
-        "string",
-        "null"
-      ]
+       "name": "asn",
+       "type": [
+         "string",
+         "null"
+      ],
+       "default": ""
     }
   ]
 }
