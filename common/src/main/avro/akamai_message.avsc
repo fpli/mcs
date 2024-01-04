@@ -318,6 +318,13 @@
         "string",
         "null"
       ]
+    },
+    {
+      "name": "asn",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   ]
 }

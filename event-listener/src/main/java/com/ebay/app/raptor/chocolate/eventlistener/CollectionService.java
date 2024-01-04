@@ -982,15 +982,16 @@ public class CollectionService {
 
     ListenerMessage listenerMessage = performanceMarketingCollector.decorateListenerMessageAndHandleGDPR(baseEvent);
 
-    // 1. send to chocolate topic
-    Producer<Long, ListenerMessage> producer = KafkaSink.get();
-    String kafkaTopic = ApplicationOptions.getInstance()
-        .getSinkKafkaConfigs().get(baseEvent.getChannelType().getLogicalChannel().getAvro());
-
-    producer.send(
-        new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
-        KafkaSink.callback);
-
+    // 1. send epn to chocolate topic
+    if (listenerMessage.getChannelType() == ChannelType.EPN) {
+      Producer<Long, ListenerMessage> producer = KafkaSink.get();
+      String kafkaTopic = ApplicationOptions.getInstance()
+              .getSinkKafkaConfigs().get(baseEvent.getChannelType().getLogicalChannel().getAvro());
+      
+      producer.send(
+              new ProducerRecord<>(kafkaTopic, listenerMessage.getSnapshotId(), listenerMessage),
+              KafkaSink.callback);
+    }
     // 2. track ubi
     // Checkout click events won't go to UBI
     // Only track click to UBI

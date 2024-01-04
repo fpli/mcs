@@ -14,10 +14,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -7707626504113081094L;
+  private static final long serialVersionUID = -893318921072151564L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"AkamaiRheosMessage\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"fields\":[{\"name\":\"version\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"ewUsageInfo\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"ewExecutionInfo\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"country\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"city\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"state\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cacheStatus\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"customField\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"turnAroundTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"transferTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cliIP\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"statusCode\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqHost\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqMethod\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"bytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"tlsVersion\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"UA\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"queryStr\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"rspContentLen\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"rspContentType\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqPath\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqPort\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"proto\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqTimeSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cp\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqId\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"tlsOverheadTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"objSize\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"uncompressedSize\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"overheadBytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"totalBytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"accLang\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cookie\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"range\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"referer\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"xForwardedFor\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"maxAgeSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqEndTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"errorCode\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"dnsLookupTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"billingRegion\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"edgeIP\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"securityRules\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"serverCountry\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"streamId\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]}],\"pk\":[\"reqId\"]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"AkamaiRheosMessage\",\"namespace\":\"com.ebay.app.raptor.chocolate.avro\",\"fields\":[{\"name\":\"version\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"ewUsageInfo\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"ewExecutionInfo\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"country\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"city\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"state\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cacheStatus\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"customField\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"turnAroundTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"transferTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cliIP\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"statusCode\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqHost\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqMethod\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"bytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"tlsVersion\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"UA\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"queryStr\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"rspContentLen\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"rspContentType\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqPath\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqPort\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"proto\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqTimeSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cp\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqId\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"tlsOverheadTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"objSize\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"uncompressedSize\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"overheadBytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"totalBytes\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"accLang\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"cookie\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"range\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"referer\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"xForwardedFor\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"maxAgeSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"reqEndTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"errorCode\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"dnsLookupTimeMSec\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"billingRegion\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"edgeIP\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"securityRules\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"serverCountry\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"streamId\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]},{\"name\":\"asn\",\"type\":[{\"type\":\"string\",\"avro.java.string\":\"String\"},\"null\"]}],\"pk\":[\"reqId\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -118,6 +118,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
   private java.lang.String securityRules;
   private java.lang.String serverCountry;
   private java.lang.String streamId;
+  private java.lang.String asn;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -173,8 +174,9 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
    * @param securityRules The new value for securityRules
    * @param serverCountry The new value for serverCountry
    * @param streamId The new value for streamId
+   * @param asn The new value for asn
    */
-  public AkamaiRheosMessage(java.lang.String version, java.lang.String ewUsageInfo, java.lang.String ewExecutionInfo, java.lang.String country, java.lang.String city, java.lang.String state, java.lang.String cacheStatus, java.lang.String customField, java.lang.String turnAroundTimeMSec, java.lang.String transferTimeMSec, java.lang.String cliIP, java.lang.String statusCode, java.lang.String reqHost, java.lang.String reqMethod, java.lang.String bytes, java.lang.String tlsVersion, java.lang.String UA, java.lang.String queryStr, java.lang.String rspContentLen, java.lang.String rspContentType, java.lang.String reqPath, java.lang.String reqPort, java.lang.String proto, java.lang.String reqTimeSec, java.lang.String cp, java.lang.String reqId, java.lang.String tlsOverheadTimeMSec, java.lang.String objSize, java.lang.String uncompressedSize, java.lang.String overheadBytes, java.lang.String totalBytes, java.lang.String accLang, java.lang.String cookie, java.lang.String range, java.lang.String referer, java.lang.String xForwardedFor, java.lang.String maxAgeSec, java.lang.String reqEndTimeMSec, java.lang.String errorCode, java.lang.String dnsLookupTimeMSec, java.lang.String billingRegion, java.lang.String edgeIP, java.lang.String securityRules, java.lang.String serverCountry, java.lang.String streamId) {
+  public AkamaiRheosMessage(java.lang.String version, java.lang.String ewUsageInfo, java.lang.String ewExecutionInfo, java.lang.String country, java.lang.String city, java.lang.String state, java.lang.String cacheStatus, java.lang.String customField, java.lang.String turnAroundTimeMSec, java.lang.String transferTimeMSec, java.lang.String cliIP, java.lang.String statusCode, java.lang.String reqHost, java.lang.String reqMethod, java.lang.String bytes, java.lang.String tlsVersion, java.lang.String UA, java.lang.String queryStr, java.lang.String rspContentLen, java.lang.String rspContentType, java.lang.String reqPath, java.lang.String reqPort, java.lang.String proto, java.lang.String reqTimeSec, java.lang.String cp, java.lang.String reqId, java.lang.String tlsOverheadTimeMSec, java.lang.String objSize, java.lang.String uncompressedSize, java.lang.String overheadBytes, java.lang.String totalBytes, java.lang.String accLang, java.lang.String cookie, java.lang.String range, java.lang.String referer, java.lang.String xForwardedFor, java.lang.String maxAgeSec, java.lang.String reqEndTimeMSec, java.lang.String errorCode, java.lang.String dnsLookupTimeMSec, java.lang.String billingRegion, java.lang.String edgeIP, java.lang.String securityRules, java.lang.String serverCountry, java.lang.String streamId, java.lang.String asn) {
     this.version = version;
     this.ewUsageInfo = ewUsageInfo;
     this.ewExecutionInfo = ewExecutionInfo;
@@ -220,6 +222,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
     this.securityRules = securityRules;
     this.serverCountry = serverCountry;
     this.streamId = streamId;
+    this.asn = asn;
   }
 
   public org.apache.avro.specific.SpecificData getSpecificData() { return MODEL$; }
@@ -272,6 +275,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
     case 42: return securityRules;
     case 43: return serverCountry;
     case 44: return streamId;
+    case 45: return asn;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -325,6 +329,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
     case 42: securityRules = value$ != null ? value$.toString() : null; break;
     case 43: serverCountry = value$ != null ? value$.toString() : null; break;
     case 44: streamId = value$ != null ? value$.toString() : null; break;
+    case 45: asn = value$ != null ? value$.toString() : null; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -1095,6 +1100,23 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
   }
 
   /**
+   * Gets the value of the 'asn' field.
+   * @return The value of the 'asn' field.
+   */
+  public java.lang.String getAsn() {
+    return asn;
+  }
+
+
+  /**
+   * Sets the value of the 'asn' field.
+   * @param value the value to set.
+   */
+  public void setAsn(java.lang.String value) {
+    this.asn = value;
+  }
+
+  /**
    * Creates a new AkamaiRheosMessage RecordBuilder.
    * @return A new AkamaiRheosMessage RecordBuilder
    */
@@ -1180,6 +1202,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
     private java.lang.String securityRules;
     private java.lang.String serverCountry;
     private java.lang.String streamId;
+    private java.lang.String asn;
 
     /** Creates a new Builder */
     private Builder() {
@@ -1372,6 +1395,10 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
         this.streamId = data().deepCopy(fields()[44].schema(), other.streamId);
         fieldSetFlags()[44] = other.fieldSetFlags()[44];
       }
+      if (isValidValue(fields()[45], other.asn)) {
+        this.asn = data().deepCopy(fields()[45].schema(), other.asn);
+        fieldSetFlags()[45] = other.fieldSetFlags()[45];
+      }
     }
 
     /**
@@ -1559,6 +1586,10 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
       if (isValidValue(fields()[44], other.streamId)) {
         this.streamId = data().deepCopy(fields()[44].schema(), other.streamId);
         fieldSetFlags()[44] = true;
+      }
+      if (isValidValue(fields()[45], other.asn)) {
+        this.asn = data().deepCopy(fields()[45].schema(), other.asn);
+        fieldSetFlags()[45] = true;
       }
     }
 
@@ -3362,6 +3393,46 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
       return this;
     }
 
+    /**
+      * Gets the value of the 'asn' field.
+      * @return The value.
+      */
+    public java.lang.String getAsn() {
+      return asn;
+    }
+
+
+    /**
+      * Sets the value of the 'asn' field.
+      * @param value The value of 'asn'.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.AkamaiRheosMessage.Builder setAsn(java.lang.String value) {
+      validate(fields()[45], value);
+      this.asn = value;
+      fieldSetFlags()[45] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'asn' field has been set.
+      * @return True if the 'asn' field has been set, false otherwise.
+      */
+    public boolean hasAsn() {
+      return fieldSetFlags()[45];
+    }
+
+
+    /**
+      * Clears the value of the 'asn' field.
+      * @return This builder.
+      */
+    public com.ebay.app.raptor.chocolate.avro.AkamaiRheosMessage.Builder clearAsn() {
+      asn = null;
+      fieldSetFlags()[45] = false;
+      return this;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public AkamaiRheosMessage build() {
@@ -3412,6 +3483,7 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
         record.securityRules = fieldSetFlags()[42] ? this.securityRules : (java.lang.String) defaultValue(fields()[42]);
         record.serverCountry = fieldSetFlags()[43] ? this.serverCountry : (java.lang.String) defaultValue(fields()[43]);
         record.streamId = fieldSetFlags()[44] ? this.streamId : (java.lang.String) defaultValue(fields()[44]);
+        record.asn = fieldSetFlags()[45] ? this.asn : (java.lang.String) defaultValue(fields()[45]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;
@@ -3804,6 +3876,14 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
       out.writeString(this.streamId);
     }
 
+    if (this.asn == null) {
+      out.writeIndex(1);
+      out.writeNull();
+    } else {
+      out.writeIndex(0);
+      out.writeString(this.asn);
+    }
+
   }
 
   @Override public void customDecode(org.apache.avro.io.ResolvingDecoder in)
@@ -4126,8 +4206,15 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
         this.streamId = in.readString();
       }
 
+      if (in.readIndex() != 0) {
+        in.readNull();
+        this.asn = null;
+      } else {
+        this.asn = in.readString();
+      }
+
     } else {
-      for (int i = 0; i < 45; i++) {
+      for (int i = 0; i < 46; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
           if (in.readIndex() != 0) {
@@ -4531,6 +4618,15 @@ public class AkamaiRheosMessage extends org.apache.avro.specific.SpecificRecordB
             this.streamId = null;
           } else {
             this.streamId = in.readString();
+          }
+          break;
+
+        case 45:
+          if (in.readIndex() != 0) {
+            in.readNull();
+            this.asn = null;
+          } else {
+            this.asn = in.readString();
           }
           break;
 

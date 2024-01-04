@@ -25,14 +25,14 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2022-09-06T18:35:36.679+08:00[Asia/Shanghai]")
-@JsonPropertyOrder({ "version","ewUsageInfo","ewExecutionInfo","country","city","state","cacheStatus","customField","turnAroundTimeMSec","transferTimeMSec","cliIP","statusCode","reqHost","reqMethod","bytes","tlsVersion","UA","queryStr","rspContentLen","rspContentType","reqPath","reqPort","proto","reqTimeSec","cp","reqId","tlsOverheadTimeMSec","objSize","uncompressedSize","overheadBytes","totalBytes","accLang","cookie","range","referer","xForwardedFor","maxAgeSec","reqEndTimeMSec","errorCode","dnsLookupTimeMSec","billingRegion","edgeIP","securityRules","serverCountry","streamId" })
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2024-01-02T17:55:36.565+08:00[Asia/Shanghai]")
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
 public class AkamaiEvent implements Serializable {
 
-private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
 
 
@@ -171,671 +171,688 @@ private static final long serialVersionUID = 1L;
     @JsonProperty("streamId")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String streamId = null;
+    @JsonProperty("asn")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String asn = null;
 
-/**
-    * Get version
-* @return version
-    **/
+    /**
+     * Get version
+     * @return version
+     **/
     @ApiModelProperty(value = "")
-public String getVersion() {
-    return version;
+    public String getVersion() {
+        return version;
     }
 
-public void setVersion(String version) {
+    public void setVersion(String version) {
         this.version = version;
-        }
-/**
-    * Get ewUsageInfo
-* @return ewUsageInfo
-    **/
+    }
+    /**
+     * Get ewUsageInfo
+     * @return ewUsageInfo
+     **/
     @ApiModelProperty(value = "")
-public String getEwUsageInfo() {
-    return ewUsageInfo;
+    public String getEwUsageInfo() {
+        return ewUsageInfo;
     }
 
-public void setEwUsageInfo(String ewUsageInfo) {
+    public void setEwUsageInfo(String ewUsageInfo) {
         this.ewUsageInfo = ewUsageInfo;
-        }
-/**
-    * Get ewExecutionInfo
-* @return ewExecutionInfo
-    **/
+    }
+    /**
+     * Get ewExecutionInfo
+     * @return ewExecutionInfo
+     **/
     @ApiModelProperty(value = "")
-public String getEwExecutionInfo() {
-    return ewExecutionInfo;
+    public String getEwExecutionInfo() {
+        return ewExecutionInfo;
     }
 
-public void setEwExecutionInfo(String ewExecutionInfo) {
+    public void setEwExecutionInfo(String ewExecutionInfo) {
         this.ewExecutionInfo = ewExecutionInfo;
-        }
-/**
-    * Get country
-* @return country
-    **/
+    }
+    /**
+     * Get country
+     * @return country
+     **/
     @ApiModelProperty(value = "")
-public String getCountry() {
-    return country;
+    public String getCountry() {
+        return country;
     }
 
-public void setCountry(String country) {
+    public void setCountry(String country) {
         this.country = country;
-        }
-/**
-    * Get city
-* @return city
-    **/
+    }
+    /**
+     * Get city
+     * @return city
+     **/
     @ApiModelProperty(value = "")
-public String getCity() {
-    return city;
+    public String getCity() {
+        return city;
     }
 
-public void setCity(String city) {
+    public void setCity(String city) {
         this.city = city;
-        }
-/**
-    * Get state
-* @return state
-    **/
+    }
+    /**
+     * Get state
+     * @return state
+     **/
     @ApiModelProperty(value = "")
-public String getState() {
-    return state;
+    public String getState() {
+        return state;
     }
 
-public void setState(String state) {
+    public void setState(String state) {
         this.state = state;
-        }
-/**
-    * Get cacheStatus
-* @return cacheStatus
-    **/
+    }
+    /**
+     * Get cacheStatus
+     * @return cacheStatus
+     **/
     @ApiModelProperty(value = "")
-public String getCacheStatus() {
-    return cacheStatus;
+    public String getCacheStatus() {
+        return cacheStatus;
     }
 
-public void setCacheStatus(String cacheStatus) {
+    public void setCacheStatus(String cacheStatus) {
         this.cacheStatus = cacheStatus;
-        }
-/**
-    * Get customField
-* @return customField
-    **/
+    }
+    /**
+     * Get customField
+     * @return customField
+     **/
     @ApiModelProperty(value = "")
-public String getCustomField() {
-    return customField;
+    public String getCustomField() {
+        return customField;
     }
 
-public void setCustomField(String customField) {
+    public void setCustomField(String customField) {
         this.customField = customField;
-        }
-/**
-    * Get turnAroundTimeMSec
-* @return turnAroundTimeMSec
-    **/
+    }
+    /**
+     * Get turnAroundTimeMSec
+     * @return turnAroundTimeMSec
+     **/
     @ApiModelProperty(value = "")
-public String getTurnAroundTimeMSec() {
-    return turnAroundTimeMSec;
+    public String getTurnAroundTimeMSec() {
+        return turnAroundTimeMSec;
     }
 
-public void setTurnAroundTimeMSec(String turnAroundTimeMSec) {
+    public void setTurnAroundTimeMSec(String turnAroundTimeMSec) {
         this.turnAroundTimeMSec = turnAroundTimeMSec;
-        }
-/**
-    * Get transferTimeMSec
-* @return transferTimeMSec
-    **/
+    }
+    /**
+     * Get transferTimeMSec
+     * @return transferTimeMSec
+     **/
     @ApiModelProperty(value = "")
-public String getTransferTimeMSec() {
-    return transferTimeMSec;
+    public String getTransferTimeMSec() {
+        return transferTimeMSec;
     }
 
-public void setTransferTimeMSec(String transferTimeMSec) {
+    public void setTransferTimeMSec(String transferTimeMSec) {
         this.transferTimeMSec = transferTimeMSec;
-        }
-/**
-    * Get cliIP
-* @return cliIP
-    **/
+    }
+    /**
+     * Get cliIP
+     * @return cliIP
+     **/
     @ApiModelProperty(value = "")
-public String getCliIP() {
-    return cliIP;
+    public String getCliIP() {
+        return cliIP;
     }
 
-public void setCliIP(String cliIP) {
+    public void setCliIP(String cliIP) {
         this.cliIP = cliIP;
-        }
-/**
-    * Get statusCode
-* @return statusCode
-    **/
+    }
+    /**
+     * Get statusCode
+     * @return statusCode
+     **/
     @ApiModelProperty(value = "")
-public String getStatusCode() {
-    return statusCode;
+    public String getStatusCode() {
+        return statusCode;
     }
 
-public void setStatusCode(String statusCode) {
+    public void setStatusCode(String statusCode) {
         this.statusCode = statusCode;
-        }
-/**
-    * Get reqHost
-* @return reqHost
-    **/
+    }
+    /**
+     * Get reqHost
+     * @return reqHost
+     **/
     @ApiModelProperty(value = "")
-public String getReqHost() {
-    return reqHost;
+    public String getReqHost() {
+        return reqHost;
     }
 
-public void setReqHost(String reqHost) {
+    public void setReqHost(String reqHost) {
         this.reqHost = reqHost;
-        }
-/**
-    * Get reqMethod
-* @return reqMethod
-    **/
+    }
+    /**
+     * Get reqMethod
+     * @return reqMethod
+     **/
     @ApiModelProperty(value = "")
-public String getReqMethod() {
-    return reqMethod;
+    public String getReqMethod() {
+        return reqMethod;
     }
 
-public void setReqMethod(String reqMethod) {
+    public void setReqMethod(String reqMethod) {
         this.reqMethod = reqMethod;
-        }
-/**
-    * Get bytes
-* @return bytes
-    **/
+    }
+    /**
+     * Get bytes
+     * @return bytes
+     **/
     @ApiModelProperty(value = "")
-public String getBytes() {
-    return bytes;
+    public String getBytes() {
+        return bytes;
     }
 
-public void setBytes(String bytes) {
+    public void setBytes(String bytes) {
         this.bytes = bytes;
-        }
-/**
-    * Get tlsVersion
-* @return tlsVersion
-    **/
+    }
+    /**
+     * Get tlsVersion
+     * @return tlsVersion
+     **/
     @ApiModelProperty(value = "")
-public String getTlsVersion() {
-    return tlsVersion;
+    public String getTlsVersion() {
+        return tlsVersion;
     }
 
-public void setTlsVersion(String tlsVersion) {
+    public void setTlsVersion(String tlsVersion) {
         this.tlsVersion = tlsVersion;
-        }
-/**
-    * Get UA
-* @return UA
-    **/
+    }
+    /**
+     * Get UA
+     * @return UA
+     **/
     @ApiModelProperty(value = "")
-public String getUA() {
-    return UA;
+    public String getUA() {
+        return UA;
     }
 
-public void setUA(String UA) {
+    public void setUA(String UA) {
         this.UA = UA;
-        }
-/**
-    * Get queryStr
-* @return queryStr
-    **/
+    }
+    /**
+     * Get queryStr
+     * @return queryStr
+     **/
     @ApiModelProperty(value = "")
-public String getQueryStr() {
-    return queryStr;
+    public String getQueryStr() {
+        return queryStr;
     }
 
-public void setQueryStr(String queryStr) {
+    public void setQueryStr(String queryStr) {
         this.queryStr = queryStr;
-        }
-/**
-    * Get rspContentLen
-* @return rspContentLen
-    **/
+    }
+    /**
+     * Get rspContentLen
+     * @return rspContentLen
+     **/
     @ApiModelProperty(value = "")
-public String getRspContentLen() {
-    return rspContentLen;
+    public String getRspContentLen() {
+        return rspContentLen;
     }
 
-public void setRspContentLen(String rspContentLen) {
+    public void setRspContentLen(String rspContentLen) {
         this.rspContentLen = rspContentLen;
-        }
-/**
-    * Get rspContentType
-* @return rspContentType
-    **/
+    }
+    /**
+     * Get rspContentType
+     * @return rspContentType
+     **/
     @ApiModelProperty(value = "")
-public String getRspContentType() {
-    return rspContentType;
+    public String getRspContentType() {
+        return rspContentType;
     }
 
-public void setRspContentType(String rspContentType) {
+    public void setRspContentType(String rspContentType) {
         this.rspContentType = rspContentType;
-        }
-/**
-    * Get reqPath
-* @return reqPath
-    **/
+    }
+    /**
+     * Get reqPath
+     * @return reqPath
+     **/
     @ApiModelProperty(value = "")
-public String getReqPath() {
-    return reqPath;
+    public String getReqPath() {
+        return reqPath;
     }
 
-public void setReqPath(String reqPath) {
+    public void setReqPath(String reqPath) {
         this.reqPath = reqPath;
-        }
-/**
-    * Get reqPort
-* @return reqPort
-    **/
+    }
+    /**
+     * Get reqPort
+     * @return reqPort
+     **/
     @ApiModelProperty(value = "")
-public String getReqPort() {
-    return reqPort;
+    public String getReqPort() {
+        return reqPort;
     }
 
-public void setReqPort(String reqPort) {
+    public void setReqPort(String reqPort) {
         this.reqPort = reqPort;
-        }
-/**
-    * Get proto
-* @return proto
-    **/
+    }
+    /**
+     * Get proto
+     * @return proto
+     **/
     @ApiModelProperty(value = "")
-public String getProto() {
-    return proto;
+    public String getProto() {
+        return proto;
     }
 
-public void setProto(String proto) {
+    public void setProto(String proto) {
         this.proto = proto;
-        }
-/**
-    * Get reqTimeSec
-* @return reqTimeSec
-    **/
+    }
+    /**
+     * Get reqTimeSec
+     * @return reqTimeSec
+     **/
     @ApiModelProperty(value = "")
-public String getReqTimeSec() {
-    return reqTimeSec;
+    public String getReqTimeSec() {
+        return reqTimeSec;
     }
 
-public void setReqTimeSec(String reqTimeSec) {
+    public void setReqTimeSec(String reqTimeSec) {
         this.reqTimeSec = reqTimeSec;
-        }
-/**
-    * Get cp
-* @return cp
-    **/
+    }
+    /**
+     * Get cp
+     * @return cp
+     **/
     @ApiModelProperty(value = "")
-public String getCp() {
-    return cp;
+    public String getCp() {
+        return cp;
     }
 
-public void setCp(String cp) {
+    public void setCp(String cp) {
         this.cp = cp;
-        }
-/**
-    * Get reqId
-* @return reqId
-    **/
+    }
+    /**
+     * Get reqId
+     * @return reqId
+     **/
     @ApiModelProperty(value = "")
-public String getReqId() {
-    return reqId;
+    public String getReqId() {
+        return reqId;
     }
 
-public void setReqId(String reqId) {
+    public void setReqId(String reqId) {
         this.reqId = reqId;
-        }
-/**
-    * Get tlsOverheadTimeMSec
-* @return tlsOverheadTimeMSec
-    **/
+    }
+    /**
+     * Get tlsOverheadTimeMSec
+     * @return tlsOverheadTimeMSec
+     **/
     @ApiModelProperty(value = "")
-public String getTlsOverheadTimeMSec() {
-    return tlsOverheadTimeMSec;
+    public String getTlsOverheadTimeMSec() {
+        return tlsOverheadTimeMSec;
     }
 
-public void setTlsOverheadTimeMSec(String tlsOverheadTimeMSec) {
+    public void setTlsOverheadTimeMSec(String tlsOverheadTimeMSec) {
         this.tlsOverheadTimeMSec = tlsOverheadTimeMSec;
-        }
-/**
-    * Get objSize
-* @return objSize
-    **/
+    }
+    /**
+     * Get objSize
+     * @return objSize
+     **/
     @ApiModelProperty(value = "")
-public String getObjSize() {
-    return objSize;
+    public String getObjSize() {
+        return objSize;
     }
 
-public void setObjSize(String objSize) {
+    public void setObjSize(String objSize) {
         this.objSize = objSize;
-        }
-/**
-    * Get uncompressedSize
-* @return uncompressedSize
-    **/
+    }
+    /**
+     * Get uncompressedSize
+     * @return uncompressedSize
+     **/
     @ApiModelProperty(value = "")
-public String getUncompressedSize() {
-    return uncompressedSize;
+    public String getUncompressedSize() {
+        return uncompressedSize;
     }
 
-public void setUncompressedSize(String uncompressedSize) {
+    public void setUncompressedSize(String uncompressedSize) {
         this.uncompressedSize = uncompressedSize;
-        }
-/**
-    * Get overheadBytes
-* @return overheadBytes
-    **/
+    }
+    /**
+     * Get overheadBytes
+     * @return overheadBytes
+     **/
     @ApiModelProperty(value = "")
-public String getOverheadBytes() {
-    return overheadBytes;
+    public String getOverheadBytes() {
+        return overheadBytes;
     }
 
-public void setOverheadBytes(String overheadBytes) {
+    public void setOverheadBytes(String overheadBytes) {
         this.overheadBytes = overheadBytes;
-        }
-/**
-    * Get totalBytes
-* @return totalBytes
-    **/
+    }
+    /**
+     * Get totalBytes
+     * @return totalBytes
+     **/
     @ApiModelProperty(value = "")
-public String getTotalBytes() {
-    return totalBytes;
+    public String getTotalBytes() {
+        return totalBytes;
     }
 
-public void setTotalBytes(String totalBytes) {
+    public void setTotalBytes(String totalBytes) {
         this.totalBytes = totalBytes;
-        }
-/**
-    * Get accLang
-* @return accLang
-    **/
+    }
+    /**
+     * Get accLang
+     * @return accLang
+     **/
     @ApiModelProperty(value = "")
-public String getAccLang() {
-    return accLang;
+    public String getAccLang() {
+        return accLang;
     }
 
-public void setAccLang(String accLang) {
+    public void setAccLang(String accLang) {
         this.accLang = accLang;
-        }
-/**
-    * Get cookie
-* @return cookie
-    **/
+    }
+    /**
+     * Get cookie
+     * @return cookie
+     **/
     @ApiModelProperty(value = "")
-public String getCookie() {
-    return cookie;
+    public String getCookie() {
+        return cookie;
     }
 
-public void setCookie(String cookie) {
+    public void setCookie(String cookie) {
         this.cookie = cookie;
-        }
-/**
-    * Get range
-* @return range
-    **/
+    }
+    /**
+     * Get range
+     * @return range
+     **/
     @ApiModelProperty(value = "")
-public String getRange() {
-    return range;
+    public String getRange() {
+        return range;
     }
 
-public void setRange(String range) {
+    public void setRange(String range) {
         this.range = range;
-        }
-/**
-    * Get referer
-* @return referer
-    **/
+    }
+    /**
+     * Get referer
+     * @return referer
+     **/
     @ApiModelProperty(value = "")
-public String getReferer() {
-    return referer;
+    public String getReferer() {
+        return referer;
     }
 
-public void setReferer(String referer) {
+    public void setReferer(String referer) {
         this.referer = referer;
-        }
-/**
-    * Get xForwardedFor
-* @return xForwardedFor
-    **/
+    }
+    /**
+     * Get xForwardedFor
+     * @return xForwardedFor
+     **/
     @ApiModelProperty(value = "")
-public String getXForwardedFor() {
-    return xForwardedFor;
+    public String getXForwardedFor() {
+        return xForwardedFor;
     }
 
-public void setXForwardedFor(String xForwardedFor) {
+    public void setXForwardedFor(String xForwardedFor) {
         this.xForwardedFor = xForwardedFor;
-        }
-/**
-    * Get maxAgeSec
-* @return maxAgeSec
-    **/
+    }
+    /**
+     * Get maxAgeSec
+     * @return maxAgeSec
+     **/
     @ApiModelProperty(value = "")
-public String getMaxAgeSec() {
-    return maxAgeSec;
+    public String getMaxAgeSec() {
+        return maxAgeSec;
     }
 
-public void setMaxAgeSec(String maxAgeSec) {
+    public void setMaxAgeSec(String maxAgeSec) {
         this.maxAgeSec = maxAgeSec;
-        }
-/**
-    * Get reqEndTimeMSec
-* @return reqEndTimeMSec
-    **/
+    }
+    /**
+     * Get reqEndTimeMSec
+     * @return reqEndTimeMSec
+     **/
     @ApiModelProperty(value = "")
-public String getReqEndTimeMSec() {
-    return reqEndTimeMSec;
+    public String getReqEndTimeMSec() {
+        return reqEndTimeMSec;
     }
 
-public void setReqEndTimeMSec(String reqEndTimeMSec) {
+    public void setReqEndTimeMSec(String reqEndTimeMSec) {
         this.reqEndTimeMSec = reqEndTimeMSec;
-        }
-/**
-    * Get errorCode
-* @return errorCode
-    **/
+    }
+    /**
+     * Get errorCode
+     * @return errorCode
+     **/
     @ApiModelProperty(value = "")
-public String getErrorCode() {
-    return errorCode;
+    public String getErrorCode() {
+        return errorCode;
     }
 
-public void setErrorCode(String errorCode) {
+    public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
-        }
-/**
-    * Get dnsLookupTimeMSec
-* @return dnsLookupTimeMSec
-    **/
+    }
+    /**
+     * Get dnsLookupTimeMSec
+     * @return dnsLookupTimeMSec
+     **/
     @ApiModelProperty(value = "")
-public String getDnsLookupTimeMSec() {
-    return dnsLookupTimeMSec;
+    public String getDnsLookupTimeMSec() {
+        return dnsLookupTimeMSec;
     }
 
-public void setDnsLookupTimeMSec(String dnsLookupTimeMSec) {
+    public void setDnsLookupTimeMSec(String dnsLookupTimeMSec) {
         this.dnsLookupTimeMSec = dnsLookupTimeMSec;
-        }
-/**
-    * Get billingRegion
-* @return billingRegion
-    **/
+    }
+    /**
+     * Get billingRegion
+     * @return billingRegion
+     **/
     @ApiModelProperty(value = "")
-public String getBillingRegion() {
-    return billingRegion;
+    public String getBillingRegion() {
+        return billingRegion;
     }
 
-public void setBillingRegion(String billingRegion) {
+    public void setBillingRegion(String billingRegion) {
         this.billingRegion = billingRegion;
-        }
-/**
-    * Get edgeIP
-* @return edgeIP
-    **/
+    }
+    /**
+     * Get edgeIP
+     * @return edgeIP
+     **/
     @ApiModelProperty(value = "")
-public String getEdgeIP() {
-    return edgeIP;
+    public String getEdgeIP() {
+        return edgeIP;
     }
 
-public void setEdgeIP(String edgeIP) {
+    public void setEdgeIP(String edgeIP) {
         this.edgeIP = edgeIP;
-        }
-/**
-    * Get securityRules
-* @return securityRules
-    **/
+    }
+    /**
+     * Get securityRules
+     * @return securityRules
+     **/
     @ApiModelProperty(value = "")
-public String getSecurityRules() {
-    return securityRules;
+    public String getSecurityRules() {
+        return securityRules;
     }
 
-public void setSecurityRules(String securityRules) {
+    public void setSecurityRules(String securityRules) {
         this.securityRules = securityRules;
-        }
-/**
-    * Get serverCountry
-* @return serverCountry
-    **/
+    }
+    /**
+     * Get serverCountry
+     * @return serverCountry
+     **/
     @ApiModelProperty(value = "")
-public String getServerCountry() {
-    return serverCountry;
+    public String getServerCountry() {
+        return serverCountry;
     }
 
-public void setServerCountry(String serverCountry) {
+    public void setServerCountry(String serverCountry) {
         this.serverCountry = serverCountry;
-        }
-/**
-    * Get streamId
-* @return streamId
-    **/
+    }
+    /**
+     * Get streamId
+     * @return streamId
+     **/
     @ApiModelProperty(value = "")
-public String getStreamId() {
-    return streamId;
+    public String getStreamId() {
+        return streamId;
     }
 
-public void setStreamId(String streamId) {
+    public void setStreamId(String streamId) {
         this.streamId = streamId;
-        }
+    }
+    /**
+     * Get asn
+     * @return asn
+     **/
+    @ApiModelProperty(value = "")
+    public String getAsn() {
+        return asn;
+    }
+
+    public void setAsn(String asn) {
+        this.asn = asn;
+    }
     @Override
-    public boolean equals(Object o) {
-    if (this == o) {
-    return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-    return false;
-    }
+    public boolean equals(java.lang.Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AkamaiEvent akamaiEvent = (AkamaiEvent) o;
         return Objects.equals(this.version, akamaiEvent.version) &&
-        Objects.equals(this.ewUsageInfo, akamaiEvent.ewUsageInfo) &&
-        Objects.equals(this.ewExecutionInfo, akamaiEvent.ewExecutionInfo) &&
-        Objects.equals(this.country, akamaiEvent.country) &&
-        Objects.equals(this.city, akamaiEvent.city) &&
-        Objects.equals(this.state, akamaiEvent.state) &&
-        Objects.equals(this.cacheStatus, akamaiEvent.cacheStatus) &&
-        Objects.equals(this.customField, akamaiEvent.customField) &&
-        Objects.equals(this.turnAroundTimeMSec, akamaiEvent.turnAroundTimeMSec) &&
-        Objects.equals(this.transferTimeMSec, akamaiEvent.transferTimeMSec) &&
-        Objects.equals(this.cliIP, akamaiEvent.cliIP) &&
-        Objects.equals(this.statusCode, akamaiEvent.statusCode) &&
-        Objects.equals(this.reqHost, akamaiEvent.reqHost) &&
-        Objects.equals(this.reqMethod, akamaiEvent.reqMethod) &&
-        Objects.equals(this.bytes, akamaiEvent.bytes) &&
-        Objects.equals(this.tlsVersion, akamaiEvent.tlsVersion) &&
-        Objects.equals(this.UA, akamaiEvent.UA) &&
-        Objects.equals(this.queryStr, akamaiEvent.queryStr) &&
-        Objects.equals(this.rspContentLen, akamaiEvent.rspContentLen) &&
-        Objects.equals(this.rspContentType, akamaiEvent.rspContentType) &&
-        Objects.equals(this.reqPath, akamaiEvent.reqPath) &&
-        Objects.equals(this.reqPort, akamaiEvent.reqPort) &&
-        Objects.equals(this.proto, akamaiEvent.proto) &&
-        Objects.equals(this.reqTimeSec, akamaiEvent.reqTimeSec) &&
-        Objects.equals(this.cp, akamaiEvent.cp) &&
-        Objects.equals(this.reqId, akamaiEvent.reqId) &&
-        Objects.equals(this.tlsOverheadTimeMSec, akamaiEvent.tlsOverheadTimeMSec) &&
-        Objects.equals(this.objSize, akamaiEvent.objSize) &&
-        Objects.equals(this.uncompressedSize, akamaiEvent.uncompressedSize) &&
-        Objects.equals(this.overheadBytes, akamaiEvent.overheadBytes) &&
-        Objects.equals(this.totalBytes, akamaiEvent.totalBytes) &&
-        Objects.equals(this.accLang, akamaiEvent.accLang) &&
-        Objects.equals(this.cookie, akamaiEvent.cookie) &&
-        Objects.equals(this.range, akamaiEvent.range) &&
-        Objects.equals(this.referer, akamaiEvent.referer) &&
-        Objects.equals(this.xForwardedFor, akamaiEvent.xForwardedFor) &&
-        Objects.equals(this.maxAgeSec, akamaiEvent.maxAgeSec) &&
-        Objects.equals(this.reqEndTimeMSec, akamaiEvent.reqEndTimeMSec) &&
-        Objects.equals(this.errorCode, akamaiEvent.errorCode) &&
-        Objects.equals(this.dnsLookupTimeMSec, akamaiEvent.dnsLookupTimeMSec) &&
-        Objects.equals(this.billingRegion, akamaiEvent.billingRegion) &&
-        Objects.equals(this.edgeIP, akamaiEvent.edgeIP) &&
-        Objects.equals(this.securityRules, akamaiEvent.securityRules) &&
-        Objects.equals(this.serverCountry, akamaiEvent.serverCountry) &&
-        Objects.equals(this.streamId, akamaiEvent.streamId);
+                Objects.equals(this.ewUsageInfo, akamaiEvent.ewUsageInfo) &&
+                Objects.equals(this.ewExecutionInfo, akamaiEvent.ewExecutionInfo) &&
+                Objects.equals(this.country, akamaiEvent.country) &&
+                Objects.equals(this.city, akamaiEvent.city) &&
+                Objects.equals(this.state, akamaiEvent.state) &&
+                Objects.equals(this.cacheStatus, akamaiEvent.cacheStatus) &&
+                Objects.equals(this.customField, akamaiEvent.customField) &&
+                Objects.equals(this.turnAroundTimeMSec, akamaiEvent.turnAroundTimeMSec) &&
+                Objects.equals(this.transferTimeMSec, akamaiEvent.transferTimeMSec) &&
+                Objects.equals(this.cliIP, akamaiEvent.cliIP) &&
+                Objects.equals(this.statusCode, akamaiEvent.statusCode) &&
+                Objects.equals(this.reqHost, akamaiEvent.reqHost) &&
+                Objects.equals(this.reqMethod, akamaiEvent.reqMethod) &&
+                Objects.equals(this.bytes, akamaiEvent.bytes) &&
+                Objects.equals(this.tlsVersion, akamaiEvent.tlsVersion) &&
+                Objects.equals(this.UA, akamaiEvent.UA) &&
+                Objects.equals(this.queryStr, akamaiEvent.queryStr) &&
+                Objects.equals(this.rspContentLen, akamaiEvent.rspContentLen) &&
+                Objects.equals(this.rspContentType, akamaiEvent.rspContentType) &&
+                Objects.equals(this.reqPath, akamaiEvent.reqPath) &&
+                Objects.equals(this.reqPort, akamaiEvent.reqPort) &&
+                Objects.equals(this.proto, akamaiEvent.proto) &&
+                Objects.equals(this.reqTimeSec, akamaiEvent.reqTimeSec) &&
+                Objects.equals(this.cp, akamaiEvent.cp) &&
+                Objects.equals(this.reqId, akamaiEvent.reqId) &&
+                Objects.equals(this.tlsOverheadTimeMSec, akamaiEvent.tlsOverheadTimeMSec) &&
+                Objects.equals(this.objSize, akamaiEvent.objSize) &&
+                Objects.equals(this.uncompressedSize, akamaiEvent.uncompressedSize) &&
+                Objects.equals(this.overheadBytes, akamaiEvent.overheadBytes) &&
+                Objects.equals(this.totalBytes, akamaiEvent.totalBytes) &&
+                Objects.equals(this.accLang, akamaiEvent.accLang) &&
+                Objects.equals(this.cookie, akamaiEvent.cookie) &&
+                Objects.equals(this.range, akamaiEvent.range) &&
+                Objects.equals(this.referer, akamaiEvent.referer) &&
+                Objects.equals(this.xForwardedFor, akamaiEvent.xForwardedFor) &&
+                Objects.equals(this.maxAgeSec, akamaiEvent.maxAgeSec) &&
+                Objects.equals(this.reqEndTimeMSec, akamaiEvent.reqEndTimeMSec) &&
+                Objects.equals(this.errorCode, akamaiEvent.errorCode) &&
+                Objects.equals(this.dnsLookupTimeMSec, akamaiEvent.dnsLookupTimeMSec) &&
+                Objects.equals(this.billingRegion, akamaiEvent.billingRegion) &&
+                Objects.equals(this.edgeIP, akamaiEvent.edgeIP) &&
+                Objects.equals(this.securityRules, akamaiEvent.securityRules) &&
+                Objects.equals(this.serverCountry, akamaiEvent.serverCountry) &&
+                Objects.equals(this.streamId, akamaiEvent.streamId) &&
+                Objects.equals(this.asn, akamaiEvent.asn);
     }
 
     @Override
     public int hashCode() {
-    return Objects.hash(version, ewUsageInfo, ewExecutionInfo, country, city, state, cacheStatus, customField, turnAroundTimeMSec, transferTimeMSec, cliIP, statusCode, reqHost, reqMethod, bytes, tlsVersion, UA, queryStr, rspContentLen, rspContentType, reqPath, reqPort, proto, reqTimeSec, cp, reqId, tlsOverheadTimeMSec, objSize, uncompressedSize, overheadBytes, totalBytes, accLang, cookie, range, referer, xForwardedFor, maxAgeSec, reqEndTimeMSec, errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId);
+        return Objects.hash(version, ewUsageInfo, ewExecutionInfo, country, city, state, cacheStatus, customField, turnAroundTimeMSec, transferTimeMSec, cliIP, statusCode, reqHost, reqMethod, bytes, tlsVersion, UA, queryStr, rspContentLen, rspContentType, reqPath, reqPort, proto, reqTimeSec, cp, reqId, tlsOverheadTimeMSec, objSize, uncompressedSize, overheadBytes, totalBytes, accLang, cookie, range, referer, xForwardedFor, maxAgeSec, reqEndTimeMSec, errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId, asn);
     }
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("class AkamaiEvent {\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append("class AkamaiEvent {\n");
 
-      sb.append("    version: ").append(toIndentedString(version)).append("\n");
-      sb.append("    ewUsageInfo: ").append(toIndentedString(ewUsageInfo)).append("\n");
-      sb.append("    ewExecutionInfo: ").append(toIndentedString(ewExecutionInfo)).append("\n");
-      sb.append("    country: ").append(toIndentedString(country)).append("\n");
-      sb.append("    city: ").append(toIndentedString(city)).append("\n");
-      sb.append("    state: ").append(toIndentedString(state)).append("\n");
-      sb.append("    cacheStatus: ").append(toIndentedString(cacheStatus)).append("\n");
-      sb.append("    customField: ").append(toIndentedString(customField)).append("\n");
-      sb.append("    turnAroundTimeMSec: ").append(toIndentedString(turnAroundTimeMSec)).append("\n");
-      sb.append("    transferTimeMSec: ").append(toIndentedString(transferTimeMSec)).append("\n");
-      sb.append("    cliIP: ").append(toIndentedString(cliIP)).append("\n");
-      sb.append("    statusCode: ").append(toIndentedString(statusCode)).append("\n");
-      sb.append("    reqHost: ").append(toIndentedString(reqHost)).append("\n");
-      sb.append("    reqMethod: ").append(toIndentedString(reqMethod)).append("\n");
-      sb.append("    bytes: ").append(toIndentedString(bytes)).append("\n");
-      sb.append("    tlsVersion: ").append(toIndentedString(tlsVersion)).append("\n");
-      sb.append("    UA: ").append(toIndentedString(UA)).append("\n");
-      sb.append("    queryStr: ").append(toIndentedString(queryStr)).append("\n");
-      sb.append("    rspContentLen: ").append(toIndentedString(rspContentLen)).append("\n");
-      sb.append("    rspContentType: ").append(toIndentedString(rspContentType)).append("\n");
-      sb.append("    reqPath: ").append(toIndentedString(reqPath)).append("\n");
-      sb.append("    reqPort: ").append(toIndentedString(reqPort)).append("\n");
-      sb.append("    proto: ").append(toIndentedString(proto)).append("\n");
-      sb.append("    reqTimeSec: ").append(toIndentedString(reqTimeSec)).append("\n");
-      sb.append("    cp: ").append(toIndentedString(cp)).append("\n");
-      sb.append("    reqId: ").append(toIndentedString(reqId)).append("\n");
-      sb.append("    tlsOverheadTimeMSec: ").append(toIndentedString(tlsOverheadTimeMSec)).append("\n");
-      sb.append("    objSize: ").append(toIndentedString(objSize)).append("\n");
-      sb.append("    uncompressedSize: ").append(toIndentedString(uncompressedSize)).append("\n");
-      sb.append("    overheadBytes: ").append(toIndentedString(overheadBytes)).append("\n");
-      sb.append("    totalBytes: ").append(toIndentedString(totalBytes)).append("\n");
-      sb.append("    accLang: ").append(toIndentedString(accLang)).append("\n");
-      sb.append("    cookie: ").append(toIndentedString(cookie)).append("\n");
-      sb.append("    range: ").append(toIndentedString(range)).append("\n");
-      sb.append("    referer: ").append(toIndentedString(referer)).append("\n");
-      sb.append("    xForwardedFor: ").append(toIndentedString(xForwardedFor)).append("\n");
-      sb.append("    maxAgeSec: ").append(toIndentedString(maxAgeSec)).append("\n");
-      sb.append("    reqEndTimeMSec: ").append(toIndentedString(reqEndTimeMSec)).append("\n");
-      sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
-      sb.append("    dnsLookupTimeMSec: ").append(toIndentedString(dnsLookupTimeMSec)).append("\n");
-      sb.append("    billingRegion: ").append(toIndentedString(billingRegion)).append("\n");
-      sb.append("    edgeIP: ").append(toIndentedString(edgeIP)).append("\n");
-      sb.append("    securityRules: ").append(toIndentedString(securityRules)).append("\n");
-      sb.append("    serverCountry: ").append(toIndentedString(serverCountry)).append("\n");
-      sb.append("    streamId: ").append(toIndentedString(streamId)).append("\n");
-      sb.append("}");
-      return sb.toString();
+        sb.append("    version: ").append(toIndentedString(version)).append("\n");
+        sb.append("    ewUsageInfo: ").append(toIndentedString(ewUsageInfo)).append("\n");
+        sb.append("    ewExecutionInfo: ").append(toIndentedString(ewExecutionInfo)).append("\n");
+        sb.append("    country: ").append(toIndentedString(country)).append("\n");
+        sb.append("    city: ").append(toIndentedString(city)).append("\n");
+        sb.append("    state: ").append(toIndentedString(state)).append("\n");
+        sb.append("    cacheStatus: ").append(toIndentedString(cacheStatus)).append("\n");
+        sb.append("    customField: ").append(toIndentedString(customField)).append("\n");
+        sb.append("    turnAroundTimeMSec: ").append(toIndentedString(turnAroundTimeMSec)).append("\n");
+        sb.append("    transferTimeMSec: ").append(toIndentedString(transferTimeMSec)).append("\n");
+        sb.append("    cliIP: ").append(toIndentedString(cliIP)).append("\n");
+        sb.append("    statusCode: ").append(toIndentedString(statusCode)).append("\n");
+        sb.append("    reqHost: ").append(toIndentedString(reqHost)).append("\n");
+        sb.append("    reqMethod: ").append(toIndentedString(reqMethod)).append("\n");
+        sb.append("    bytes: ").append(toIndentedString(bytes)).append("\n");
+        sb.append("    tlsVersion: ").append(toIndentedString(tlsVersion)).append("\n");
+        sb.append("    UA: ").append(toIndentedString(UA)).append("\n");
+        sb.append("    queryStr: ").append(toIndentedString(queryStr)).append("\n");
+        sb.append("    rspContentLen: ").append(toIndentedString(rspContentLen)).append("\n");
+        sb.append("    rspContentType: ").append(toIndentedString(rspContentType)).append("\n");
+        sb.append("    reqPath: ").append(toIndentedString(reqPath)).append("\n");
+        sb.append("    reqPort: ").append(toIndentedString(reqPort)).append("\n");
+        sb.append("    proto: ").append(toIndentedString(proto)).append("\n");
+        sb.append("    reqTimeSec: ").append(toIndentedString(reqTimeSec)).append("\n");
+        sb.append("    cp: ").append(toIndentedString(cp)).append("\n");
+        sb.append("    reqId: ").append(toIndentedString(reqId)).append("\n");
+        sb.append("    tlsOverheadTimeMSec: ").append(toIndentedString(tlsOverheadTimeMSec)).append("\n");
+        sb.append("    objSize: ").append(toIndentedString(objSize)).append("\n");
+        sb.append("    uncompressedSize: ").append(toIndentedString(uncompressedSize)).append("\n");
+        sb.append("    overheadBytes: ").append(toIndentedString(overheadBytes)).append("\n");
+        sb.append("    totalBytes: ").append(toIndentedString(totalBytes)).append("\n");
+        sb.append("    accLang: ").append(toIndentedString(accLang)).append("\n");
+        sb.append("    cookie: ").append(toIndentedString(cookie)).append("\n");
+        sb.append("    range: ").append(toIndentedString(range)).append("\n");
+        sb.append("    referer: ").append(toIndentedString(referer)).append("\n");
+        sb.append("    xForwardedFor: ").append(toIndentedString(xForwardedFor)).append("\n");
+        sb.append("    maxAgeSec: ").append(toIndentedString(maxAgeSec)).append("\n");
+        sb.append("    reqEndTimeMSec: ").append(toIndentedString(reqEndTimeMSec)).append("\n");
+        sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
+        sb.append("    dnsLookupTimeMSec: ").append(toIndentedString(dnsLookupTimeMSec)).append("\n");
+        sb.append("    billingRegion: ").append(toIndentedString(billingRegion)).append("\n");
+        sb.append("    edgeIP: ").append(toIndentedString(edgeIP)).append("\n");
+        sb.append("    securityRules: ").append(toIndentedString(securityRules)).append("\n");
+        sb.append("    serverCountry: ").append(toIndentedString(serverCountry)).append("\n");
+        sb.append("    streamId: ").append(toIndentedString(streamId)).append("\n");
+        sb.append("    asn: ").append(toIndentedString(asn)).append("\n");
+        sb.append("}");
+        return sb.toString();
     }
 
     /**
      * Convert the given object to string with each line indented by 4 spaces
      * (except the first line).
      */
-    private String toIndentedString(Object o) {
-      if (o == null) {
-        return "null";
-      }
-      return o.toString().replace("\n", "\n    ");
+    private String toIndentedString(java.lang.Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
     }
 
 }
