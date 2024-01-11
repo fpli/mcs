@@ -3,8 +3,8 @@ package chocolate.util;
 import com.ebay.app.raptor.chocolate.EventListenerApplication;
 import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
-import com.ebay.app.raptor.chocolate.eventlistener.util.BehaviorMessageParser;
 import com.ebay.app.raptor.chocolate.eventlistener.util.CollectionServiceUtil;
+import com.ebay.kernel.util.HeaderMultiValue;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
 import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
@@ -20,10 +20,12 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.ebay.app.raptor.chocolate.constant.Constants.TRACKING_HEADER;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
@@ -546,5 +548,33 @@ public class CollectionServiceUtilTest {
     parameters.put("ul_noapp", Arrays.asList(new String[] {"true"}));
     assertFalse(CollectionServiceUtil.inSpecialCase(ChannelType.ROI, parameters));
     assertTrue(CollectionServiceUtil.inSpecialCase(ChannelType.EPN, parameters));
+  }
+
+  @Test
+  public void testFilterInvalidGuidByRequestHeaders() throws UnsupportedEncodingException {
+    Map<String, String> headers = new HashMap<>();
+    String validGuid = new HeaderMultiValue.HeaderMultiValueBuilder().put("guid", "ValidGUID12345678901234567890123").build().toHeader("UTF-8");
+    String InvalidLengthGUID = new HeaderMultiValue.HeaderMultiValueBuilder().put("guid", "InvalidLengthGUID123456789012345678901234567").build().toHeader("UTF-8");
+    String InValidGUIDChar = new HeaderMultiValue.HeaderMultiValueBuilder().put("guid", "InValidGUID123456789012345--++&&").build().toHeader("UTF-8");
+    String InValidGUIDNull = new HeaderMultiValue.HeaderMultiValueBuilder().put("guid", null).build().toHeader("UTF-8");
+
+    Map<String, String> nullHeaders = null;
+    assertTrue(CollectionServiceUtil.filterInvalidGuidByRequestHeaders(nullHeaders,"testInvalidGuid","test"));
+
+    headers.put(TRACKING_HEADER, validGuid);
+    assertFalse(CollectionServiceUtil.filterInvalidGuidByRequestHeaders(headers,"testInvalidGuid","test"));
+
+    headers.clear();
+    headers.put(TRACKING_HEADER,InvalidLengthGUID);
+    assertTrue(CollectionServiceUtil.filterInvalidGuidByRequestHeaders(headers,"testInvalidGuid","test"));
+
+    headers.clear();
+    headers.put(TRACKING_HEADER,InValidGUIDChar);
+    assertTrue(CollectionServiceUtil.filterInvalidGuidByRequestHeaders(headers,"testInvalidGuid","test"));
+
+    headers.clear();
+    headers.put(TRACKING_HEADER,InValidGUIDNull);
+    assertTrue(CollectionServiceUtil.filterInvalidGuidByRequestHeaders(headers,"testInvalidGuid","test"));
+
   }
 }

@@ -412,7 +412,8 @@ public class CollectionService {
     boolean isULKDuplicateClick = CollectionServiceUtil.isUlkDuplicateClick(baseEvent.getChannelType().getLogicalChannel().getAvro(),
             baseEvent.getReferer(), baseEvent.getUrl(), baseEvent.getUserAgentInfo());
 
-    if(isInternalRef || isULKDuplicateClick) {
+    boolean isInvalidGuid = CollectionServiceUtil.filterInvalidGuidByRequestHeaders(baseEvent.getRequestHeaders(),baseEvent.getActionType().toString(),baseEvent.getChannelType().toString());
+    if(isInternalRef || isULKDuplicateClick || isInvalidGuid) {
       Producer<Long, ListenerMessage> producer = KafkaSink.get();
       ListenerMessage listenerMessage = listenerMessageParser.parse(baseEvent);
       sendClickToInternalClickTopic(producer, listenerMessage);
@@ -426,7 +427,7 @@ public class CollectionService {
     SpanEventHelper.writeEvent(TYPE_INFO, "eventId", STATUS_OK, utpEventId);
     SpanEventHelper.writeEvent(TYPE_INFO, "requestHeaders", STATUS_OK, requestHeaders.toString());
 
-    if(!isInternalRef && !isULKDuplicateClick) {
+    if(!isInternalRef && !isULKDuplicateClick && !isInvalidGuid) {
       // add channel specific tags, and produce message for EPN and IMK
       if (PM_CHANNELS.contains(baseEvent.getChannelType())) {
         firePMEvent(baseEvent, requestContext);

@@ -12,6 +12,7 @@ import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.traffic.chocolate.utp.common.EmailPartnerIdEnum;
 import com.ebay.traffic.monitoring.Field;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +119,8 @@ public class CollectionServiceUtil {
 
   // referer pattern for the clicks from Promoted Listings iframe on ebay partner sites
   private static Pattern promotedListsingsRefererWithEbaySites = Pattern.compile("^(http[s]?:\\/\\/)?([\\w.]+\\.)?(qa\\.)?ebay\\.[\\w-.]+(\\/gum\\/.*)", Pattern.CASE_INSENSITIVE);
+
+  private static final Pattern VALID_GUID_PATTERN = Pattern.compile("^[0-9A-Za-z]*$");
 
   private static final List<String> PAGE_WHITELIST = Arrays.asList("cnt", "seller", "rxo", "ws", "bo", "cart", "pages");
 
@@ -738,4 +741,21 @@ public class CollectionServiceUtil {
     }
     return false;
   }
+
+  public static boolean filterInvalidGuidByRequestHeaders(Map<String, String> requestHeaders, String actionType, String channelType) {
+    if (MapUtils.isEmpty(requestHeaders)) {
+      MonitorUtil.info("InvalidGuid", 1, Field.of(CHANNEL_ACTION, actionType),
+              Field.of(CHANNEL_TYPE, channelType));
+      return true;
+    }
+    String trackingHeader = requestHeaders.get(TRACKING_HEADER);
+    String guid = HttpRequestUtil.getHeaderValue(trackingHeader, GUID);
+    if (org.apache.commons.lang3.StringUtils.isBlank(guid) || guid.length() != 32 || !VALID_GUID_PATTERN.matcher(guid).matches()) {
+      MonitorUtil.info("InvalidGuid", 1, Field.of(CHANNEL_ACTION, actionType),
+              Field.of(CHANNEL_TYPE, channelType));
+      return true;
+    }
+    return false;
+  }
+
 }
