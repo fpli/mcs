@@ -2,7 +2,6 @@ package com.ebay.app.raptor.chocolate.eventlistener.util;
 
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 
 /**
  * Created by jialili1 on 11/20/20

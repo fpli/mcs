@@ -1,6 +1,10 @@
 package com.ebay.traffic.chocolate.kafka;
 
 import com.ebay.app.raptor.chocolate.avro.AkamaiMessage;
+import io.ebay.rheos.kafka.client.StreamConnectorConfig;
+import io.ebay.rheos.schema.avro.GenericRecordDomainDataDecoder;
+import io.ebay.rheos.schema.event.RheosEvent;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -13,7 +17,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import static com.ebay.traffic.chocolate.common.TestHelper.loadProperties;
 import static com.ebay.traffic.chocolate.common.TestHelper.newAkamaiMessage;
@@ -51,23 +57,27 @@ public class TestRheosAkamaiProducer {
 
     System.out.println("Producer sent 3 message.");
 
-    Consumer<byte[], AkamaiMessage> consumer =
+    Consumer<byte[], RheosEvent> consumer =
         new KafkaConsumer<>(loadProperties("rheos-kafka-akamai-consumer.properties"));
     consumer.subscribe(Arrays.asList(topic));
 
     int count = 0;
     long start = System.currentTimeMillis();
     long end = start;
+    Map<String, Object> config = new HashMap<>();
+    // for staging
+    config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.qa.ebay.com");
+    // for production
+    //config.put(StreamConnectorConfig.RHEOS_SERVICES_URLS, "https://rheos-services.stratus.ebay.com");
+    GenericRecordDomainDataDecoder decoder = new GenericRecordDomainDataDecoder(config);
     while (count < 3 && (end - start < 5 * 60 * 1000)) {
-      ConsumerRecords<byte[], AkamaiMessage> consumerRecords = consumer.poll(3000);
-      Iterator<ConsumerRecord<byte[], AkamaiMessage>> iterator = consumerRecords.iterator();
-
+      ConsumerRecords<byte[], RheosEvent> consumerRecords = consumer.poll(3000);
+      Iterator<ConsumerRecord<byte[], RheosEvent>> iterator = consumerRecords.iterator();
       while (iterator.hasNext()) {
-        ConsumerRecord<byte[], AkamaiMessage> record = iterator.next();
-        AkamaiMessage message = record.value();
-        System.out.println(message);
+        System.out.println(decoder.decode(iterator.next().value()));
         count++;
       }
+
       end = System.currentTimeMillis();
     }
 
