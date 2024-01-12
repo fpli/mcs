@@ -15,5 +15,4 @@ public class StringConstants {
   public static final String EQUAL = "=";
   public static final String SEMICOLON = ";";
   public static final String AND = "&";
-  public static final String BLANK_SPACE = " ";
 }

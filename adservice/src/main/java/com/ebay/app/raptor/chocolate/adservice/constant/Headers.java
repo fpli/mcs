@@ -18,6 +18,4 @@ public class Headers {
   public static final String VARY = "Vary";
   public static final char SEMICOLON = ';';
   public static final String ACCEPT_CH = "accept-ch";
-  public static final String ATTRIBUTION_REPORTING_REGISTER_SOURCE = "Attribution-Reporting-Register-Source";
-  public static final String ATTRIBUTION_REPORTING_REGISTER_TRIGGER = "Attribution-Reporting-Register-Trigger";
 }

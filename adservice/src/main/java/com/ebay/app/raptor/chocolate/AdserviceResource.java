@@ -8,7 +8,6 @@ import com.ebay.app.raptor.chocolate.adservice.lbs.LBSClient;
 import com.ebay.app.raptor.chocolate.adservice.lbs.LBSQueryResult;
 import com.ebay.app.raptor.chocolate.adservice.util.*;
 import com.ebay.app.raptor.chocolate.adservice.util.idmapping.IdMapable;
-import com.ebay.app.raptor.chocolate.common.SnapshotId;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.ClientDataEnum;
 import com.ebay.app.raptor.chocolate.gen.api.*;
@@ -26,7 +25,6 @@ import com.ebay.traffic.monitoring.Field;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +50,6 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static com.ebay.app.raptor.chocolate.adservice.constant.AttributionReportingConstants.*;
-import static com.ebay.app.raptor.chocolate.adservice.constant.Headers.ATTRIBUTION_REPORTING_REGISTER_SOURCE;
-import static com.ebay.app.raptor.chocolate.adservice.constant.Headers.ATTRIBUTION_REPORTING_REGISTER_TRIGGER;
-import static com.ebay.app.raptor.chocolate.adservice.constant.StringConstants.COMMA;
 
 /**
  * Resource class
@@ -65,7 +59,7 @@ import static com.ebay.app.raptor.chocolate.adservice.constant.StringConstants.C
 
 @Path("/marketingtracking/v1")
 @Consumes(MediaType.APPLICATION_JSON)
-public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi, AkamaiApi, ConversionApi {
+public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi, AkamaiApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);
 
   private static final String TYPE_INFO = "Info";
@@ -272,29 +266,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       // call marketing collection service to send ubi event or send kafka async
       builder.async().post(Entity.json(mktEvent), new MCSCallback());
-
-      // Attribution Reporting API - Register the source event
-      if (params.containsKey(ENABLE_TEST) && "true".equals(params.get(ENABLE_TEST)[0])) {
-        // set ar_debug cookie for debug report
-        adserviceCookie.setArDebug(response);
-
-        // construct Attribution-Reporting-Register-Source header
-        JSONObject sourceHeader = new JSONObject();
-        String destinationParam = URLDecoder.decode(params.get(DESTINATIONS)[0], "UTF-8");
-        String[] destinations = destinationParam.replace(" ", "").split(COMMA);
-        sourceHeader.put(DESTINATION, destinations);
-        JSONObject aggregationKeys = new JSONObject();
-        aggregationKeys.put(GMV, "0x13E3AF9C84D");
-        sourceHeader.put(AGGREGATION_KEYS, aggregationKeys);
-        sourceHeader.put(AGGREGATABLE_REPORT_WINDOW, 259200);
-        sourceHeader.put(DEBUG_KEY, String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId())
-            .getRepresentation()));
-        sourceHeader.put(DEBUG_REPORTING, true);
-        sourceHeader.put(SOURCE_EVENT_ID, String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance()
-            .getDriverId()).getRepresentation()));
-        response.setHeader(ATTRIBUTION_REPORTING_REGISTER_SOURCE, sourceHeader.toString());
-      }
-
       // send 1x1 pixel
       ImageResponseHandler.sendImageResponse(response);
 
@@ -305,6 +276,7 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
 
       stopTimerAndLogData(startTime, Field.of(Constants.CHANNEL_TYPE, channelType),
         Field.of(Constants.PARTNER, partner));
+
     } catch (Exception e) {
       try {
         logger.warn("Impression request process failed, url: {}", request.getRequestURL().append("?")
@@ -543,37 +515,6 @@ public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, Gui
       } catch (Exception ex) {
         logger.warn(ex.getMessage(), ex);
       }
-    }
-
-    return res;
-  }
-
-  /**
-   * Attribution Reporting API - Register the conversion event
-   * @return response
-   */
-  @Override
-  public Response conversion() {
-    MonitorUtil.info(METRIC_INCOMING_REQUEST, 1, Field.of("path", "conversion"));
-    Response res;
-
-    try {
-      // set ar_debug cookie for debug report
-      adserviceCookie.setArDebug(response);
-
-      // construct Attribution-Reporting-Register-Trigger header
-      JSONObject triggerHeader = new JSONObject();
-      JSONObject aggregatableValues = new JSONObject();
-      aggregatableValues.put(GMV, 100);
-      triggerHeader.put(AGGREGATABLE_VALUES, aggregatableValues);
-      triggerHeader.put(DEBUG_KEY, String.valueOf(SnapshotId.getNext(ApplicationOptions.getInstance().getDriverId())
-          .getRepresentation()));
-      triggerHeader.put(DEBUG_REPORTING, true);
-      response.setHeader(ATTRIBUTION_REPORTING_REGISTER_TRIGGER, triggerHeader.toString());
-      res = Response.status(Response.Status.OK).build();
-    } catch (Exception e) {
-      res = Response.status(Response.Status.BAD_REQUEST).build();
-      logger.warn("Conversion registration failed", e);
     }
 
     return res;

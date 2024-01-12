@@ -20,8 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
-import static org.springframework.boot.web.server.Cookie.SameSite.NONE;
-
 /**
  * Read and write ebayadserving.com cookie. The purpose of this cookie is for synchronizing adguid with ebay.com guid.
  * When user comes to ebayadserving.com, the server will fetch adguid in cookie and then find corresponding guid.
@@ -36,7 +34,6 @@ public class AdserviceCookie {
   private static final String ADGUID_COOKIE_PATH = "/";
   // expires in 90 days
   private static final int COOKIE_EXPIRY = 90 * 24 * 60 * 60;
-  private static final String AR_DEBUG = "ar_debug";
   private static final String DEFAULT_ADGUID = "00000000000000000000000000000000";
   private static final String METRIC_READ_ADGUID = "METRIC_READ_ADGUID";
   private static final String METRIC_NO_ADGUID_IN_COOKIE = "METRIC_NO_ADGUID_IN_COOKIE";
@@ -121,7 +118,7 @@ public class AdserviceCookie {
 
     ResponseCookie cookie = ResponseCookie.from(ADGUID, adguid)
             .maxAge(COOKIE_EXPIRY)
-            .sameSite(NONE.attributeValue())
+            .sameSite(org.springframework.boot.web.server.Cookie.SameSite.NONE.attributeValue())
             .path(ADGUID_COOKIE_PATH)
             .secure(ApplicationOptions.getInstance().isSecureCookie())
             .httpOnly(true)
@@ -130,22 +127,6 @@ public class AdserviceCookie {
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
     return adguid;
-  }
-
-  /**
-   * Set ar_debug cookie for Attribution Reporting debug report
-   *
-   * @param response http response
-   * @return adguid in String
-   */
-  public void setArDebug(HttpServletResponse response) {
-    ResponseCookie cookie = ResponseCookie.from(AR_DEBUG, "1")
-        .httpOnly(true)
-        .secure(true)
-        .sameSite(NONE.attributeValue())
-        .build();
-
-    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
   private static String generateAdguid() {
