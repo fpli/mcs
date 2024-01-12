@@ -1,5 +1,6 @@
 package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.adservice.ARReportResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,7 @@ import java.util.Set;
  * @author xiangli4
  */
 @Configuration
-@ApplicationPath("/marketingtracking")
+@ApplicationPath("/")
 public class AdserviceResourceConfig extends Application {
 
   @Autowired
@@ -28,6 +29,7 @@ public class AdserviceResourceConfig extends Application {
   public Set<Class<?>> getClasses() {
     Set<Class<?>> providers = new LinkedHashSet<Class<?>>();
     providers.add(AdserviceResource.class);
+    providers.add(ARReportResource.class);
     return providers;
   }
 
