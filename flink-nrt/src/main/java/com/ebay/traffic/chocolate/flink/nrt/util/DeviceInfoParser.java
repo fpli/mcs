@@ -2,7 +2,6 @@ package com.ebay.traffic.chocolate.flink.nrt.util;
 
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 
 /**
  * Created by zhofan on 06/30/21

@@ -1,7 +1,7 @@
 package com.ebay.traffic.chocolate.flink.nrt.transformer;
 
+import com.ebay.platform.raptor.dds.parser.UserAgentParser;
 import com.ebay.platform.raptor.ddsmodels.UserAgentInfo;
-import com.ebay.platform.raptor.raptordds.parsers.UserAgentParser;
 import com.ebay.traffic.chocolate.flink.nrt.constant.StringConstants;
 import com.ebay.traffic.chocolate.flink.nrt.constant.TransformerConstants;
 import com.ebay.traffic.chocolate.flink.nrt.util.DeviceInfoParser;
