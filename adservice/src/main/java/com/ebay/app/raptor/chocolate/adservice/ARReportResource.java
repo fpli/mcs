@@ -31,7 +31,8 @@ public class ARReportResource implements AttestationsApi {
         Response res;
 
         try {
-            res = arReportService.attestations();
+            String attestations = arReportService.attestations();
+            res = Response.ok().entity(attestations).build();
         } catch (Exception e) {
             logger.warn("Attestation Error", e);
             res = Response.status(Response.Status.BAD_REQUEST).build();
