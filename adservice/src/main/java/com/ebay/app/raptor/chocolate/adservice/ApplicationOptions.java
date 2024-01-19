@@ -43,7 +43,8 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    */
   private static final String REDIRECT_HOMEPAGE = "chocolate.adservice.redirect.homepage";
 
-  private static final String ATTESTATION_FILE = "privacy-sandbox-attestations.json";
+  private static final String ATTESTATION_FILE_NAME = "privacy-sandbox-attestations.json";
+  public static String ATTESTATION_FILE = null;
 
   /**
    * Static driver ID
@@ -128,15 +129,14 @@ public class ApplicationOptions extends AbstractApplicationOptions {
   }
 
   /**
-   * Get the Privacy Sandbox attestation file
+   * Load the Privacy Sandbox attestation file
    */
-  public String getAttestationFile() throws IOException {
+  public void loadAttestationFile() throws IOException {
     InputStream inputStream = null;
-    String jsonTxt;
     try {
-      File file = new File(RuntimeContext.getConfigRoot().getFile() + ATTESTATION_FILE);
+      File file = new File(RuntimeContext.getConfigRoot().getFile() + ATTESTATION_FILE_NAME);
       inputStream = new FileInputStream(file);
-      jsonTxt = IOUtils.toString(inputStream, "UTF-8");
+      ATTESTATION_FILE = IOUtils.toString(inputStream, "UTF-8");
     } catch (IOException e) {
       throw e;
     } finally {
@@ -144,7 +144,5 @@ public class ApplicationOptions extends AbstractApplicationOptions {
         inputStream.close();
       }
     }
-
-    return jsonTxt;
   }
 }
