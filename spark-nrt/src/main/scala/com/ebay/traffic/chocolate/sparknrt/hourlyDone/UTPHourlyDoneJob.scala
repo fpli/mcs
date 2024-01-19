@@ -121,14 +121,14 @@ class UTPHourlyDoneJob(params: Parameter, override val enableHiveSupport: Boolea
     val fromDateTime = lastDone.plusHours(1)
     val fromDateString = fromDateTime.format(dtFormatter)
     val fromProducerEventTs = fromDateTime.toInstant.toEpochMilli
-    val sql = "select eventId, dt, hour, producerEventTs, channelType, actionType from %s where dt >= '%s' and producerEventTs >= %d and actionType not in ('WATCH', 'UNWATCH')".format(inputSource, fromDateString, fromProducerEventTs)
+    val sql = "select eventId, dt, hour, producerEventTs, channelType, actionType from %s where dt >= '%s' and producerEventTs >= %d".format(inputSource, fromDateString, fromProducerEventTs)
     logger.info("sqlToSelectSource: " + sql)
     val sourceDf = sqlsc.sql(sql)
     sourceDf
   }
 
   def readCache(): DataFrame = {
-    val sql = "select eventId, dt, hour, producerEventTs, channelType, actionType from %s where actionType not in ('WATCH', 'UNWATCH')".format(cacheTable)
+    val sql = "select eventId, dt, hour, producerEventTs, channelType, actionType from %s".format(cacheTable)
     logger.info("sqlToSelectCache: " + sql)
     val sourceDf = sqlsc.sql(sql)
     sourceDf
