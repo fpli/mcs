@@ -1,0 +1,29 @@
+{
+  "privacy_sandbox_api_attestations": [
+    {
+      "attestation_parser_version": "2",
+      "attestation_version": "1",
+      "privacy_policy": [
+        "https://www.ebay.com/help/policies/member-behaviour-policies/user-privacy-notice-privacy-policy?id=4260"
+      ],
+      "ownership_token": "m3WtGQwFjVVRdOdtTAFAR1zCzev3QjrYv41MNI1YYkR1Kl6SvywRGa0YwJQ1dojI",
+      "issued_seconds_since_epoch": 1704731449,
+      "enrollment_id": "3J2UJ",
+      "enrollment_site": "https://ebayadservices.com/",
+      "platform_attestations": [
+        {
+          "platform": "chrome",
+          "attestations": {
+            "attribution_reporting_api": {
+              "ServiceNotUsedForIdentifyingUserAcrossSites": true
+            }
+          }
+        },
+        {
+          "platform": "android",
+          "attestations": {}
+        }
+      ]
+    }
+  ]
+}

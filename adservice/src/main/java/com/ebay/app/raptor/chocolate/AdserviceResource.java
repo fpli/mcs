@@ -57,7 +57,7 @@ import java.util.concurrent.CompletableFuture;
  * @author xiangli4
  */
 
-@Path("/v1")
+@Path("/marketingtracking/v1")
 @Consumes(MediaType.APPLICATION_JSON)
 public class AdserviceResource implements ArApi, ImpressionApi, RedirectApi, GuidApi, UseridApi, SyncApi, EpntApi, AkamaiApi {
   private static final Logger logger = LoggerFactory.getLogger(AdserviceResource.class);

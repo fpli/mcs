@@ -292,6 +292,20 @@ paths:
           text/plain:
             schema:
               type: string
+  /privacy-sandbox-attestations.json:
+    get:
+      summary: Privacy Sandbox Attestations
+      description: Privacy Sandbox Attestations
+      tags:
+        - attestations
+      operationId: attestations
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Rejected
+        '500':
+          description: The call was unsuccessful due to exceptions on the Server
 
 components:
   schemas:

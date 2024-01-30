@@ -3,10 +3,11 @@ package com.ebay.app.raptor.chocolate.adservice;
 import com.ebay.app.raptor.chocolate.common.AbstractApplicationOptions;
 import com.ebay.app.raptor.chocolate.common.ApplicationOptionsParser;
 import com.ebay.kernel.context.RuntimeContext;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -41,6 +42,9 @@ public class ApplicationOptions extends AbstractApplicationOptions {
    * Redirect default page
    */
   private static final String REDIRECT_HOMEPAGE = "chocolate.adservice.redirect.homepage";
+
+  private static final String ATTESTATION_FILE_NAME = "privacy-sandbox-attestations.json";
+  public static String ATTESTATION_FILE = null;
 
   /**
    * Static driver ID
@@ -122,5 +126,23 @@ public class ApplicationOptions extends AbstractApplicationOptions {
 
   public String getRedirectHomepage() {
     return ApplicationOptionsParser.getStringProperty(properties, REDIRECT_HOMEPAGE);
+  }
+
+  /**
+   * Load the Privacy Sandbox attestation file
+   */
+  public void loadAttestationFile() throws IOException {
+    InputStream inputStream = null;
+    try {
+      File file = new File(RuntimeContext.getConfigRoot().getFile() + ATTESTATION_FILE_NAME);
+      inputStream = new FileInputStream(file);
+      ATTESTATION_FILE = IOUtils.toString(inputStream, "UTF-8");
+    } catch (IOException e) {
+      throw e;
+    } finally {
+      if(inputStream != null){
+        inputStream.close();
+      }
+    }
   }
 }

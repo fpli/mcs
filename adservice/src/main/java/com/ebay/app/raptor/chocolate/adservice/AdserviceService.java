@@ -42,6 +42,7 @@ public class AdserviceService {
     ApplicationOptions.init();
     ApplicationOptions options = ApplicationOptions.getInstance();
     options.setDriverId(driverIdService.getDriverId(Hostname.HOSTNAME, Hostname.getIp(), DAPRvrId.getMaxDriverId(), ApplicationOptions.getInstance().getByNameInteger(DRIVERID_RETRIES)));
+    options.loadAttestationFile();
     ThirdpartyWhitelistCache.init(thirdpartyWhitelistRepo);
 
   }
