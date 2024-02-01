@@ -137,6 +137,7 @@ public class ApplicationOptions extends AbstractApplicationOptions {
       File file = new File(RuntimeContext.getConfigRoot().getFile() + ATTESTATION_FILE_NAME);
       inputStream = new FileInputStream(file);
       ATTESTATION_FILE = IOUtils.toString(inputStream, "UTF-8");
+      logger.info("Attestation file loaded successfully: \n" + ATTESTATION_FILE);
     } catch (IOException e) {
       throw e;
     } finally {
