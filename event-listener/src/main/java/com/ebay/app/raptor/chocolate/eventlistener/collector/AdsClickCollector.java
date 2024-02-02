@@ -80,7 +80,7 @@ public class AdsClickCollector {
     protected ImmutablePair<String, Boolean> getAdsSignals(MultiValueMap<String, String> parameters) {
         String amdata = null;
         Boolean offebay = Boolean.FALSE;
-        if (MapUtils.isNotEmpty(parameters)) {
+        if (MapUtils.isEmpty(parameters)) {
             return new ImmutablePair<>(amdata, offebay);
         }
         if (!CollectionUtils.isEmpty(parameters)) {
