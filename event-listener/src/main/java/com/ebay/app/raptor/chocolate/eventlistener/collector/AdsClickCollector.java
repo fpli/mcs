@@ -37,7 +37,7 @@ public class AdsClickCollector {
     private static final String ONE = "1";
     private static final String ENCODED_ENC = "enc%3A";
     private static final String ENC = "enc:";
-    private static final String ENCODED_ENC_PD = "encpd:";
+    private static final String ENCODED_ENC_PD = "encpd%3A";
     private static final String ENC_PD = "encpd:";
     private static final Logger LOGGER = LoggerFactory.getLogger(AdsClickCollector.class);
 
