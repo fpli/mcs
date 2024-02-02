@@ -21,6 +21,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @DependsOn("EventListenerService")
@@ -95,7 +96,7 @@ public class AdsClickCollector {
     protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals,
                                      MultiValueMap<String, String> queryParams) {
         if (isNative(endUserContext)
-                && (amdataPresent(adsSignals.left) || adsSignals.right)) {
+                && (amdataPresent(adsSignals.left) || adsSignals.right || encKeyPresent(queryParams))) {
             return true;
         }
         return false;
@@ -107,7 +108,8 @@ public class AdsClickCollector {
 
     protected boolean encKeyPresent(MultiValueMap<String, String> queryParams) {
         for (String key: queryParams.keySet()) {
-            if (key.contains(ENC) || key.contains(ENC_PD)) {
+            List<String> values = queryParams.get(key);
+            if (!CollectionUtils.isEmpty(values) && (values.get(0).contains(ENC) || values.get(0).contains(ENC_PD))) {
                 return true;
             }
         }

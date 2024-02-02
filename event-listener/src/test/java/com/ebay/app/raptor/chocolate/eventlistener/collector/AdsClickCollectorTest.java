@@ -59,6 +59,34 @@ public class AdsClickCollectorTest {
         assertFalse(adsSignals.right);
     }
 
+    @Test
+    public void encValuePresent() {
+        Event event = new Event();
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=enc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
+        IEndUserContext endUserContext = mock(IEndUserContext.class);
+        doReturn("ebayUserAgent/eBayIOS;6.4.0;iOS;13.5.1;Apple;iPhone12_1;Vodafone.de;414x896;2.0")
+                .when(endUserContext).getUserAgent();
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
+                adsClickCollector.getQueryParams(event)));
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=tkp%3ABlBMUIzmrr6tYw%7Cenc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D");
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
+                adsClickCollector.getQueryParams(event)));
+    }
+
+    @Test
+    public void encpdValuePresent() {
+        Event event = new Event();
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?someparam=encpd%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
+        IEndUserContext endUserContext = mock(IEndUserContext.class);
+        doReturn("ebayUserAgent/eBayIOS;6.4.0;iOS;13.5.1;Apple;iPhone12_1;Vodafone.de;414x896;2.0")
+                .when(endUserContext).getUserAgent();
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
+                adsClickCollector.getQueryParams(event)));
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?someparam2=tkp%3ABlBMUIzmrr6tYw%7Cencpd%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D");
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
+                adsClickCollector.getQueryParams(event)));
+    }
+
     private Event createEvent() {
         Event event = new Event();
         event.setTargetUrl("https://www.ebay.com/i/174202315485?chn=ps&norover=1&mkevt=1&mkrid=711-117182-37290-0&mkcid" +
