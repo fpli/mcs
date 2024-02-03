@@ -37,8 +37,10 @@ public class AdsClickCollector {
     private static final String ONE = "1";
     private static final String ENCODED_ENC = "enc%3A";
     private static final String ENC = "enc:";
+    private static final String D_ENCODED_ENC = "enc%253A";
     private static final String ENCODED_ENC_PD = "encpd%3A";
     private static final String ENC_PD = "encpd:";
+    private static final String D_ENCODED_ENC_PD = "encpd%253A";
     private static final Logger LOGGER = LoggerFactory.getLogger(AdsClickCollector.class);
 
     public void processPromotedListingClick(IEndUserContext endUserContext, Event event,
@@ -113,6 +115,7 @@ public class AdsClickCollector {
             List<String> values = queryParams.get(key);
             if (!CollectionUtils.isEmpty(values)
                     && (values.get(0).contains(ENCODED_ENC) || values.get(0).contains(ENCODED_ENC_PD)
+                    || values.get(0).contains(D_ENCODED_ENC) || values.get(0).contains(D_ENCODED_ENC_PD)
                     || values.get(0).contains(ENC) || values.get(0).contains(ENC_PD))) {
                 return true;
             }
