@@ -1,5 +1,6 @@
-package com.ebay.app.raptor.chocolate.adservice;
+package com.ebay.app.raptor.chocolate;
 
+import com.ebay.app.raptor.chocolate.adservice.ARReportService;
 import com.ebay.app.raptor.chocolate.gen.api.AttestationsApi;
 import com.ebay.app.raptor.chocolate.util.MonitorUtil;
 import com.ebay.traffic.monitoring.Field;
@@ -20,7 +21,7 @@ import javax.ws.rs.core.Response;
 public class ARReportResource implements AttestationsApi {
     private static final Logger logger = LoggerFactory.getLogger(ARReportResource.class);
 
-    private static final String METRIC_INCOMING_REQUEST = "incoming_request";
+    private static final String METRIC_INCOMING_REQUEST = "METRIC_INCOMING_REQUEST";
 
     @Autowired
     private ARReportService arReportService;

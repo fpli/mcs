@@ -2,14 +2,14 @@ package com.ebay.app.raptor.chocolate.adservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-
-import javax.ws.rs.core.Response;
 
 /**
  * Created by jialili1 on 1/17/24
  */
 @Component
+@DependsOn("AdserviceService")
 public class ARReportService {
     private static final Logger logger = LoggerFactory.getLogger(ARReportService.class);
 

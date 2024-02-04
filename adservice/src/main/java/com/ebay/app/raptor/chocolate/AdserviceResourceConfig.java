@@ -1,12 +1,10 @@
 package com.ebay.app.raptor.chocolate;
 
-import com.ebay.app.raptor.chocolate.adservice.ARReportResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Feature;
 import java.util.LinkedHashSet;
