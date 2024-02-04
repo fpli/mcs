@@ -1,11 +1,11 @@
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.constant.Constants;
 import com.ebay.app.raptor.chocolate.eventlistener.component.AdsCollectionSvcClient;
 import com.ebay.app.raptor.chocolate.eventlistener.model.AdsCollectionSvcRequest;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -21,6 +21,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @DependsOn("EventListenerService")
@@ -32,16 +33,22 @@ public class AdsClickCollector {
     private static final String ANDROID = "ebayandroid";
     private static final String IPHONE = "ebayiphone";
     private static final String AMDATA = "amdata";
-    private static final String CAMP_ID = "campid";
     private static final String CLICK_TIME = "|tsp:";
     private static final String ONE = "1";
+    private static final String ENCODED_ENC = "enc%3A";
+    private static final String ENC = "enc:";
+    private static final String D_ENCODED_ENC = "enc%253A";
+    private static final String ENCODED_ENC_PD = "encpd%3A";
+    private static final String ENC_PD = "encpd:";
+    private static final String D_ENCODED_ENC_PD = "encpd%253A";
     private static final Logger LOGGER = LoggerFactory.getLogger(AdsClickCollector.class);
 
     public void processPromotedListingClick(IEndUserContext endUserContext, Event event,
                                             MultivaluedMap<String, String> requestHeaders) {
         try {
-            ImmutablePair<String, Boolean> adsSignals = getAdsSignals(event);
-            if (isInvokeAdsSvc(endUserContext, adsSignals)) {
+            MultiValueMap<String, String> queryParams = getQueryParams(event);
+            ImmutablePair<String, Boolean> adsSignals = getAdsSignals(queryParams);
+            if (isInvokeAdsSvc(endUserContext, adsSignals, queryParams)) {
                 AdsCollectionSvcRequest adsCollectionSvcRequest = createAdsRequest(event, adsSignals.left);
                 adsCollectionSvcClient.invokeService(adsCollectionSvcRequest, event.getReferrer(), requestHeaders);
             }
@@ -68,14 +75,19 @@ public class AdsClickCollector {
         return request;
     }
 
-    protected ImmutablePair<String, Boolean> getAdsSignals(Event event) {
+    protected MultiValueMap<String, String> getQueryParams(Event event) {
+        if (event != null && StringUtils.isNotEmpty(event.getTargetUrl())) {
+            return UriComponentsBuilder.fromUriString(event.getTargetUrl()).build().getQueryParams();
+        }
+        return null;
+    }
+
+    protected ImmutablePair<String, Boolean> getAdsSignals(MultiValueMap<String, String> parameters) {
         String amdata = null;
         Boolean offebay = Boolean.FALSE;
-        if (event == null) {
+        if (MapUtils.isEmpty(parameters)) {
             return new ImmutablePair<>(amdata, offebay);
         }
-        MultiValueMap<String, String> parameters =
-                UriComponentsBuilder.fromUriString(event.getTargetUrl()).build().getQueryParams();
         if (!CollectionUtils.isEmpty(parameters)) {
             amdata = parameters.getFirst(AMDATA);
             if (ONE.equals(parameters.getFirst(Constants.MKEVT))) {
@@ -85,8 +97,10 @@ public class AdsClickCollector {
         return new ImmutablePair<>(amdata, offebay);
     }
 
-    protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals) {
-        if (isNative(endUserContext) && (amdataPresent(adsSignals.left) || adsSignals.right)) {
+    protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals,
+                                     MultiValueMap<String, String> queryParams) {
+        if (isNative(endUserContext)
+                && (amdataPresent(adsSignals.left) || adsSignals.right || encKeyPresent(queryParams))) {
             return true;
         }
         return false;
@@ -94,6 +108,19 @@ public class AdsClickCollector {
 
     protected boolean amdataPresent(String amdata) {
         return !StringUtils.isBlank(amdata);
+    }
+
+    protected boolean encKeyPresent(MultiValueMap<String, String> queryParams) {
+        for (String key: queryParams.keySet()) {
+            List<String> values = queryParams.get(key);
+            if (!CollectionUtils.isEmpty(values)
+                    && (values.get(0).contains(ENCODED_ENC) || values.get(0).contains(ENCODED_ENC_PD)
+                    || values.get(0).contains(D_ENCODED_ENC) || values.get(0).contains(D_ENCODED_ENC_PD)
+                    || values.get(0).contains(ENC) || values.get(0).contains(ENC_PD))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isNative(IEndUserContext endUserContext) {
