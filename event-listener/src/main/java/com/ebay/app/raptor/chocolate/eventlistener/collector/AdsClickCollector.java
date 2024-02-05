@@ -48,7 +48,7 @@ public class AdsClickCollector {
         try {
             MultiValueMap<String, String> queryParams = getQueryParams(event);
             ImmutablePair<String, Boolean> adsSignals = getAdsSignals(queryParams);
-            if (isInvokeAdsSvc(endUserContext, adsSignals, queryParams)) {
+            if (isInvokeAdsSvc(endUserContext, adsSignals)) {
                 AdsCollectionSvcRequest adsCollectionSvcRequest = createAdsRequest(event, adsSignals.left);
                 adsCollectionSvcClient.invokeService(adsCollectionSvcRequest, event.getReferrer(), requestHeaders);
             }
@@ -90,6 +90,9 @@ public class AdsClickCollector {
         }
         if (!CollectionUtils.isEmpty(parameters)) {
             amdata = parameters.getFirst(AMDATA);
+            if (StringUtils.isEmpty(amdata)) {
+                amdata = findAmdataFromencKey(parameters);
+            }
             if (ONE.equals(parameters.getFirst(Constants.MKEVT))) {
                 offebay = Boolean.TRUE;
             }
@@ -97,10 +100,8 @@ public class AdsClickCollector {
         return new ImmutablePair<>(amdata, offebay);
     }
 
-    protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals,
-                                     MultiValueMap<String, String> queryParams) {
-        if (isNative(endUserContext)
-                && (amdataPresent(adsSignals.left) || adsSignals.right || encKeyPresent(queryParams))) {
+    protected boolean isInvokeAdsSvc(IEndUserContext endUserContext, ImmutablePair<String, Boolean> adsSignals) {
+        if (isNative(endUserContext) && (amdataPresent(adsSignals.left) || adsSignals.right)) {
             return true;
         }
         return false;
@@ -110,17 +111,17 @@ public class AdsClickCollector {
         return !StringUtils.isBlank(amdata);
     }
 
-    protected boolean encKeyPresent(MultiValueMap<String, String> queryParams) {
+    protected String findAmdataFromencKey(MultiValueMap<String, String> queryParams) {
         for (String key: queryParams.keySet()) {
             List<String> values = queryParams.get(key);
             if (!CollectionUtils.isEmpty(values)
                     && (values.get(0).contains(ENCODED_ENC) || values.get(0).contains(ENCODED_ENC_PD)
                     || values.get(0).contains(D_ENCODED_ENC) || values.get(0).contains(D_ENCODED_ENC_PD)
                     || values.get(0).contains(ENC) || values.get(0).contains(ENC_PD))) {
-                return true;
+                return values.get(0);
             }
         }
-        return false;
+        return null;
     }
 
     private boolean isNative(IEndUserContext endUserContext) {
