@@ -66,17 +66,25 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayIOS;6.4.0;iOS;13.5.1;Apple;iPhone12_1;Vodafone.de;414x896;2.0")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        ImmutablePair<String, Boolean> adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("enc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
+
         event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=tkp%3ABlBMUIzmrr6tYw%7Cenc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("tkp%3ABlBMUIzmrr6tYw%7Cenc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D"));
+
         event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=enc:AQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("enc:AQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
+
         event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=enc%253AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("enc%253AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
+
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=xyz");
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft() == null);
+
     }
 
     @Test
@@ -86,17 +94,17 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayIOS;6.4.0;iOS;13.5.1;Apple;iPhone12_1;Vodafone.de;414x896;2.0")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        ImmutablePair<String, Boolean> adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("encpd%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
         event.setTargetUrl("https://www.ebay.com/i/174202315485?someparam2=tkp%3ABlBMUIzmrr6tYw%7Cencpd%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("tkp%3ABlBMUIzmrr6tYw%7Cencpd%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D"));
         event.setTargetUrl("https://www.ebay.com/i/174202315485?someparam=encpd:AQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("encpd:AQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
         event.setTargetUrl("https://www.ebay.com/i/174202315485?someparam=encpd%253AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.FALSE),
-                adsClickCollector.getQueryParams(event)));
+        adsSignals = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertTrue(adsSignals.getLeft().equals("encpd%253AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
     }
 
     private Event createEvent() {
@@ -134,16 +142,14 @@ public class AdsClickCollectorTest {
     }
     @Test
     public void nullEndUserCtxt() {
-        assertFalse(adsClickCollector.isInvokeAdsSvc(null, new ImmutablePair<>("amdata", Boolean.FALSE),
-                createMultiValueMap()));
+        assertFalse(adsClickCollector.isInvokeAdsSvc(null, new ImmutablePair<>("amdata", Boolean.FALSE)));
     }
 
     @Test
     public void webUserAgent() {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36").when(endUserContext).getUserAgent();
-        assertFalse(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE),
-                createMultiValueMap()));
+        assertFalse(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE)));
     }
 
     @Test
@@ -151,8 +157,7 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayIOS;6.4.0;iOS;13.5.1;Apple;iPhone12_1;Vodafone.de;414x896;2.0")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE),
-                createMultiValueMap()));
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE)));
     }
 
     @Test
@@ -160,8 +165,7 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayAndroid;6.4.0;Android;10;Google;sargo;T-Mobile;1080x2088;2.8")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE),
-                createMultiValueMap()));
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("amdata", Boolean.FALSE)));
     }
 
     @Test
@@ -169,8 +173,7 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayAndroid;6.4.0;Android;10;Google;sargo;T-Mobile;1080x2088;2.8")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.TRUE),
-                createMultiValueMap()));
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>(null, Boolean.TRUE)));
     }
 
     @Test
@@ -178,8 +181,19 @@ public class AdsClickCollectorTest {
         IEndUserContext endUserContext = mock(IEndUserContext.class);
         doReturn("ebayUserAgent/eBayAndroid;6.4.0;Android;10;Google;sargo;T-Mobile;1080x2088;2.8")
                 .when(endUserContext).getUserAgent();
-        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("", Boolean.TRUE),
-                createMultiValueMap()));
+        assertTrue(adsClickCollector.isInvokeAdsSvc(endUserContext, new ImmutablePair<>("", Boolean.TRUE)));
+    }
+
+    @Test
+    public void noAmdataAndNoPayloadess() {
+        IEndUserContext endUserContext = mock(IEndUserContext.class);
+        doReturn("ebayUserAgent/eBayAndroid;6.4.0;Android;10;Google;sargo;T-Mobile;1080x2088;2.8")
+                .when(endUserContext).getUserAgent();
+        Event event = new Event();
+        event.setTargetUrl("https://www.ebay.com/itm/174202315485?chn=ps");
+
+        assertFalse(adsClickCollector.isInvokeAdsSvc(endUserContext,
+                adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event))));
     }
 
     @Test
@@ -263,6 +277,17 @@ public class AdsClickCollectorTest {
         assertTrue(request.getAmdata().contains("enc%3AencValue%7Ctsp%3A"));
         assertTrue(request.getReferrer().equals("referrer"));
         assertTrue(request.getRequestUrl().equals("targetUrl"));
+    }
+
+    @Test
+    public void buildRequestNoAmdataQueryParam() {
+        Event event = new Event();
+        event.setTargetUrl("https://www.ebay.com/i/174202315485?qparan=enc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw");
+        ImmutablePair<String, Boolean> adSignal = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+
+        AdsCollectionSvcRequest request = adsClickCollector.createAdsRequest(event, adSignal.getLeft());
+        assertTrue(request.getAmdata().contains("enc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
+        assertTrue(request.getRequestUrl().equals("https://www.ebay.com/i/174202315485?qparan=enc%3AAQAJAAAAwHpAtFBN53uX%2FhF7olfs5c0c6VjAD%2BeWVThrk6BVedP9Pn7%2FkBfl6LKMkUUm8inVqdH4WNlxqotzwh8nSflDqy0YN91camaDnhq%2BF9AZQittV6DdoB2BFujDPkc3N0SvI%2F3IjS%2Ba0S03T4nCuWbzsfN8q36r91CopT%2FJ7PbyB8p7CBH7F6xIejd3OAvuiYTcEkc1GPd%2FNME7hVHE1SYoT0NHZQJSsS6S4TVH%2FH6TqBO2xqaDLcbEY%2FFsTbDDuaDHZw%3D%3D%7Ctkp%3ABlBMUIzmrr6tYw"));
     }
 
     @Test
