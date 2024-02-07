@@ -291,6 +291,14 @@ public class AdsClickCollectorTest {
     }
 
     @Test
+    public void invalidMarketingUrl() {
+        Event event = new Event();
+        event.setTargetUrl("https://www.ebay.com/itm/325988063928?mkevt=1&plmtId=1110100102&mesgId=3041&mkpid=0&emsid=enull.m161560.l174179&mkcid=7&ch=osgood&euid&bu=43128145354&trkId=5ed6ebd9-c10b-43e4-a0a8-53e6600368a5&cnvId=a7fb74a1-c76a-4a5d-81a4-a4efd73d9c0c&osub=-1%7E1&crd=20240206142412&segname&recoId=325988063928&recoPos=5&autorefresh=true");
+        ImmutablePair<String, Boolean> adSignal = adsClickCollector.getAdsSignals(adsClickCollector.getQueryParams(event));
+        assertNull(adSignal.getLeft());
+        assertTrue(adSignal.getRight());
+    }
+    @Test
     public void payloadLessEpnRequest() {
         Event event = new Event();
         event.setTargetUrl("targetUrl");

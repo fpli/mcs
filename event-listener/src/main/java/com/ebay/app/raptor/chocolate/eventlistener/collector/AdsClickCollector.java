@@ -114,7 +114,7 @@ public class AdsClickCollector {
     protected String findAmdataFromencKey(MultiValueMap<String, String> queryParams) {
         for (String key: queryParams.keySet()) {
             List<String> values = queryParams.get(key);
-            if (!CollectionUtils.isEmpty(values)
+            if (!CollectionUtils.isEmpty(values) && values.get(0) != null
                     && (values.get(0).contains(ENCODED_ENC) || values.get(0).contains(ENCODED_ENC_PD)
                     || values.get(0).contains(D_ENCODED_ENC) || values.get(0).contains(D_ENCODED_ENC_PD)
                     || values.get(0).contains(ENC) || values.get(0).contains(ENC_PD))) {
