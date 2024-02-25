@@ -1,3 +1,0 @@
-type=command
-command=bash imkReformatNewAndImkCheck.sh
-failure.emails=yli19@ebay.com

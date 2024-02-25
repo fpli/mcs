@@ -1,3 +1,0 @@
-type=command
-command=bash imkReformatNewEventTsCheck.sh
-failure.emails=yli19@ebay.com

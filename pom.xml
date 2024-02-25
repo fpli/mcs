@@ -51,15 +51,8 @@
 
   <modules>
     <module>common</module>
-    <module>spark-common</module>
     <module>kafka-common</module>
-    <module>adservice</module>
     <module>event-listener</module>
-    <module>listener</module>
-    <module>filter</module>
-    <module>spark-nrt</module>
-    <module>tools</module>
-    <module>flink-nrt</module>
   </modules>
 
   <dependencyManagement>

@@ -1,3 +1,0 @@
-type=command
-command=bash DailyClickTrendReport.sh
-failure.emails=lxiong1@ebay.com
