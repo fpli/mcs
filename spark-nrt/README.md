@@ -1,1 +1,0 @@
-## Capping Rules
