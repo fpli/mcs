@@ -101,6 +101,9 @@ public class SendEmail {
         case "batchDone":
           message.setSubject("Batch done report for tracking (Chocolate team)! " + time);
           break;
+        case "metricMonitor":
+          message.setSubject("Metric monitor report for tracking team! " + time);
+          break;
         default:
           message.setSubject("Wrong email message" + time);
           break;
@@ -116,6 +119,8 @@ public class SendEmail {
       System.out.println("Sent message to: " + toEmail + " successfully.");
     } catch (MessagingException mex) {
       logger.info(mex.getMessage());
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 

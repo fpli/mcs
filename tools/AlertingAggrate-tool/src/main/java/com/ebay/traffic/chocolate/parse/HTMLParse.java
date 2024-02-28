@@ -2,10 +2,12 @@ package com.ebay.traffic.chocolate.parse;
 
 import com.ebay.traffic.chocolate.html.DailyEmailHtml;
 import com.ebay.traffic.chocolate.html.HourlyEmailHtml;
+import com.ebay.traffic.chocolate.html.metric.MetricHtmlParse;
+import com.ebay.traffic.chocolate.util.MetricMonitorUtil;
 
 public class HTMLParse {
 
-    public static String parse(String runPeriod, String cluster) {
+    public static String parse(String runPeriod, String cluster) throws InterruptedException {
         switch (runPeriod) {
             case "daily":
                 return parseDaily();
@@ -13,6 +15,8 @@ public class HTMLParse {
                 return parseHourly(cluster);
             case "batchDone":
                 return parseBatchDone();
+            case "metricMonitor":
+                return parseMetricMonitor();
             default:
                 return "page is wrong!";
         }
@@ -46,6 +50,13 @@ public class HTMLParse {
     public static String parseBatchDone() {
         StringBuilder html = new StringBuilder();
         html.append(HourlyEmailHtml.getBatchDoneFileHtml());
+        return html.toString();
+    }
+    
+    public static String parseMetricMonitor() throws InterruptedException {
+        MetricMonitorUtil.dealMetricMonitorInfo();
+        StringBuilder html = new StringBuilder();
+        html.append(MetricHtmlParse.getMetricHtml());
         return html.toString();
     }
 }
