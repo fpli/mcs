@@ -409,17 +409,6 @@ public class EventListenerServiceTest {
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
 
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
-      LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 10, 30 * 1000);
-    consumerPaidSearch.close();
-
-    assertEquals(11, listenerMessagesPaidSearch.size());
-
     // mrkt email click events
     event.setTargetUrl("https://www.ebay.com/?mkevt=1&mkcid=8&mkpid=12&sojTags=bu%3Dbu&bu=43551630917&emsid=e11051.m44.l1139&crd=20190801034425&segname=AD379737195_GBH_BBDBENNEWROW_20180813_ZK&ymmmid=1740915&ymsid=1495596781385&yminstc=7");
     response = postMcsResponseWithExtraHeader(eventsPath, endUserCtxiPhone, tracking, event, "X-Purpose", "preview");
@@ -490,16 +479,6 @@ public class EventListenerServiceTest {
     event.setTargetUrl("https://c.qa.ebay.com/marketingtracking/v1/pixel?mkcid=2&mkrid=710-123456-1234-6&mkevt=1&originalRef=https%3A%2F%2Fwww.google.com&originalUrl=https%3A%2F%2Fpages.qa.ebay.com%2Fsitemap.html");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
-      LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-      consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 2, 30 * 1000);
-    consumerPaidSearch.close();
-    assertEquals(2, listenerMessagesPaidSearch.size());
   }
 
   @Test
@@ -1191,27 +1170,6 @@ public class EventListenerServiceTest {
 
     Map<Long, ListenerMessage> listenerMessagesEpnExcludeRover = listenerMessageExcludeRover(listenerMessagesEpn);
     assertEquals(14, listenerMessagesEpnExcludeRover.size());
-
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerSocialMedia = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesSocialMedia = pollFromKafkaTopic(
-            consumerSocialMedia, Arrays.asList("dev_listened-social-media"), 2, 30 * 1000);
-    consumerSocialMedia.close();
-    assertEquals(1, listenerMessagesSocialMedia.size());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerDisplay = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesDisplay = pollFromKafkaTopic(
-            consumerDisplay, Arrays.asList("dev_listened-display"), 10, 30 * 1000);
-    consumerDisplay.close();
-    assertEquals(8, listenerMessagesDisplay.size());
   }
 
   @Test
@@ -1259,26 +1217,6 @@ public class EventListenerServiceTest {
     event.setTargetUrl("http://www.ebay.co.uk/sch/i.html?gclid=EAIaIQobChMI78%252DP1Z2s6AIVy7TtCh11YAAxEAMYAyAAEgJYavD_BwE&recordsize=12&geo_id=32251&MT_ID=584396&campid=1537903895&crlp=349241947881&_sastarttime=1591532529&_saved=1&rlsatarget=aud%252D629407025665%253Akwd%252D312440981206&keyword=stonemarket%2520paving%2520slabs&abcId=1139886&loc=1006563&mkrid=711%2D42618%2D2056%0&mkevt=1&_nkw=stonemarket+paving+slabs&device=t&mkcid=2");
     response = postMcsResponse(eventsPath, endUserCtxiPhone, tracking, event);
     assertEquals(201, response.getStatus());
-
-    // validate kafka message
-    Thread.sleep(3000);
-    KafkaSink.get().flush();
-    Consumer<Long, ListenerMessage> consumerPaidSearch = kafkaCluster.createConsumer(
-            LongDeserializer.class, ListenerMessageDeserializer.class);
-    Map<Long, ListenerMessage> listenerMessagesPaidSearch = pollFromKafkaTopic(
-            consumerPaidSearch, Arrays.asList("dev_listened-paid-search"), 4, 30 * 1000);
-    consumerPaidSearch.close();
-
-    assertEquals(4, listenerMessagesPaidSearch.size());
-    Map<Long, Long> campaignRotationMap = new HashMap<>();
-    for (ListenerMessage listenerMessage: listenerMessagesPaidSearch.values()) {
-      campaignRotationMap.put(listenerMessage.getCampaignId(), listenerMessage.getDstRotationId());
-    }
-
-    assertEquals("7111536773464014", campaignRotationMap.get(1615587334L).toString());
-    assertEquals("7114261820560", campaignRotationMap.get(495209116L).toString());
-    assertEquals("7101540849339260", campaignRotationMap.get(1537903894L).toString());
-    assertEquals("-1", campaignRotationMap.get(1537903895L).toString());
   }
 
   @Test

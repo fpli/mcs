@@ -283,7 +283,7 @@
     <dependency>
       <groupId>com.ebay.traffic</groupId>
       <artifactId>chocolate-kafkacommon</artifactId>
-      <version>3.8.0-RELEASE</version>
+      <version>3.9.1-RELEASE</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -295,7 +295,7 @@
     <dependency>
       <groupId>com.ebay.traffic</groupId>
       <artifactId>chocolate-common</artifactId>
-      <version>3.8.0-RELEASE</version>
+      <version>3.9.1-RELEASE</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
