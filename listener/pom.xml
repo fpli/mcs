@@ -331,6 +331,10 @@
          <groupId>com.ebay.raptorio.component</groupId>
          <artifactId>raptor-resilience-starter</artifactId>
       </dependency>
+      <dependency>
+         <groupId>com.ebay.raptorio.component</groupId>
+         <artifactId>raptor-cloud-metrics-starter</artifactId>
+      </dependency>
 
     </dependencies>
 

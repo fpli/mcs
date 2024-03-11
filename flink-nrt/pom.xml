@@ -264,29 +264,24 @@
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes</artifactId>
-            <version>1.6.26</version>
         </dependency>
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes-nukv</artifactId>
-            <version>1.6.26</version>
         </dependency>
 
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes-migration</artifactId>
-            <version>1.6.26</version>
         </dependency>
 
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes-fountclient</artifactId>
-            <version>1.6.26</version>
         </dependency>
         <dependency>
             <groupId>com.ebay.dukes</groupId>
             <artifactId>dukes-simple</artifactId>
-            <version>1.6.26</version>
         </dependency>
 
         <!-- kernel platform stuff -->
@@ -344,6 +339,10 @@
         <dependency>
             <groupId>com.ebay.raptorio.component</groupId>
             <artifactId>raptor-resilience-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ebay.raptorio.component</groupId>
+            <artifactId>raptor-cloud-metrics-starter</artifactId>
         </dependency>
 
     </dependencies>
