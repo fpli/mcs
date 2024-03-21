@@ -1,0 +1,16 @@
+{
+  "git": {
+    "org": "chocolate",
+    "repo": "mcs",
+    "branch": "release"
+  },
+  "enabled": true,
+  "stack": "raptor",
+  "emails": [
+    "DL-eBay-Chocolate-GC@ebay.com"
+  ],
+  "upgradeDay": 10,
+  "props": {
+    "pom": "pom.xml"
+  }
+}
