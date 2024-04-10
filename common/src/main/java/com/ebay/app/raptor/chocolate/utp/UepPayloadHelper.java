@@ -38,6 +38,7 @@ public class UepPayloadHelper {
   public static final String EXPERIMENT_ID = "exe";
   public static final String EXPERIMENT_TYPE = "ext";
   public static final String MOB_TRK_ID = "osub";
+  public static final String CANVAS_MOB_TRK_ID = "cmob";
   public static final String MESSAGE_ID = "mesgId";
   public static final String PLACEMENT_ID = "plmtId";
   public static final String PLACEMENT_POS = "plmtPos";
@@ -203,6 +204,9 @@ public class UepPayloadHelper {
     // experiment ids
     payload.put("exe", getOrDefault(parameters.getFirst(EXPERIMENT_ID)));
     payload.put("ext", getOrDefault(parameters.getFirst(EXPERIMENT_TYPE)));
+
+    // canvas mob trk id
+    payload.put("canvas.mob.trk.id" , getOrDefault(parameters.getFirst(CANVAS_MOB_TRK_ID)));
 
     // message list
     Message message = new Message();
