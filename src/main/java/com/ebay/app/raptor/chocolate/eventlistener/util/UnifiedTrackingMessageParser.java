@@ -865,7 +865,9 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("placedDate") && StringUtils.isNotEmpty(roiPayload.get("placedDate"))) {
       payloadMap.put("placedDate", roiPayload.get("placedDate"));
     }
-
+    if(StringUtils.isNotEmpty(roiEvent.getTransactionTimestamp())) {
+      payloadMap.put("transactionTimestamp", roiEvent.getTransactionTimestamp());
+    }
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
