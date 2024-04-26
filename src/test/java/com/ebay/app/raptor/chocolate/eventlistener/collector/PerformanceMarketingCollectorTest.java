@@ -4,35 +4,23 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
-import com.ebay.app.raptor.chocolate.EventListenerApplication;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.app.raptor.chocolate.avro.ListenerMessage;
 import com.ebay.app.raptor.chocolate.constant.ChannelIdEnum;
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.SearchEngineFreeListingsRotationEnum;
 import com.ebay.app.raptor.chocolate.gen.model.EventPayload;
 import com.ebay.app.raptor.chocolate.model.GdprConsentDomain;
-import com.ebay.platform.raptor.cosadaptor.context.IEndUserContext;
 import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(
-    classes = EventListenerApplication.class)
 public class PerformanceMarketingCollectorTest {
 
-  @Autowired
-  private PerformanceMarketingCollector performanceMarketingCollector;
+  PerformanceMarketingCollector performanceMarketingCollector = new PerformanceMarketingCollector();
 
   @Test
   public void testEraseGDPR() {
@@ -43,7 +31,6 @@ public class PerformanceMarketingCollectorTest {
     performanceMarketingCollector.eraseByGdpr(gdprConsentDomain, message);
     assertEquals("", message.getRemoteIp());
     assertEquals(0L, message.getUserId());
-
   }
 
   @Test

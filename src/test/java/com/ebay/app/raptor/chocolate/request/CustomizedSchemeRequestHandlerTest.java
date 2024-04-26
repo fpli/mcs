@@ -3,19 +3,12 @@ package com.ebay.app.raptor.chocolate.request;
 import com.ebay.app.raptor.chocolate.eventlistener.request.CustomizedSchemeRequestHandler;
 import com.ebay.app.raptor.chocolate.gen.model.Event;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest()
 public class CustomizedSchemeRequestHandlerTest {
 
-    @Autowired
-    CustomizedSchemeRequestHandler customizedSchemeRequestHandler;
+    CustomizedSchemeRequestHandler customizedSchemeRequestHandler = new CustomizedSchemeRequestHandler();
 
     @Test
     public void testCustomizedSchemeRequestHandler() {
