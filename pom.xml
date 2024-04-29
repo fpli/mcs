@@ -34,7 +34,6 @@
     <metrics.version>1.2.6-RELEASE</metrics.version>
     <jackson.version>2.9.7</jackson.version>
     <powermock.version>1.6.6</powermock.version>
-
     <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
 
     <sonar.scoverage.reportPath>target/scoverage.xml</sonar.scoverage.reportPath>
@@ -309,6 +308,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -609,10 +614,28 @@
       <artifactId>raptor-resilience-starter</artifactId>
     </dependency>
 
+    <!-- Rheos -->
     <dependency>
-      <groupId>com.ebay.traffic</groupId>
-      <artifactId>metrics-common</artifactId>
-      <version>${metrics.version}</version>
+      <groupId>io.ebay.rheos</groupId>
+      <artifactId>rheos-client_JDK-1.8</artifactId>
+      <version>${rheos.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebay.rheos</groupId>
+      <artifactId>rheos-iaf-raptorio_JDK-1.8</artifactId>
+      <version>${rheos.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.ebay.raptor.dfp</groupId>
+      <artifactId>DeviceFingerprintSvcClient</artifactId>
+      <version>1.0.12</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>ConfigWeb</artifactId>
+          <groupId>com.ebay.raptor.core</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -645,6 +668,16 @@
       <plugin>
         <groupId>com.spotify</groupId>
         <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>once</forkMode>
+          <forkCount>1.0C</forkCount>
+          <reuseForks>false</reuseForks>
+          <argLine>-Xverify:none -Xmx1024m ${surefireArgLine}</argLine>
+        </configuration>
       </plugin>
 
 <!--      <plugin>-->
