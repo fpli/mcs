@@ -614,18 +614,6 @@
       <artifactId>raptor-resilience-starter</artifactId>
     </dependency>
 
-    <!-- Rheos -->
-    <dependency>
-      <groupId>io.ebay.rheos</groupId>
-      <artifactId>rheos-client_JDK-1.8</artifactId>
-      <version>${rheos.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.ebay.rheos</groupId>
-      <artifactId>rheos-iaf-raptorio_JDK-1.8</artifactId>
-      <version>${rheos.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.ebay.raptor.dfp</groupId>
       <artifactId>DeviceFingerprintSvcClient</artifactId>
