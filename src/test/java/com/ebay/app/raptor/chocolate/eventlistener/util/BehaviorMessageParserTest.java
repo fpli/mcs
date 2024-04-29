@@ -4,8 +4,6 @@
 
 package com.ebay.app.raptor.chocolate.eventlistener.util;
 
-import com.ebay.app.raptor.chocolate.avro.ChannelAction;
-import com.ebay.app.raptor.chocolate.avro.ChannelType;
 import com.ebay.platform.raptor.ddsmodels.DDSResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,8 +12,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
