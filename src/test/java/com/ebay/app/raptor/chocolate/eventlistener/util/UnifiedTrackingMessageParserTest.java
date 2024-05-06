@@ -20,7 +20,6 @@ import com.ebay.raptor.geo.context.GeoCtx;
 import com.ebay.raptor.geo.context.UserPrefsCtx;
 import com.ebay.raptor.kernel.util.RaptorConstants;
 import com.ebay.raptorio.request.tracing.RequestTracingContext;
-import com.google.common.collect.Maps;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +34,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import java.io.IOException;
 import java.util.*;
 
-import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 import static org.junit.Assert.*;
 
 public class UnifiedTrackingMessageParserTest {
