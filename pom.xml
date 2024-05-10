@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.19.3-RELEASE</version>
+    <version>0.19.4-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -17,7 +17,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <CodeCacheSize>512m</CodeCacheSize>
     <encoding>UTF-8</encoding>
-    <ep.component.version>0.19.7-RELEASE</ep.component.version>
+    
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <avro.version>1.11.0</avro.version>
@@ -304,13 +304,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.5.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -366,7 +364,6 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>${kafka.version}</version>
     </dependency>
 
     <dependency>
