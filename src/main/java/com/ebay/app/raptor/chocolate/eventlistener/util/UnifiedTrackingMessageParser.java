@@ -871,6 +871,9 @@ public class UnifiedTrackingMessageParser {
     if (isLongNumeric(userId)) {
       payloadMap.put("userid", userId);
     }
+    if(roiPayload.containsKey("cartId") && StringUtils.isNotEmpty(roiPayload.get("cartId"))){
+      payloadMap.put("cartId", roiPayload.get("cartId"));
+    }
   }
 
   /**
