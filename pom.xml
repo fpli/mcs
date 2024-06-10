@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.ebay.raptorio.platform</groupId>
     <artifactId>raptor-io-parent</artifactId>
-    <version>0.19.4-RELEASE</version>
+    <version>0.19.5-RELEASE</version>
     <relativePath></relativePath> <!-- lookup parent from repository -->
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -364,7 +364,6 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>${kafka.version}</version>
     </dependency>
 
     <dependency>
