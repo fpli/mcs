@@ -36,6 +36,7 @@ import static com.ebay.app.raptor.chocolate.constant.Constants.*;
 public class CommonRequestHandler {
 
   public static final String EBAYUSER = "EBAYUSER";
+  public static final String X_EBAY_TF_AUTHORIZATION = "x-ebay-tf-authorization";
   private static final Logger LOGGER = LoggerFactory.getLogger(CommonRequestHandler.class);
 
   public Map<String, String> getHeaderMaps(HttpServletRequest clientRequest) {
@@ -45,6 +46,9 @@ public class CommonRequestHandler {
         String headerName = e.nextElement();
         // skip auth header
         if (headerName.equalsIgnoreCase(AUTH_HEADER)) {
+          continue;
+        }
+        if (headerName.equalsIgnoreCase(X_EBAY_TF_AUTHORIZATION)) {
           continue;
         }
         headers.put(headerName, clientRequest.getHeader(headerName));
