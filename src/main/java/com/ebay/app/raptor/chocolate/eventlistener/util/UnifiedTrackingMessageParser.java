@@ -874,6 +874,12 @@ public class UnifiedTrackingMessageParser {
     if(roiPayload.containsKey("cartId") && StringUtils.isNotEmpty(roiPayload.get("cartId"))){
       payloadMap.put("cartId", roiPayload.get("cartId"));
     }
+    if (roiPayload.containsKey("checkoutSessionId") && StringUtils.isNotEmpty(roiPayload.get("checkoutSessionId"))) {
+      payloadMap.put("checkoutSessionId", roiPayload.get("checkoutSessionId"));
+    }
+    if (roiPayload.containsKey("guestCheckout") && StringUtils.isNotEmpty(roiPayload.get("guestCheckout"))) {
+      payloadMap.put("guestCheckout", roiPayload.get("guestCheckout"));
+    }
   }
 
   /**
