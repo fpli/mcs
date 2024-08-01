@@ -485,6 +485,8 @@ components:
           type: string
         asn:
           type: string
+        breadcrumbs:
+          type: string
     errorData:
       type: object
       description: >

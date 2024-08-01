@@ -25,8 +25,8 @@ import com.fasterxml.jackson.annotation.*;
  */
 
 
-@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2024-01-02T17:55:36.565+08:00[Asia/Shanghai]")
-
+@javax.annotation.Generated(value = "com.ebay.swagger.templates.codegen.JavaEtsGenerator", date = "2024-08-01T10:59:52.217+08:00[Asia/Shanghai]")
+@JsonPropertyOrder({ "version","ewUsageInfo","ewExecutionInfo","country","city","state","cacheStatus","customField","turnAroundTimeMSec","transferTimeMSec","cliIP","statusCode","reqHost","reqMethod","bytes","tlsVersion","UA","queryStr","rspContentLen","rspContentType","reqPath","reqPort","proto","reqTimeSec","cp","reqId","tlsOverheadTimeMSec","objSize","uncompressedSize","overheadBytes","totalBytes","accLang","cookie","range","referer","xForwardedFor","maxAgeSec","reqEndTimeMSec","errorCode","dnsLookupTimeMSec","billingRegion","edgeIP","securityRules","serverCountry","streamId","asn","breadcrumbs" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 
 
@@ -174,6 +174,9 @@ public class AkamaiEvent implements Serializable {
     @JsonProperty("asn")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String asn = null;
+    @JsonProperty("breadcrumbs")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String breadcrumbs = null;
 
     /**
      * Get version
@@ -727,6 +730,18 @@ public class AkamaiEvent implements Serializable {
     public void setAsn(String asn) {
         this.asn = asn;
     }
+    /**
+     * Get breadcrumbs
+     * @return breadcrumbs
+     **/
+    @ApiModelProperty(value = "")
+    public String getBreadcrumbs() {
+        return breadcrumbs;
+    }
+
+    public void setBreadcrumbs(String breadcrumbs) {
+        this.breadcrumbs = breadcrumbs;
+    }
     @Override
     public boolean equals(java.lang.Object o) {
         if (this == o) {
@@ -781,12 +796,13 @@ public class AkamaiEvent implements Serializable {
                 Objects.equals(this.securityRules, akamaiEvent.securityRules) &&
                 Objects.equals(this.serverCountry, akamaiEvent.serverCountry) &&
                 Objects.equals(this.streamId, akamaiEvent.streamId) &&
-                Objects.equals(this.asn, akamaiEvent.asn);
+                Objects.equals(this.asn, akamaiEvent.asn) &&
+                Objects.equals(this.breadcrumbs, akamaiEvent.breadcrumbs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(version, ewUsageInfo, ewExecutionInfo, country, city, state, cacheStatus, customField, turnAroundTimeMSec, transferTimeMSec, cliIP, statusCode, reqHost, reqMethod, bytes, tlsVersion, UA, queryStr, rspContentLen, rspContentType, reqPath, reqPort, proto, reqTimeSec, cp, reqId, tlsOverheadTimeMSec, objSize, uncompressedSize, overheadBytes, totalBytes, accLang, cookie, range, referer, xForwardedFor, maxAgeSec, reqEndTimeMSec, errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId, asn);
+        return Objects.hash(version, ewUsageInfo, ewExecutionInfo, country, city, state, cacheStatus, customField, turnAroundTimeMSec, transferTimeMSec, cliIP, statusCode, reqHost, reqMethod, bytes, tlsVersion, UA, queryStr, rspContentLen, rspContentType, reqPath, reqPort, proto, reqTimeSec, cp, reqId, tlsOverheadTimeMSec, objSize, uncompressedSize, overheadBytes, totalBytes, accLang, cookie, range, referer, xForwardedFor, maxAgeSec, reqEndTimeMSec, errorCode, dnsLookupTimeMSec, billingRegion, edgeIP, securityRules, serverCountry, streamId, asn, breadcrumbs);
     }
 
     @Override
@@ -840,6 +856,7 @@ public class AkamaiEvent implements Serializable {
         sb.append("    serverCountry: ").append(toIndentedString(serverCountry)).append("\n");
         sb.append("    streamId: ").append(toIndentedString(streamId)).append("\n");
         sb.append("    asn: ").append(toIndentedString(asn)).append("\n");
+        sb.append("    breadcrumbs: ").append(toIndentedString(breadcrumbs)).append("\n");
         sb.append("}");
         return sb.toString();
     }
