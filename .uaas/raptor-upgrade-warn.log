@@ -13,3 +13,4 @@
 2024-05-10 08:18:50 WARN  c.e.r.c.JsonUpgradeConfiguration.apply:61 - com.ebay.uaas.raptor.rule.RaptorPlatformVersionUpdateRule
 2024-06-10 08:06:51 WARN  c.e.r.c.JsonUpgradeConfiguration.apply:61 - com.ebay.uaas.raptor.rule.RaptorPlatformVersionUpdateRule
 2024-07-10 08:08:09 WARN  c.e.r.c.JsonUpgradeConfiguration.apply:61 - com.ebay.uaas.raptor.rule.RaptorPlatformVersionUpdateRule
+2024-07-31 22:43:47 WARN  c.e.r.c.JsonUpgradeConfiguration.apply:61 - com.ebay.uaas.raptor.rule.RaptorPlatformVersionUpdateRule
