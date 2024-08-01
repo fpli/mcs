@@ -6,6 +6,7 @@ package com.ebay.app.raptor.chocolate.eventlistener.collector;
 
 import com.ebay.app.raptor.chocolate.eventlistener.model.BaseEvent;
 import com.ebay.app.raptor.chocolate.eventlistener.util.PageIdEnum;
+import com.ebay.app.raptor.chocolate.eventlistener.util.StringConstants;
 import com.ebay.app.raptor.chocolate.gen.model.ROIEvent;
 import com.ebay.tracking.api.IRequestScopeTracker;
 import com.ebay.tracking.util.TrackerTagValueUtil;
@@ -134,8 +135,8 @@ public class ROICollector {
     if (roiPayload.containsKey("saleTypeId") && isIntegerNumeric(roiPayload.get("saleTypeId"))) {
       requestTracker.addTag("saleTypeId", Integer.parseInt(roiPayload.get("saleTypeId")), Integer.class);
     }
-    if (roiPayload.containsKey("saleTypeFlow") && !StringUtils.isEmpty(roiPayload.get("saleTypeFlow"))) {
-      requestTracker.addTag("saleTypeFlow", roiPayload.get("saleTypeFlow"), String.class);
+    if (roiPayload.containsKey(StringConstants.SALE_TYPE_FLOW) && !StringUtils.isEmpty(roiPayload.get(StringConstants.SALE_TYPE_FLOW))) {
+      requestTracker.addTag(StringConstants.SALE_TYPE_FLOW, roiPayload.get(StringConstants.SALE_TYPE_FLOW), String.class);
     }
   }
 }

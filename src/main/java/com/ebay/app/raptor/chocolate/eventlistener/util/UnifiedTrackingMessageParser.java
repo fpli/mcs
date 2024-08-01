@@ -34,13 +34,8 @@ import com.ebay.traffic.chocolate.utp.lib.cache.TrackingGovernanceTagCache;
 import com.ebay.traffic.chocolate.utp.lib.constants.EnvironmentEnum;
 import com.ebay.traffic.monitoring.Field;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.primitives.Longs;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -51,7 +46,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
 import static com.ebay.app.raptor.chocolate.constant.Constants.*;
@@ -822,8 +816,8 @@ public class UnifiedTrackingMessageParser {
     if (roiPayload.containsKey("saleTypeId") && StringUtils.isNotEmpty(roiPayload.get("saleTypeId"))) {
       payloadMap.put("saleTypeId", roiPayload.get("saleTypeId"));
     }
-    if (roiPayload.containsKey("saleTypeFlow") && StringUtils.isNotEmpty(roiPayload.get("saleTypeFlow"))) {
-      payloadMap.put("saleTypeFlow", roiPayload.get("saleTypeFlow"));
+    if (roiPayload.containsKey(com.ebay.app.raptor.chocolate.eventlistener.util.StringConstants.SALE_TYPE_FLOW) && StringUtils.isNotEmpty(roiPayload.get(com.ebay.app.raptor.chocolate.eventlistener.util.StringConstants.SALE_TYPE_FLOW))) {
+      payloadMap.put(com.ebay.app.raptor.chocolate.eventlistener.util.StringConstants.SALE_TYPE_FLOW, roiPayload.get(com.ebay.app.raptor.chocolate.eventlistener.util.StringConstants.SALE_TYPE_FLOW));
     }
     if (roiPayload.containsKey("order_type") && StringUtils.isNotEmpty(roiPayload.get("order_type"))) {
       payloadMap.put("order_type", roiPayload.get("order_type"));
