@@ -67,6 +67,7 @@ import static com.ebay.app.raptor.chocolate.eventlistener.util.UrlPatternUtil.*;
 public class CollectionServiceUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(CollectionServiceUtil.class);
 
+  private static final String SELLER_ACCEPT_OFFER = "SELLER_ACCEPT_OFFER";
   private static String MOBILE_PHONE_WEB_APPID = "3564";
   private static String MOBILE_TABLET_WEB_APPID = "1115";
   private static String IPHONE_APPID = "1462";
@@ -451,7 +452,7 @@ public class CollectionServiceUtil {
   }
 
   /**
-   * Determine if it is a valid roi
+   * Determine if it is a valid roi for UBI
    * @param roiPayload
    * @return
    */
@@ -473,8 +474,8 @@ public class CollectionServiceUtil {
     if (!BES_SRC.equals(roiSrc)) {
       return true;
     }
-    // from bes source, but not from ops side
-    if (BES_SRC.equals(roiSrc) && !publisher.startsWith(CHECKOUT)) {
+    // from bes source, but not from ops side, and not seller-accept-offer
+    if (BES_SRC.equals(roiSrc) && !publisher.startsWith(CHECKOUT) && !isSellerAcceptOffer(roiPayload)) {
       return true;
     }
     // from bes ops source, but no IS_COMMITTED or ORDER_TYPE tag
@@ -492,6 +493,10 @@ public class CollectionServiceUtil {
     }
 
     return false;
+  }
+
+  private static boolean isSellerAcceptOffer(Map<String, String> roiPayload) {
+    return SELLER_ACCEPT_OFFER.equals(roiPayload.get(StringConstants.SALE_TYPE_FLOW));
   }
 
   /**
